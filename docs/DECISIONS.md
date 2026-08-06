@@ -53,6 +53,7 @@ Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](sup
 | D029 | Sensitivity analysis over ROI geometry and severity cutpoints | Accepted |
 | D030 | Policy impact reported on two axes, not ranking churn alone | Accepted |
 | D031 | Shift sweep narrowed to 2–3 corruptions to pay for D027–D030 | Accepted |
+| D032 | Verified dataset facts; Python pinned to 3.12 | Accepted |
 
 ---
 
@@ -419,3 +420,48 @@ calendars — the one item in the plan that cannot be compressed by working hard
 Revised cut order if slipping past week 6: shift sweep → sensitivity sweep → policy
 Axis 2. **The validation study (D027) is never cut** — it is the only evidence the
 central quantity is meaningful.
+
+## D032 — Verified dataset facts; Python pinned to 3.12
+
+**2026-08-06 · Accepted**
+
+Established against the Figshare and Mendeley APIs before planning, replacing
+estimates used in D025 and D026.
+
+**RDD2022** (DOI `10.6084/m9.figshare.21431547.v1`, CC BY 4.0). Ships as **one
+13.26 GB zip** — *there is no per-country download.* "India subset only" therefore
+means downloading 13.26 GB and selectively extracting `RDD2022/India/*`. Structure is
+`RDD2022/<Country>/train/{images,annotations/xmls}` and `<Country>/test/images`.
+Annotations are PASCAL VOC XML; `label_map.pbtxt` declares four classes — D00, D10,
+D20, D40.
+
+Per-country annotated counts (from the published file list):
+
+| Country | Images | Annotated |
+|---|---|---|
+| India | 9,665 | **7,706** |
+| Japan | 13,133 | 10,506 |
+| Norway | 10,201 | 8,161 |
+| United States | 6,005 | 4,805 |
+| Czech | 3,538 | 2,829 |
+| China MotorBike | 2,477 | 1,977 |
+| China Drone | 2,401 | 2,401 |
+
+**The test split is unlabelled** and cannot serve as our `test`. All four splits are
+carved from the 7,706 annotated training images: `train` 4,624 / `val` 771 / `calib`
+1,541 / `test` 770. This corrects D026 (see spec §2).
+
+Consequence to expect: **~4,624 training images is small**, and India is the hardest
+RDD2022 subset. Published multi-country mAP figures are not a fair benchmark for this
+model, and the thesis should not compare against them as though they were.
+
+**Water-filled potholes** (Mendeley `tp95cdvgm8`) is **lower risk than D025 assumed**.
+`Potholes.zip` is 290 MB and the ReadMe confirms it ships `IMG/`, `XML/` (PASCAL VOC)
+**and** `TXT/` (YOLO) — the same format family as RDD2022. The week-1 spike should
+cost hours, not the budgeted day. The open question narrows to class set and whether
+the potholes are genuinely water-filled.
+
+**Python pinned to 3.12.** The machine's system Python is 3.14. torch 2.13 publishes
+macOS arm64 wheels through cp314, but ultralytics 8.4.115 declares support only
+through 3.13. 3.12 is the well-supported intersection and matches the machine's
+existing convention.

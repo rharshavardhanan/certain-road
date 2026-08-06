@@ -211,13 +211,15 @@ are **not physical road segments** and must never be described as such. Calibrat
 artifacts are named `eval_segments_*` so the distinction is visible in filenames.
 
 **Segment count is a first-order constraint, and the India-only cut (D025) tightened
-it.** The India subset gives ~1.8–2.0k calibration frames. At `K = 30` that is only
-~60 evaluation segments; realised coverage then has a standard deviation of roughly
-4 percentage points, so a nominal 90% interval may empirically land anywhere from
-~82% to ~98%. The guarantee still holds — it is marginal over draws — but a single
-noisy coverage number is weak evidence in a thesis.
+it.** Verified figures (D032): India has 9,665 images but only **7,706 annotated** —
+the 1,959-image test split ships without labels and is unusable here. A 20%
+calibration share is therefore **1,541 frames**. At `K = 30` that is only ~51
+evaluation segments; realised coverage then has a standard deviation of roughly 4
+percentage points, so a nominal 90% interval may empirically land anywhere from ~82%
+to ~98%. The guarantee still holds — it is marginal over draws — but a single noisy
+coverage number is weak evidence in a thesis.
 
-**Default is therefore `K = 15`, giving ~120 evaluation segments**, halving that
+**Default is therefore `K = 15`, giving ~102 evaluation segments**, halving that
 noise while keeping segments large enough to be meaningful. Report at `α = 0.1` and
 `α = 0.2`; `α = 0.05` is not supportable at this sample size and should not be
 claimed.
