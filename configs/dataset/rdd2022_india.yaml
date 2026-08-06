@@ -1,4 +1,4 @@
-path: /Users/harshav/PROJECTS/certain-road/data/processed/india
+path: data/processed/india
 train: images/train
 val: images/val
 names:

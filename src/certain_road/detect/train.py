@@ -8,9 +8,25 @@ from pathlib import Path
 
 import yaml
 
+# Keys that must never appear in a data yaml handed to the detector trainer.
+# `configs/dataset/*.yaml` is a checked-in, hand-editable file with no other
+# validation before `detect train` consumes it; either key here feeding
+# training would silently void every conformal guarantee in the project (D009).
+FORBIDDEN_DATA_YAML_KEYS = ("calib", "test")
+
 
 def load_train_config(path: Path) -> dict:
     return yaml.safe_load(Path(path).read_text())
+
+
+def _check_data_yaml_has_no_calib_firewall_breach(data_yaml: Path) -> None:
+    data_cfg = yaml.safe_load(Path(data_yaml).read_text())
+    found = [key for key in FORBIDDEN_DATA_YAML_KEYS if key in data_cfg]
+    if found:
+        raise ValueError(
+            f"{data_yaml} contains forbidden key(s) {found}: calib/test must never "
+            "reach detector training, or every conformal guarantee is silently voided"
+        )
 
 
 def train(config_path: Path, data_yaml: Path, *, smoke: bool = False) -> Path:
@@ -18,6 +34,7 @@ def train(config_path: Path, data_yaml: Path, *, smoke: bool = False) -> Path:
     import torch
     from ultralytics import YOLO
 
+    _check_data_yaml_has_no_calib_firewall_breach(data_yaml)
     cfg = load_train_config(config_path)
 
     if cfg["device"] == "mps" and not torch.backends.mps.is_available():

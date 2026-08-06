@@ -13,10 +13,12 @@ from datetime import UTC, datetime, timedelta
 import numpy as np
 import pandas as pd
 
-CLASS_NAMES = ["D00", "D10", "D20", "D40"]
+from certain_road.detect.dataset.convert import ID_TO_CLASS
+
+CLASS_NAMES = [ID_TO_CLASS[i] for i in sorted(ID_TO_CLASS)]
 IMG_W, IMG_H = 600, 600
 SAMPLE_SPACING_M = 6.0
-SEGMENT_SEVERITY_RANGE = (0.3, 2.0)
+SEGMENT_APPARENT_SEVERITY_RANGE = (0.3, 2.0)
 BOX_SIZE_RANGE_PX = (20.0, 140.0)
 SCORE_RANGE = (0.25, 0.98)
 ROAD_ROI_TOP_FRACTION = 0.4
@@ -70,7 +72,7 @@ def synthetic_detections(
     """
     rng = np.random.default_rng(seed)
     segments = sorted(frames["segment_id"].unique())
-    apparent_severity = {s: rng.uniform(*SEGMENT_SEVERITY_RANGE) for s in segments}
+    apparent_severity = {s: rng.uniform(*SEGMENT_APPARENT_SEVERITY_RANGE) for s in segments}
 
     rows = []
     for frame in frames.itertuples():

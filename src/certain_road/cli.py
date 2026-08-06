@@ -98,11 +98,13 @@ def dataset_convert(country: str = "India") -> None:
 @dataset_app.command("split")
 def dataset_split(country: str = "India") -> None:
     """Build the deterministic four-way split and the ultralytics data yaml."""
-    import yaml
-
     from certain_road.core.paths import processed_dir, raw_dir, repo_root
-    from certain_road.detect.dataset.convert import ID_TO_CLASS
-    from certain_road.detect.dataset.split import build_splits, materialise, write_manifest
+    from certain_road.detect.dataset.split import (
+        build_splits,
+        materialise,
+        write_data_yaml,
+        write_manifest,
+    )
 
     root = processed_dir() / country.lower()
     label_src = root / "labels_all"
@@ -137,18 +139,7 @@ def dataset_split(country: str = "India") -> None:
         )
 
     data_yaml = repo_root() / "configs" / "dataset" / f"rdd2022_{country.lower()}.yaml"
-    data_yaml.parent.mkdir(parents=True, exist_ok=True)
-    data_yaml.write_text(
-        yaml.safe_dump(
-            {
-                "path": str(root),
-                "train": "images/train",
-                "val": "images/val",
-                "names": {i: ID_TO_CLASS[i] for i in sorted(ID_TO_CLASS)},
-            },
-            sort_keys=False,
-        )
-    )
+    write_data_yaml(data_yaml, root, repo_root())
     print(f"\nwrote {data_yaml}")
     print("calib and test are deliberately absent from the yaml: ultralytics must never see them")
 

@@ -2,9 +2,15 @@ import pandas as pd
 
 from certain_road.artifacts.io import read_artifact, write_artifact
 from certain_road.artifacts.schema import DetectionRow, FrameRow
-from tests.fixtures.synthetic import synthetic_detections, synthetic_frames
+from certain_road.detect.dataset.convert import ID_TO_CLASS
+from tests.fixtures.synthetic import CLASS_NAMES, synthetic_detections, synthetic_frames
 
-CLASSES = {"D00", "D10", "D20", "D40"}
+CLASSES = set(ID_TO_CLASS.values())
+
+
+def test_fixture_class_vocabulary_matches_pipeline():
+    """CLASS_NAMES must never drift from the pipeline's own class vocabulary."""
+    assert [ID_TO_CLASS[i] for i in sorted(ID_TO_CLASS)] == CLASS_NAMES
 
 
 def test_frames_have_expected_shape():

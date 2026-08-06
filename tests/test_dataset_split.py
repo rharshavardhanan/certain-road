@@ -1,10 +1,15 @@
 import json
+from pathlib import Path
 
+import yaml
+
+from certain_road.detect.dataset.convert import ID_TO_CLASS
 from certain_road.detect.dataset.split import (
     SPLIT_BOUNDS,
     assign_split,
     build_splits,
     materialise,
+    write_data_yaml,
     write_manifest,
 )
 
@@ -151,6 +156,21 @@ def test_rerun_after_removing_a_stem_leaves_no_stale_file(tmp_path):
     # Everything else in that split should still be present.
     images = {p.stem for p in (out_root / "images" / removed_split).glob("*.jpg")}
     assert images == set(new_splits[removed_split])
+
+
+def test_write_data_yaml_has_only_expected_keys_and_relative_path(tmp_path):
+    repo_root = tmp_path / "repo"
+    data_root = repo_root / "data" / "processed" / "india"
+    data_root.mkdir(parents=True)
+    out_path = repo_root / "configs" / "dataset" / "rdd2022_india.yaml"
+
+    write_data_yaml(out_path, data_root, repo_root)
+
+    data = yaml.safe_load(out_path.read_text())
+    assert set(data) == {"path", "train", "val", "names"}
+    assert data["path"] == "data/processed/india"
+    assert not Path(data["path"]).is_absolute()
+    assert data["names"] == {i: ID_TO_CLASS[i] for i in sorted(ID_TO_CLASS)}
 
 
 def test_write_manifest_counts_match_actual_split_sizes(tmp_path):

@@ -11,6 +11,10 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+import yaml
+
+from certain_road.detect.dataset.convert import ID_TO_CLASS
+
 SALT = "certain-road-v1"
 
 # Extensions of the files `materialise` owns in images/<split> and labels/<split>.
@@ -125,6 +129,27 @@ def materialise(
         )
 
     return reports
+
+
+def write_data_yaml(out_path: Path, data_root: Path, repo_root: Path) -> None:
+    """Write the ultralytics data yaml, `path` relative to `repo_root`.
+
+    A relative `path` keeps the file usable on any machine; ultralytics
+    resolves it against its own working directory. `calib` and `test` are
+    deliberately absent: ultralytics must never see them (D009).
+    """
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(
+        yaml.safe_dump(
+            {
+                "path": str(data_root.relative_to(repo_root)),
+                "train": "images/train",
+                "val": "images/val",
+                "names": {i: ID_TO_CLASS[i] for i in sorted(ID_TO_CLASS)},
+            },
+            sort_keys=False,
+        )
+    )
 
 
 def write_manifest(splits: dict[str, list[str]], path: Path, salt: str = SALT) -> None:
