@@ -54,6 +54,7 @@ Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](sup
 | D030 | Policy impact reported on two axes, not ranking churn alone | Accepted |
 | D031 | Shift sweep narrowed to 2–3 corruptions to pay for D027–D030 | Accepted |
 | D032 | Verified dataset facts; Python pinned to 3.12 | Accepted |
+| D033 | Synthetic fixtures vary detection count, not defect character | Accepted |
 
 ---
 
@@ -465,3 +466,24 @@ the potholes are genuinely water-filled.
 macOS arm64 wheels through cp314, but ultralytics 8.4.115 declares support only
 through 3.13. 3.12 is the well-supported intersection and matches the machine's
 existing convention.
+
+## D033 — Synthetic fixtures vary detection count, not defect character
+
+**2026-08-06 · Accepted**
+
+`tests/fixtures/synthetic.py` draws a per-segment `apparent_severity` multiplier
+that scales the Poisson detection rate, so segments genuinely differ in how many
+defects they contain. Box size and `class_name`, however, are drawn independently
+of that multiplier — uniform across every segment regardless of its severity.
+
+Downstream, vision-estimated PCI is computed per (class × apparent_severity) with a
+separate deduct curve for each combination, so the fixtures exercise only one axis
+of that machinery: quantity varies, but the class mix and box-size distribution that
+drive which deduct curve applies do not. A test built against these fixtures cannot
+show PCI responding correctly to a shift in defect character, only to a shift in
+defect count.
+
+Deliberately deferred to week 2, once `assess` exists and can reveal what
+variation the deduct curves actually need from the fixtures — building that
+coupling now would be guessing at a shape the real computation hasn't specified
+yet.

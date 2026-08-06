@@ -16,6 +16,11 @@ import pandas as pd
 CLASS_NAMES = ["D00", "D10", "D20", "D40"]
 IMG_W, IMG_H = 600, 600
 SAMPLE_SPACING_M = 6.0
+SEGMENT_SEVERITY_RANGE = (0.3, 2.0)
+BOX_SIZE_RANGE_PX = (20.0, 140.0)
+SCORE_RANGE = (0.25, 0.98)
+ROAD_ROI_TOP_FRACTION = 0.4
+SPEED_RANGE_MPS = (6.0, 9.0)
 
 
 def synthetic_frames(
@@ -41,7 +46,7 @@ def synthetic_frames(
                     "survey_date": start.date(),
                     "lat": base_lat + distance * 9e-6,
                     "lon": base_lon,
-                    "speed_mps": float(rng.uniform(6.0, 9.0)),
+                    "speed_mps": float(rng.uniform(*SPEED_RANGE_MPS)),
                     "cum_dist_m": float(distance),
                     "segment_id": f"seg{seg:04d}",
                     "image_path": f"synthetic/seg{seg:04d}/f{frame_index:06d}.jpg",
@@ -58,29 +63,31 @@ def synthetic_detections(
     seed: int = 0,
     damage_rate: float = 2.0,
 ) -> pd.DataFrame:
-    """Poisson-distributed detections per frame, with per-segment severity drift.
+    """Poisson-distributed detections per frame, with per-segment apparent_severity drift.
 
-    Segments differ systematically in damage level so that downstream PCI values
-    span a usable range rather than clustering.
+    Segments differ systematically in damage level so that downstream
+    vision-estimated PCI values span a usable range rather than clustering.
     """
     rng = np.random.default_rng(seed)
     segments = sorted(frames["segment_id"].unique())
-    severity = {s: rng.uniform(0.3, 2.0) for s in segments}
+    apparent_severity = {s: rng.uniform(*SEGMENT_SEVERITY_RANGE) for s in segments}
 
     rows = []
     for frame in frames.itertuples():
-        n = rng.poisson(damage_rate * severity[frame.segment_id])
+        n = rng.poisson(damage_rate * apparent_severity[frame.segment_id])
         for k in range(int(n)):
-            w = float(rng.uniform(20, 140))
-            h = float(rng.uniform(20, 140))
+            w = float(rng.uniform(*BOX_SIZE_RANGE_PX))
+            h = float(rng.uniform(*BOX_SIZE_RANGE_PX))
             x1 = float(rng.uniform(0, IMG_W - w))
-            y1 = float(rng.uniform(IMG_H * 0.4, IMG_H - h))  # lower half: road surface
+            y1 = float(
+                rng.uniform(IMG_H * ROAD_ROI_TOP_FRACTION, IMG_H - h)
+            )  # lower part: road surface
             rows.append(
                 {
                     "frame_id": frame.frame_id,
                     "det_id": f"{frame.frame_id}-{k}",
                     "class_name": str(rng.choice(CLASS_NAMES)),
-                    "score": float(rng.uniform(0.25, 0.98)),
+                    "score": float(rng.uniform(*SCORE_RANGE)),
                     "x1": x1,
                     "y1": y1,
                     "x2": x1 + w,

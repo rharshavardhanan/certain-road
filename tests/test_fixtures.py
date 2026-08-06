@@ -47,3 +47,15 @@ def test_fixtures_satisfy_the_artifact_contract(tmp_path):
     assert len(
         read_artifact(tmp_path / "detections.parquet", DetectionRow, validate_rows=True)
     ) == len(dets)
+
+
+def test_segment_damage_levels_actually_differ():
+    """Downstream vision-estimated PCI work needs segments spanning a usable range."""
+    frames = synthetic_frames(n_segments=20, frames_per_segment=15, seed=5)
+    dets = synthetic_detections(frames, seed=5)
+    per_segment = (
+        dets.merge(frames[["frame_id", "segment_id"]], on="frame_id").groupby("segment_id").size()
+    )
+    assert per_segment.min() * 2 < per_segment.max(), (
+        f"segments too uniform: min={per_segment.min()} max={per_segment.max()}"
+    )
