@@ -58,6 +58,7 @@ Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](sup
 | D034 | `aria2c` preferred over `curl` for the RDD2022 download, with curl fallback | Accepted |
 | D035 | `convert`/`split` fail loud-but-not-fatal on real-data defects; `materialise` reports and self-cleans | Accepted |
 | D036 | RDD2022 archive is nested two levels; corrects D032's flat-layout assumption and image/annotation counts | Accepted |
+| D037 | Real census: RDD2022 India carries six non-CRDDC2022 class strings; `D44` dominates the drop set | Accepted |
 
 ---
 
@@ -616,3 +617,37 @@ GB** for an India-only fetch. This is not a hypothetical: S3 already honours byt
 requests (D034), so the same mechanism that makes `aria2c -x16` viable would carry a
 range-restricted single-country fetch. Out of scope for this fix, which only corrects
 extraction against the archive already on disk.
+
+## D037 — Real census: RDD2022 India carries six non-CRDDC2022 class strings; `D44` dominates the drop set
+
+**2026-08-06 · Accepted**
+
+`certain-road dataset census --country India` over all 7,706 annotated training images
+found six class strings beyond the four `label_map.pbtxt` classes {D00, D10, D20, D40}:
+
+| Class | Boxes | Status |
+|---|---|---|
+| D44 | 1,062 | DROP |
+| D01 | 179 | DROP |
+| D43 | 57 | DROP |
+| D11 | 45 | DROP |
+| D50 | 28 | DROP |
+| D0w0 | 1 | DROP |
+
+Total census: 8,203 boxes; kept (D00/D10/D20/D40) 6,831; dropped 1,372. No
+`PARSE_ERROR` rows occurred — every one of the 7,706 XML files parsed cleanly.
+
+`D44` alone (1,062 boxes) is not noise: it exceeds the kept count of the official
+`D10` class (68 boxes) by more than 15x, making it a substantial second-tier
+annotation scheme India's RDD2022 contributors used alongside the official four,
+not a scattering of typos. `conversion` already counts every rejection under
+`unknown_class:<name>` (D035), so the gap between the census total and kept boxes
+is fully explained and reconciles exactly: 6,831 kept + 1,372 dropped = 8,203
+census total.
+
+No code change results from this entry — the existing drop-and-count behaviour in
+`to_yolo_lines` is correct as designed. Recorded because a future multi-class
+extension (widening `CLASS_TO_ID` beyond the four CRDDC2022 damage types) would
+need to weigh whether `D44` is a distinct, learnable damage type worth adding or
+an annotation artifact specific to this contributor, before spending a training
+run on it.
