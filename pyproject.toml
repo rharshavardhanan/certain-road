@@ -1,0 +1,46 @@
+[project]
+name = "certain-road"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "rharshavardhanan", email = "rharshavardhanan@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "pandas>=3.0.5",
+    "pyarrow>=25.0.0",
+    "pydantic>=2.13.4",
+    "pyyaml>=6.0.3",
+    "requests>=2.34.2",
+    "torch>=2.13.0",
+    "torchvision>=0.28.0",
+    "tqdm>=4.70.0",
+    "typer>=0.27.1",
+    "ultralytics>=8.4.115",
+]
+
+[project.scripts]
+certain-road = "certain_road.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.12.1,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "import-linter>=2.13",
+    "pytest>=9.1.1",
+    "ruff>=0.16.1",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

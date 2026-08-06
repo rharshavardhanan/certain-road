@@ -763,7 +763,9 @@ def test_fixtures_satisfy_the_artifact_contract(tmp_path):
     write_artifact(dets, tmp_path / "detections.parquet", DetectionRow)
 
     assert len(read_artifact(tmp_path / "frames.parquet", FrameRow, validate_rows=True)) == 10
-    assert len(read_artifact(tmp_path / "detections.parquet", DetectionRow, validate_rows=True)) == len(dets)
+    assert len(
+        read_artifact(tmp_path / "detections.parquet", DetectionRow, validate_rows=True)
+    ) == len(dets)
 ```
 
 - [ ] **Step 2: Run it and watch it fail**
@@ -871,8 +873,16 @@ def synthetic_detections(
             )
 
     columns = [
-        "frame_id", "det_id", "class_name", "score",
-        "x1", "y1", "x2", "y2", "img_w", "img_h",
+        "frame_id",
+        "det_id",
+        "class_name",
+        "score",
+        "x1",
+        "y1",
+        "x2",
+        "y2",
+        "img_w",
+        "img_h",
     ]
     return pd.DataFrame(rows, columns=columns)
 ```
@@ -1037,8 +1047,13 @@ FIGSHARE_API = "https://api.figshare.com/v2/articles/21431547"
 ZIP_NAME = "RDD2022_released_through_CRDDC2022.zip"
 ZIP_URL = "https://ndownloader.figshare.com/files/38030910"
 COUNTRIES = {
-    "China_Drone", "China_MotorBike", "Czech",
-    "India", "Japan", "Norway", "United_States",
+    "China_Drone",
+    "China_MotorBike",
+    "Czech",
+    "India",
+    "Japan",
+    "Norway",
+    "United_States",
 }
 
 
@@ -1110,7 +1125,9 @@ Expected: all three PASS.
 In `src/certain_road/cli.py`, replace the auto-generated `detect` sub-app registration with an explicit one and add `dataset`. Add after the `for` loop:
 
 ```python
-dataset_app = typer.Typer(name="dataset", help="RDD2022 acquisition and preparation.", no_args_is_help=True)
+dataset_app = typer.Typer(
+    name="dataset", help="RDD2022 acquisition and preparation.", no_args_is_help=True
+)
 app.add_typer(dataset_app, name="dataset")
 
 
@@ -1126,7 +1143,9 @@ def dataset_fetch(country: str = "India") -> None:
     checks = raw_dir() / "CHECKSUMS.txt"
     checks.write_text(f"{checksum}  {zip_path.name}\n")
     print(f"sha256 {checksum}")
-    print("(recorded for our own reproducibility; Figshare publishes no checksum to verify against)")
+    print(
+        "(recorded for our own reproducibility; Figshare publishes no checksum to verify against)"
+    )
 
     out = extract_country(zip_path, country, raw_dir())
     images = len(list((out / "train" / "images").glob("*.jpg")))
@@ -1297,10 +1316,13 @@ def test_census_counts_every_class_string(tmp_path):
     d = tmp_path / "xmls"
     d.mkdir()
     write_xml(d / "a.xml", [dict(name="D00", xmin=1, ymin=1, xmax=9, ymax=9)])
-    write_xml(d / "b.xml", [
-        dict(name="D00", xmin=1, ymin=1, xmax=9, ymax=9),
-        dict(name="D43", xmin=1, ymin=1, xmax=9, ymax=9),
-    ])
+    write_xml(
+        d / "b.xml",
+        [
+            dict(name="D00", xmin=1, ymin=1, xmax=9, ymax=9),
+            dict(name="D43", xmin=1, ymin=1, xmax=9, ymax=9),
+        ],
+    )
     counts = class_census(d)
     assert counts["D00"] == 2
     assert counts["D43"] == 1

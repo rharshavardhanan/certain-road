@@ -1,0 +1,29 @@
+[importlinter]
+root_package = certain_road
+
+[importlinter:contract:stages-are-independent]
+name = Stages must never import each other
+type = independence
+modules =
+    certain_road.ingest
+    certain_road.detect
+    certain_road.assess
+    certain_road.calibrate
+    certain_road.rsl
+    certain_road.optimize
+    certain_road.report
+
+[importlinter:contract:contract-layer-is-a-leaf]
+name = artifacts and core must not import stages
+type = forbidden
+source_modules =
+    certain_road.artifacts
+    certain_road.core
+forbidden_modules =
+    certain_road.ingest
+    certain_road.detect
+    certain_road.assess
+    certain_road.calibrate
+    certain_road.rsl
+    certain_road.optimize
+    certain_road.report
