@@ -57,6 +57,7 @@ Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](sup
 | D033 | Synthetic fixtures vary detection count, not defect character | Accepted |
 | D034 | `aria2c` preferred over `curl` for the RDD2022 download, with curl fallback | Accepted |
 | D035 | `convert`/`split` fail loud-but-not-fatal on real-data defects; `materialise` reports and self-cleans | Accepted |
+| D036 | RDD2022 archive is nested two levels; corrects D032's flat-layout assumption and image/annotation counts | Accepted |
 
 ---
 
@@ -561,3 +562,57 @@ so far:
 
 `SALT` and `SPLIT_BOUNDS` are unchanged (settled, D009); the ultralytics data
 yaml still references only `train`/`val`.
+
+## D036 — RDD2022 archive is nested two levels; corrects D032's flat-layout assumption and image/annotation counts
+
+**2026-08-06 · Accepted · Corrects D032**
+
+D032 described RDD2022's layout as flat: `RDD2022/<Country>/train/{images,annotations/xmls}`
+directly inside the 13.26 GB outer zip. Inspecting the real, fully-downloaded archive
+(13,264,172,619 bytes, matching the Figshare API) shows that's wrong — **the archive is
+nested two levels.** The outer zip contains exactly seven entries, each a per-country zip
+stored **uncompressed**:
+
+| Entry | Size |
+|---|---|
+| `RDD2022/China_Drone.zip` | 0.160 GB |
+| `RDD2022/China_MotorBike.zip` | 0.192 GB |
+| `RDD2022/Czech.zip` | 0.257 GB |
+| `RDD2022/India.zip` | 0.527 GB |
+| `RDD2022/Japan.zip` | 1.073 GB |
+| `RDD2022/Norway.zip` | 10.611 GB |
+| `RDD2022/United_States.zip` | 0.444 GB |
+
+Inside `RDD2022/India.zip`, the root is `India/` — **not** `RDD2022/India/` — with 17,377
+entries: `India/train/images/*.jpg` (7,706 files), `India/train/annotations/xmls/*.xml`
+(7,706 files, matched 1:1 with the train images), and `India/test/images/*.jpg` (1,959
+files, unlabelled). 7,706 + 1,959 = 9,665.
+
+`extract_country` assumed the flat layout and raised `ValueError: no entries under
+'RDD2022/India/'` against the real archive — a real-data defect no synthetic fixture could
+catch, since the fixture itself encoded the same wrong assumption. Fixed by having
+`extract_country` open the outer zip, locate `RDD2022/<country>.zip` (raising a clear,
+country-named error if absent), stream that member to a temporary file — never reading it
+fully into memory, since Norway's inner zip alone is 10.6 GB — and extract *that* into
+`dest / "RDD2022" / <country>`, preserving the flat on-disk contract the rest of the
+codebase (`cli.py`, `convert.py`, `split.py`) already expects. `tests/test_dataset_fetch.py`'s
+fixture now builds the same two-level nesting instead of a flat fake zip.
+
+**This corrects D032's stated counts.** D032 listed India as "9,665 images, 7,706
+annotated," which conflated the *combined* train+test image count (9,665) with the
+*train-only* annotation count (7,706), implying a mismatch. There is no mismatch: India
+has exactly 7,706 train images and 7,706 train annotations (1:1), plus 1,959 separate,
+unlabelled test images, and 7,706 + 1,959 = 9,665. The per-country table in D032 for the
+other six countries is unverified by this entry and should be treated the same way until
+each is checked against its own inner zip.
+
+**Concrete improvement logged for future work, not implemented here:** entries in the
+outer zip are stored uncompressed, which means the ZIP central directory records each
+member's exact byte range within the outer file. A future fetch could read only the
+outer archive's central directory over HTTP (a small, fixed-size read from the end of
+the file) to find `RDD2022/India.zip`'s offset and length, then issue a single HTTP
+range request for just that span — pulling roughly **0.6 GB instead of the full 13.26
+GB** for an India-only fetch. This is not a hypothetical: S3 already honours byte-range
+requests (D034), so the same mechanism that makes `aria2c -x16` viable would carry a
+range-restricted single-country fetch. Out of scope for this fix, which only corrects
+extraction against the archive already on disk.

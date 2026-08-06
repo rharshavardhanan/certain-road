@@ -1,16 +1,25 @@
 """Acquire RDD2022.
 
 RDD2022 ships as a single 13.26 GB zip with no per-country download (D032), so
-we fetch the whole archive once and extract only the country we need.
+we fetch the whole archive once and extract only the country we need. That
+archive is nested two levels deep — an outer zip of per-country zips, each
+rooted at `<Country>/` (D036) — which `extract_country` unwraps.
 """
 
 import hashlib
 import shutil
 import subprocess
+import tempfile
 import zipfile
 from pathlib import Path
 
 import requests
+
+# Inner per-country zips are stored uncompressed inside the outer archive
+# (verified 2026-08-06, D036), so streaming the copy in fixed-size chunks
+# never needs to hold more than one chunk in memory regardless of how large
+# the member is (Norway.zip alone is 10.6 GB).
+COPY_CHUNK_BYTES = 1024 * 1024
 
 FIGSHARE_API = "https://api.figshare.com/v2/articles/21431547"
 ZIP_NAME = "RDD2022_released_through_CRDDC2022.zip"
@@ -108,17 +117,37 @@ def download_rdd2022(dest: Path) -> Path:
 
 
 def extract_country(zip_path: Path, country: str, dest: Path) -> Path:
-    """Extract only `RDD2022/<country>/` from the archive."""
+    """Extract one country from the archive's two-level nesting (D036).
+
+    The outer archive holds one uncompressed per-country zip per entry, named
+    `RDD2022/<country>.zip`; that inner zip's own root is `<country>/`, not
+    `RDD2022/<country>/`. We extract the inner zip's contents into
+    `dest / "RDD2022" / <country>` so the rest of the codebase sees the flat
+    layout it already expects.
+    """
     if country not in COUNTRIES:
         raise ValueError(f"unknown country {country!r}; expected one of {sorted(COUNTRIES)}")
 
-    prefix = f"RDD2022/{country}/"
-    dest.mkdir(parents=True, exist_ok=True)
+    inner_name = f"RDD2022/{country}.zip"
+    country_dest = dest / "RDD2022" / country
+    country_dest.mkdir(parents=True, exist_ok=True)
 
-    with zipfile.ZipFile(zip_path) as archive:
-        members = [n for n in archive.namelist() if n.startswith(prefix)]
-        if not members:
-            raise ValueError(f"no entries under {prefix!r} in {zip_path}")
-        archive.extractall(dest, members=members)
+    with zipfile.ZipFile(zip_path) as outer:
+        if inner_name not in outer.namelist():
+            raise ValueError(f"{inner_name!r} not found in {zip_path}")
 
-    return dest / "RDD2022" / country
+        # Stream the (potentially multi-GB, e.g. Norway's 10.6 GB) member to a
+        # temporary file rather than reading it into memory, then open that
+        # file as its own zip archive.
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as tmp:
+            tmp_path = Path(tmp.name)
+            with outer.open(inner_name) as member:
+                shutil.copyfileobj(member, tmp, length=COPY_CHUNK_BYTES)
+
+    try:
+        with zipfile.ZipFile(tmp_path) as inner:
+            inner.extractall(dest / "RDD2022")
+    finally:
+        tmp_path.unlink(missing_ok=True)
+
+    return country_dest
