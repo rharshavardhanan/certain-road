@@ -1,0 +1,334 @@
+# Decision log
+
+The running history of this repo. Every design decision, why it was made, and what
+superseded it.
+
+**Rules:**
+
+- **Append, never rewrite.** A decision that turns out wrong is marked `Superseded`
+  and a new entry explains why. The wrong turn stays visible — that history is the
+  point of this file.
+- **One decision per entry.** Numbered `Dnnn`, never renumbered.
+- **Update on the same commit as the change.** A code change that alters a decision
+  and does not touch this file is an incomplete change.
+- Status is one of: `Accepted`, `Superseded by Dnnn`, `Refined by Dnnn`, `Rejected`,
+  `Open`.
+
+Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](superpowers/specs/2026-08-06-certain-road-design.md)
+
+---
+
+## Index
+
+| # | Decision | Status |
+|---|---|---|
+| D001 | Product is a prioritisation system, not a pothole detector | Accepted |
+| D002 | Single `uv` project with staged artifacts ("A+") | Accepted |
+| D003 | Stage isolation enforced by `import-linter` in CI | Accepted |
+| D004 | Conformal layer targets PCI, not detections | Refined by D005 |
+| D005 | Calibration unit is the segment, not the frame | Accepted |
+| D006 | Distance-sampled frames + ROI area fraction; no tracker, no homography | Accepted |
+| D007 | `assess` runs before `calibrate` | Accepted |
+| D008 | `rsl` is its own stage | Accepted |
+| D009 | Four-way data split | Accepted |
+| D010 | Evaluation segments: disjoint random partition, within-country | Accepted |
+| D011 | `pci_true` renamed `pci_ref` (reference PCI) | Accepted |
+| D012 | OOD detection / conformal p-values cut to future work | Accepted |
+| D013 | Band-spanning intervals flagged `inconclusive` | Accepted |
+| D014 | Severity is an area-quantile proxy, declared as such | Accepted |
+| D015 | `density` renamed `vision_density` | Accepted |
+| D016 | Deduct curves digitized; raw points committed | Accepted |
+| D017 | Full iterative CDV correction, not simplified | Accepted |
+| D018 | PCI→RSL curve requires a mandatory `source:` citation | Open |
+| D019 | Optimiser ranks on worst-case RSL with must-fix constraint | Accepted |
+| D020 | Dashboard is a self-contained offline HTML file | Accepted |
+| D021 | Decision Replay panel | Accepted |
+| D022 | Synthetic demo network by default; OSM gated and bannered | Accepted |
+| D023 | No basemap tiles at all | Accepted |
+| D024 | `survey_date` on every segment artifact | Accepted |
+| D025 | Timeline cut 16 → 8 weeks; India subset only | Accepted |
+| D026 | Evaluation segment size `K = 15`; `α = 0.05` not claimed | Accepted |
+
+---
+
+## D001 — Product is a prioritisation system, not a pothole detector
+
+**2026-08-06 · Accepted**
+
+The question is "which segments do we repair first on a fixed budget", not "where is
+a pothole". Detection, YOLO and the Jetson are inputs and tooling, not the product.
+Contributions are edge detection, calibrated uncertainty, and uncertainty changing
+the budget decision — the novelty is the integration.
+
+## D002 — Single `uv` project with staged artifacts ("A+")
+
+**2026-08-06 · Accepted**
+
+One project, one dependency file, one CLI. Stages communicate only through typed
+artifacts on disk.
+
+Rejected: a `uv` workspace of six sub-packages (configuration ceremony with no payoff
+for one author in eight weeks); a flat package with `scripts/` (how the codebase
+becomes unmaintainable by week 6).
+
+Consequence — and the reason for the choice: downstream stages are testable against
+synthetic detections, so hardware procurement and long training runs never block
+development.
+
+## D003 — Stage isolation enforced by `import-linter` in CI
+
+**2026-08-06 · Accepted**
+
+Stages may import `artifacts/` and `core/` only, never each other. A rule nothing
+enforces does not survive a deadline, so a cross-stage import fails the build.
+
+## D004 — Conformal layer targets PCI, not detections
+
+**2026-08-06 · Refined by D005**
+
+Chosen over conformal risk control on false negatives, OOD-only, and box-level
+conformal detection. Nonconformity is `|PCI(predicted) − PCI(reference)|`, which
+needs no PCI ground truth that does not exist, and quantifies the error the detector
+injects into the decision.
+
+## D005 — Calibration unit is the segment, not the frame
+
+**2026-08-06 · Accepted · refines D004**
+
+Governments repair road segments, not frames or bounding boxes. Attaching the
+guarantee to the engineering decision rather than to the detector is both a stronger
+research story and statistically cleaner — the segment is the exchangeable unit.
+Guarantees are reported as `PCI [41,56]`, `RSL [0.8,1.6] years`.
+
+## D006 — Distance-sampled frames + ROI area fraction; no tracker, no homography
+
+**2026-08-06 · Accepted**
+
+One frame per ~L metres of travel, so camera footprints never overlap and
+double-counting is impossible by construction. Density is damaged pixel area over a
+fixed trapezoid ROI.
+
+Rejected: ByteTrack dedup (fragile on dashcam video, ID switches corrupt counts);
+inverse perspective mapping (RDD2022 camera geometry varies by country, so one
+homography cannot be right). Removes the two most failure-prone components from the
+project. Valid because predicted and reference PCI pass through identical geometry.
+
+## D007 — `assess` runs before `calibrate`
+
+**2026-08-06 · Accepted**
+
+Corrects an earlier sketch of `detect → calibrate → assess`. The nonconformity score
+is defined on segment PCI, so PCI must exist before it can be calibrated. Chain is
+`ingest → detect → assess → calibrate → rsl → optimize → report`.
+
+Consequence: `calibrate` splits into `fit` (offline, once) and `apply` (per run), and
+`assess` must be pure over any detections table since calibration calls it on both
+predicted and ground-truth boxes.
+
+## D008 — `rsl` is its own stage
+
+**2026-08-06 · Accepted**
+
+Separated from `assess` so the PCI→RSL relationship can be swapped, or skipped
+entirely via `mode: pci_only`, without touching PCI computation.
+
+## D009 — Four-way data split
+
+**2026-08-06 · Accepted**
+
+`train` 60 / `val` 10 / `calib` 20 / `test` 10. Conformal validity is void if the
+calibration set influenced detector fitting, so `calib` is disjoint from both `train`
+and `val`. Calibration gets 20% because `q̂` is noisy and the sample unit is the
+segment, not the frame.
+
+## D010 — Evaluation segments: disjoint random partition, within-country
+
+**2026-08-06 · Accepted**
+
+RDD2022 has no GPS or route continuity, so real 100 m segments cannot be built from
+it. An evaluation segment is a random **disjoint** partition of the calibration pool
+into `K`-frame blocks — disjoint because overlapping blocks break exchangeability.
+Partitioned within country; a segment mixing Norwegian and Japanese frames is not a
+road.
+
+Named "evaluation segment" in code, schemas and prose. These are **not** physical
+road segments and must never be described as such.
+
+## D011 — `pci_true` renamed `pci_ref` (reference PCI)
+
+**2026-08-06 · Accepted**
+
+`pci_true` implies a certified ASTM field survey. The quantity is derived from
+annotations and from this project's own assessment algorithm. Renaming is a one-word
+change that removes a whole line of attack.
+
+## D012 — OOD detection / conformal p-values cut to future work
+
+**2026-08-06 · Accepted**
+
+Image-level conformal p-values over backbone embeddings were specified, then cut:
+they constitute a second research objective (distribution-shift detection) bolted
+onto the first (certified PCI). Implementation cost without strengthening the central
+contribution.
+
+## D013 — Band-spanning intervals flagged `inconclusive`
+
+**2026-08-06 · Accepted · consequence of D012**
+
+D012 removed the abstention mechanism, so the dashboard had nothing to say when it
+should not be trusted. Any interval spanning more than one PCI condition band is
+flagged `inconclusive` and rendered as "human inspection required". `[42,55]` is
+actionable; `[38,71]` is not. Derived from the interval already computed — no new
+model, no second thesis.
+
+## D014 — Severity is an area-quantile proxy, declared as such
+
+**2026-08-06 · Accepted**
+
+RDD2022 has no severity annotations. Severity is banded L/M/H from each detection's
+area fraction, using per-class quantile cutpoints computed once on the train split
+and frozen into config.
+
+Known weakness, stated rather than hidden: a long thin crack may have small area but
+high severity. Thesis must carry the sentence "severity is a vision-derived proxy
+based on apparent damaged area, because RDD2022 contains no severity annotations."
+
+## D015 — `density` renamed `vision_density`
+
+**2026-08-06 · Accepted**
+
+ASTM density is physical area. This is image-space area fraction. A civil engineer
+would correctly object to the unqualified term. Renamed everywhere in code and prose.
+
+## D016 — Deduct curves digitized; raw points committed
+
+**2026-08-06 · Accepted**
+
+`DV = min(100, α + β·log₁₀(vision_density))` per (class, severity), fitted to ASTM
+curves digitized with WebPlotDigitizer — never eyeballed. Raw `(density, DV)` points
+committed to `configs/assess/curves/*.csv` beside the fitted coefficients, so β has
+provenance and the fit is reproducible.
+
+## D017 — Full iterative CDV correction, not simplified
+
+**2026-08-06 · Accepted**
+
+~40 lines, and the difference between something a pavement engineer recognises as PCI
+and something that is merely a weighted penalty sum.
+
+## D018 — PCI→RSL curve requires a mandatory `source:` citation
+
+**2026-08-06 · Open**
+
+The form `age = ((100 − PCI)/a)^(1/b)` was proposed without a citation — a standard
+deterioration *shape*, but presented as if settled. It is not.
+
+`configs/rsl/*.yaml` carries a mandatory `source:` field and the stage **refuses to
+run while it is empty**. Resolve by week 5: either enter a published relationship
+with its citation, or the mentor selects `mode: pci_only`. One-line config change
+either way.
+
+Note: the relationship is monotone increasing, so interval endpoints map through
+directly and conformal coverage is preserved exactly.
+
+## D019 — Optimiser ranks on worst-case RSL with must-fix constraint
+
+**2026-08-06 · Accepted**
+
+Urgency driven by `rsl_lo`, not point RSL. Any segment with `rsl_lo < 1 year` is a
+hard must-fix ahead of discretionary spend, mirroring how road agencies budget.
+Benefit is `length × traffic_weight × risk` with `traffic_weight = 1` (AADT is future
+work; Chennai data unavailable). Solver is an exact 0/1 knapsack by DP over costs
+integerised to ₹1 lakh — exact and instant, so no greedy approximation to defend.
+
+The stage runs twice (point RSL vs `rsl_lo`) and diffs the funded sets, producing the
+headline "how often does uncertainty change the repair list" figure as a by-product.
+
+## D020 — Dashboard is a self-contained offline HTML file
+
+**2026-08-06 · Accepted**
+
+One generated HTML per run. Leaflet and Plotly vendored inline — no CDN, because a
+CDN fails exactly like a tile server and a viva room's wifi cannot be trusted. No
+server, no install, no database. PDF export is a print stylesheet, not a library.
+
+Rejected: Streamlit (looks like a research notebook, needs a process running);
+React + FastAPI + DB (6–8 weeks for zero research contribution); CSV only (loses the
+demo, which is what a panel remembers).
+
+## D021 — Decision Replay panel
+
+**2026-08-06 · Accepted**
+
+Clicking a segment expands the full chain: detections → vision-estimated PCI with
+interval → RSL interval → treatment → cost → rank → rationale. Converts the ranking
+from a black box into a visible audit chain, and exhibits the entire contribution in
+one panel.
+
+## D022 — Synthetic demo network by default; OSM gated and bannered
+
+**2026-08-06 · Accepted**
+
+RDD2022 has no geometry, so the map and cost model need a network. Default is a
+procedurally generated synthetic network with fictional names and no real geography.
+An OSM mode exists but is off by default and gated behind a persistent "Demonstration
+Only" banner; real road names are never rendered.
+
+Rationale: a screenshot of "Anna Salai — PCI 34" would be read as a real measurement
+of a road that was never surveyed. The safe option is the default option.
+
+## D023 — No basemap tiles at all
+
+**2026-08-06 · Accepted · consequence of D022**
+
+A synthetic network needs no satellite imagery. Leaflet draws polylines on a blank
+canvas, deleting tile prefetching, CDN dependence and the offline-tiles problem in
+one move.
+
+## D024 — `survey_date` on every segment artifact
+
+**2026-08-06 · Accepted**
+
+Without it the optimiser treats a segment surveyed today and one surveyed six months
+ago identically, and longitudinal extension later requires a schema migration.
+Present from the first schema even though all current runs share one date.
+
+## D025 — Timeline cut 16 → 8 weeks; India subset only
+
+**2026-08-06 · Accepted**
+
+Cut: RDD2022 India subset only (~9–10k images, 4–6h training instead of 25–40h,
+same-day retraining, tighter Tamil Nadu narrative, loses cross-country shift);
+water-pothole dataset optional and verified in week 1; normalized CP to future work;
+Jetson deployment reduced to ONNX export plus latency benchmark; basemap tiles
+deleted per D023.
+
+Defended as the actual contribution: deduct-curve digitization (3-day timebox), full
+CDV correction, split conformal with coverage table, dual-run ranking diff.
+
+Feasible only because of D002 — training runs unattended for days while `assess` and
+`calibrate` are built against synthetic fixtures.
+
+If slipping past week 6: **cut the shift sweep before touching the dashboard.**
+
+## D026 — Evaluation segment size `K = 15`; `α = 0.05` not claimed
+
+**2026-08-06 · Accepted · consequence of D025**
+
+Found during spec self-review. D025 cut the dataset to India only, which shrank the
+calibration pool to ~1.8–2.0k frames. At the previously assumed `K = 30` that yields
+only ~60 evaluation segments, giving realised coverage a standard deviation of ~4
+percentage points — a nominal 90% interval could land empirically between ~82% and
+~98%. The guarantee holds (it is marginal over draws) but one noisy number is weak
+thesis evidence.
+
+Default `K = 15` (~120 segments) halves that noise while keeping segments meaningful.
+Report `α = 0.1` and `α = 0.2` only; **`α = 0.05` is not supportable at this sample
+size and must not be claimed.** Raise the calibration share to 30% before shrinking
+`K` further.
+
+Calibration frames may not be borrowed from other countries — `calib` must be
+exchangeable with `test`.
+
+The `K` sweep becomes a reportable figure: a genuine finding about deploying
+conformal prediction on small survey datasets, not a tuning note.

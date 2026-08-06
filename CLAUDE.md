@@ -1,0 +1,46 @@
+# certain-road
+
+A pavement management decision-support system. It answers **"which road segments
+should be repaired first, given a fixed budget?"** — not "where is a pothole".
+
+Camera → YOLOv8n → vision-estimated PCI → conformal interval → RSL interval →
+budget optimiser → offline HTML dashboard.
+
+**Status: design phase. No code yet.** Nothing below about running or testing is
+live until the week-1 skeleton lands.
+
+## Read these first
+
+- [`docs/superpowers/specs/2026-08-06-certain-road-design.md`](docs/superpowers/specs/2026-08-06-certain-road-design.md)
+  — the current design.
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — the decision log: every choice, why it
+  was made, and what superseded it.
+
+## Maintaining the decision log
+
+**Any change that alters a design decision must update `docs/DECISIONS.md` in the
+same commit.** A code change that contradicts the log without amending it is an
+incomplete change.
+
+- Append a new numbered entry `Dnnn`. Never renumber, never delete.
+- When a decision is replaced, mark the old entry `Superseded by Dnnn` and leave its
+  text intact. The wrong turn stays visible — that history is the point.
+- Add the entry to the index table at the top.
+- Keep the spec document in sync when the change is structural.
+
+## Conventions
+
+- Python via `uv` only. Own `pyproject.toml` and committed `uv.lock` — never the
+  shared `~/PROJECTS/venv`.
+- Torch/YOLO run on the MPS (Metal) backend, not CUDA.
+- **Stages never import each other.** They communicate only through typed artifacts
+  on disk. `import-linter` enforces this in CI; a cross-stage import fails the build.
+  Only `artifacts/` and `core/` are shared.
+- No magic numbers in code. Every tunable lives in `configs/`.
+- Terminology is load-bearing and enforced in review:
+  - `vision_density`, never bare `density` (ASTM density is physical area)
+  - `pci_ref` / "reference PCI", never `pci_true`
+  - "vision-estimated PCI", never bare "PCI"
+  - "evaluation segment" for RDD2022 partitions, never "road segment"
+- `data/`, `models/` and `runs/` are gitignored. Digitized curve points in
+  `configs/assess/curves/` are committed — they are provenance, not data.

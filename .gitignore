@@ -1,0 +1,18 @@
+# Data, models, run outputs — large, regenerable, never committed
+data/
+models/
+runs/
+
+# Provenance IS committed, despite living beside config
+!configs/assess/curves/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.ruff_cache/
+.pytest_cache/
+*.egg-info/
+
+# macOS
+.DS_Store
