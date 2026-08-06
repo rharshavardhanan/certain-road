@@ -1,6 +1,6 @@
 import pytest
 
-from certain_road.detect.dataset.convert import CLASS_TO_ID, to_yolo_lines
+from certain_road.detect.dataset.convert import CLASS_TO_ID, convert_directory, to_yolo_lines
 from certain_road.detect.dataset.voc import class_census, parse_voc
 
 XML_TEMPLATE = """<annotation>
@@ -87,3 +87,35 @@ def test_census_counts_every_class_string(tmp_path):
     counts = class_census(d)
     assert counts["D00"] == 2
     assert counts["D43"] == 1
+
+
+def test_malformed_xml_is_skipped_not_fatal(tmp_path):
+    """A single unparseable annotation must not abort the whole conversion."""
+    d = tmp_path / "xmls"
+    d.mkdir()
+    write_xml(d / "good.xml", [dict(name="D00", xmin=1, ymin=1, xmax=9, ymax=9)])
+    (d / "bad.xml").write_text("<annotation><unclosed>")
+    label_dir = tmp_path / "labels"
+
+    files, boxes, rejected = convert_directory(d, label_dir)
+
+    assert files == 1
+    assert boxes == 1
+    assert rejected["PARSE_ERROR:ParseError"] == 1
+    assert (label_dir / "good.txt").exists()
+    assert not (label_dir / "bad.txt").exists()
+
+
+def test_annotation_missing_size_is_skipped_not_fatal(tmp_path):
+    """VocAnnotation parsing raises ValueError for a missing <size>; same handling."""
+    d = tmp_path / "xmls"
+    d.mkdir()
+    (d / "nosize.xml").write_text("<annotation><object><name>D00</name></object></annotation>")
+    label_dir = tmp_path / "labels"
+
+    files, boxes, rejected = convert_directory(d, label_dir)
+
+    assert files == 0
+    assert boxes == 0
+    assert rejected["PARSE_ERROR:ValueError"] == 1
+    assert not (label_dir / "nosize.txt").exists()

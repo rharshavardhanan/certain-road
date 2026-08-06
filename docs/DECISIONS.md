@@ -56,6 +56,7 @@ Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](sup
 | D032 | Verified dataset facts; Python pinned to 3.12 | Accepted |
 | D033 | Synthetic fixtures vary detection count, not defect character | Accepted |
 | D034 | `aria2c` preferred over `curl` for the RDD2022 download, with curl fallback | Accepted |
+| D035 | `convert`/`split` fail loud-but-not-fatal on real-data defects; `materialise` reports and self-cleans | Accepted |
 
 ---
 
@@ -516,3 +517,47 @@ file, so `aria2c` treats it as an ordinary partial and silently falls back to a
 single connection, losing the whole speedup. Switching downloaders mid-transfer
 therefore means discarding the in-flight partial and restarting, not resuming it
 in place.
+
+## D035 — `convert`/`split` fail loud-but-not-fatal on real-data defects; `materialise` reports and self-cleans
+
+**2026-08-06 · Accepted**
+
+Pre-real-data review found four failures that only manifest against the actual
+9,665-image / ~7,706-annotation RDD2022 India set, not the synthetic fixtures used
+so far:
+
+1. `convert_directory` called `parse_voc` bare, so a single malformed XML among
+   ~7,706 real annotations raised `ET.ParseError`/`ValueError` and aborted the
+   whole conversion with zero labels written — defeating the stated design intent
+   that the gap between annotation count and label count is always explainable.
+   `convert_directory` now catches the same two exception types `class_census`
+   already does, counts them under the same `PARSE_ERROR:<Type>` key, skips that
+   file (no label file is written for it), and continues.
+2. `materialise` silently `continue`d past a missing source image. RDD2022 ships
+   more images than annotations, so some skipping is expected — but the printed
+   split sizes and `splits.json` gave no way to tell how much, or whether a
+   skip meant "expected annotation gap" vs. "someone pointed this at the wrong
+   directory." `materialise` now returns `dict[str, SplitMaterialiseReport]`
+   (`requested`, `linked`, `skipped_missing_image` per split) instead of `None`;
+   this is a breaking signature change for the one caller, `cli.dataset_split`,
+   which now prints it and flags any non-zero skip count.
+3. `materialise` never removed files from a prior run, so a stem dropped from
+   `labels_all` (re-conversion, corrected annotations) left a stale symlink and
+   label behind that silently diverged from the current `build_splits()` output.
+   `materialise` now clears each split's `images/<split>` and `labels/<split>`
+   directory contents before repopulating — but only files it manages (`*.jpg`
+   symlinks, `*.txt` labels, matched by the new `IMAGE_SUFFIX`/`LABEL_SUFFIX`
+   constants), never the directory tree itself. A `rm -rf` on a path built from
+   config is exactly the kind of thing that eats someone's data when the path is
+   wrong.
+4. `materialise` and `write_manifest` had no test coverage, so the calib/train/val
+   disjointness the whole conformal layer depends on (D009) was proven only in
+   memory (`build_splits`), never verified in its physical, on-disk form.
+   `tests/test_dataset_split.py` now builds a small fake dataset under `tmp_path`
+   and checks matching image/label counts per split, no stem's image file
+   appearing under more than one split directory, a missing image being skipped
+   with no orphan label, no stale file surviving a re-run after a stem is
+   removed, and `write_manifest`'s `counts` matching actual split sizes.
+
+`SALT` and `SPLIT_BOUNDS` are unchanged (settled, D009); the ultralytics data
+yaml still references only `train`/`val`.

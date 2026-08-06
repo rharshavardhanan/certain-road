@@ -113,11 +113,28 @@ def dataset_split(country: str = "India") -> None:
         raise SystemExit(f"no labels in {label_src}; run `dataset convert` first")
 
     splits = build_splits(stems)
-    materialise(splits, image_src, label_src, root)
+    reports = materialise(splits, image_src, label_src, root)
     write_manifest(splits, root / "splits.json")
 
     for name, names in splits.items():
         print(f"{name:<6} {len(names):>6}")
+
+    print("\nmaterialised (requested vs. linked to disk):")
+    any_skipped = False
+    for name, report in reports.items():
+        line = (
+            f"  {name:<6} requested={report.requested:>6} "
+            f"linked={report.linked:>6} skipped_missing_image={report.skipped_missing_image:>6}"
+        )
+        if report.skipped_missing_image:
+            any_skipped = True
+            line += "  <-- MISSING IMAGES ON DISK"
+        print(line)
+    if any_skipped:
+        print(
+            "\nsome stems had no matching image on disk; this is expected for RDD2022 "
+            "(images without annotations) but confirm the counts above look right"
+        )
 
     data_yaml = repo_root() / "configs" / "dataset" / f"rdd2022_{country.lower()}.yaml"
     data_yaml.parent.mkdir(parents=True, exist_ok=True)

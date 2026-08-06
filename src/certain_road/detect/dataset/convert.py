@@ -4,6 +4,7 @@ Only the four CRDDC2022 classes survive. Everything dropped is counted, so the
 gap between annotation count and label count is always explainable.
 """
 
+import xml.etree.ElementTree as ET
 from collections import Counter
 from pathlib import Path
 
@@ -52,13 +53,22 @@ def to_yolo_lines(ann: VocAnnotation) -> tuple[list[str], Counter]:
 
 
 def convert_directory(xml_dir: Path, label_dir: Path) -> tuple[int, int, Counter]:
-    """Convert every XML in `xml_dir`. Returns (files, boxes, rejections)."""
+    """Convert every XML in `xml_dir`. Returns (files, boxes, rejections).
+
+    A file that fails to parse is counted under the same `PARSE_ERROR:<Type>`
+    key `class_census` uses, and produces no label file — it must not abort
+    conversion of the remaining ~7,706 real annotations.
+    """
     label_dir.mkdir(parents=True, exist_ok=True)
     rejected: Counter = Counter()
     files = boxes = 0
 
     for xml_path in sorted(Path(xml_dir).glob("*.xml")):
-        annotation = parse_voc(xml_path)
+        try:
+            annotation = parse_voc(xml_path)
+        except (ET.ParseError, ValueError) as exc:
+            rejected[f"PARSE_ERROR:{type(exc).__name__}"] += 1
+            continue
         lines, dropped = to_yolo_lines(annotation)
         rejected.update(dropped)
         # An empty label file is meaningful: it marks a genuine negative frame.
