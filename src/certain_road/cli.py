@@ -153,6 +153,20 @@ def dataset_split(country: str = "India") -> None:
     print("calib and test are deliberately absent from the yaml: ultralytics must never see them")
 
 
+@STAGE_APPS["detect"].command("train")
+def detect_train(smoke: bool = False, country: str = "India") -> None:
+    """Train YOLOv8n. Use --smoke for a two-epoch setup check."""
+    from certain_road.core.paths import repo_root
+    from certain_road.detect.train import train
+
+    save_dir = train(
+        repo_root() / "configs" / "train" / "yolov8n.yaml",
+        repo_root() / "configs" / "dataset" / f"rdd2022_{country.lower()}.yaml",
+        smoke=smoke,
+    )
+    print(f"results -> {save_dir}")
+
+
 def main() -> None:
     app()
 
