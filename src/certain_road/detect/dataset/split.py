@@ -134,9 +134,13 @@ def materialise(
 def write_data_yaml(out_path: Path, data_root: Path, repo_root: Path) -> None:
     """Write the ultralytics data yaml, `path` relative to `repo_root`.
 
-    A relative `path` keeps the file usable on any machine; ultralytics
-    resolves it against its own working directory. `calib` and `test` are
-    deliberately absent: ultralytics must never see them (D009).
+    A relative `path` keeps the file usable on any machine. It is *not*
+    resolved against the process working directory by ultralytics — it
+    resolves against ultralytics' own `datasets_dir` setting instead
+    (D040) — so `certain_road.detect.train` resolves it against
+    `repo_root()` itself before handing anything to `YOLO().train()`.
+    `calib` and `test` are deliberately absent: ultralytics must never see
+    them (D009).
     """
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(

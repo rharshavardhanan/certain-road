@@ -61,6 +61,7 @@ Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](sup
 | D037 | Real census: RDD2022 India carries six non-CRDDC2022 class strings; `D44` dominates the drop set | Accepted |
 | D038 | D00/D10 merged to one class; three-class set, refines D016 | Accepted |
 | D039 | Water-pothole dataset: NO-GO as secondary shift experiment | Accepted |
+| D040 | Ultralytics resolves a relative data-yaml `path` against its own `datasets_dir`, not cwd; `detect train` resolves against `repo_root()` at runtime | Accepted |
 
 ---
 
@@ -729,3 +730,40 @@ Consequence: the synthetic corruption sweep (D031) remains the sole
 distribution-shift experiment for the thesis — exactly the fallback D025 and
 D031 already planned around. No other week-1/week-2 work is blocked or delayed
 by this verdict.
+
+## D040 — Ultralytics relative `path` resolves against `datasets_dir`, not cwd
+
+**2026-08-07 · Accepted**
+
+D039's sibling commit (`configs/dataset/rdd2022_india.yaml` no longer baking in
+an absolute machine path) assumed a relative data-yaml `path` resolves against
+the process working directory, or against the yaml's own location. Measured
+directly, neither is true: ultralytics resolves a relative `path` against its
+own `datasets_dir` setting (`~/PROJECTS/datasets` on this machine, set once by
+the library and unrelated to this repo), so `path: data/processed/india`
+resolved to `~/PROJECTS/datasets/data/processed/india/...` — a directory that
+does not exist — and training would have failed at the first batch. This
+slipped through because the pre-launch smoke run was skipped to protect the
+then-live training run, which is exactly the situation a smoke run exists to
+catch.
+
+**Decision:** keep the committed yaml's `path` relative (still required for
+portability — it must not embed a machine-specific absolute path), but resolve
+it ourselves before ultralytics ever sees it. `certain_road.detect.train`:
+
+1. Loads the data yaml and runs the `calib`/`test` firewall check (D009) against
+   the *original* loaded config, unconditionally, before any path resolution.
+2. If `path` is relative, resolves it against `certain_road.core.paths.repo_root()`.
+3. Confirms the resolved `images/train` and `images/val` directories exist,
+   raising `FileNotFoundError` naming the resolved path (not just the relative
+   one) if not — a missing-data error must say where it actually looked.
+4. Writes an absolute-path copy to a temporary yaml and hands only that copy to
+   `YOLO().train()`. The committed config is never mutated.
+
+This keeps the config portable across machines while making the actual
+resolution behavior explicit and tested, rather than relying on an assumption
+about ultralytics internals that turned out to be wrong. Anyone tempted to
+"simplify" this back to a bare relative `path` should read this entry first —
+it will train against the wrong directory, or against nothing, with no error
+until the trainer already claims a GPU/MPS device and starts scanning for
+images.
