@@ -48,6 +48,11 @@ Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](sup
 | D024 | `survey_date` on every segment artifact | Accepted |
 | D025 | Timeline cut 16 → 8 weeks; India subset only | Accepted |
 | D026 | Evaluation segment size `K = 15`; `α = 0.05` not claimed | Accepted |
+| D027 | Band-level validation study against manual assessment | Accepted |
+| D028 | `severity` renamed `apparent_severity`; visual prominence, not structural | Accepted |
+| D029 | Sensitivity analysis over ROI geometry and severity cutpoints | Accepted |
+| D030 | Policy impact reported on two axes, not ranking churn alone | Accepted |
+| D031 | Shift sweep narrowed to 2–3 corruptions to pay for D027–D030 | Accepted |
 
 ---
 
@@ -332,3 +337,85 @@ exchangeable with `test`.
 
 The `K` sweep becomes a reportable figure: a genuine finding about deploying
 conformal prediction on small survey datasets, not a tuning note.
+
+## D027 — Band-level validation study against manual assessment
+
+**2026-08-06 · Accepted**
+
+Without it the project demonstrates a pipeline that runs but never shows its central
+quantity means anything.
+
+50 stratified evaluation segments; three raters independently assign a condition band
+from a contact sheet of each segment's frames, blind to model output (~1h per rater).
+Reported as a confusion matrix, exact and within-one-band agreement, quadratic-weighted
+Cohen's κ against the modal human band, and **Fleiss' κ between raters as the ceiling**
+— a model at κ = 0.45 where humans agree at κ = 0.5 is performing near the limit of the
+task, and omitting that context understates the result.
+
+Scope boundary, stated wherever reported: raters judge the same monocular images the
+model consumes, so this validates agreement with *human visual judgement*, not with a
+certified ASTM field survey.
+
+Why it matters: D004/§2's limitation states the conformal interval covers
+detector-induced error and **not** PCI-model error. This study is direct evidence about
+that uncovered term. It does not close the gap; it bounds it.
+
+**The rating set is validation, never a dev set.** The model is not tuned against it.
+Poor agreement is a result to report and analyse, not a failure to fix.
+
+## D028 — `severity` renamed `apparent_severity`; visual prominence, not structural
+
+**2026-08-06 · Accepted · refines D014**
+
+ASTM severity is a structural judgement depending on crack width, spalling, depth and
+ride quality — none observable from a single monocular frame. What the area-quantile
+proxy actually measures is **visual prominence**. Renamed `apparent_severity` in code
+and schemas so the distinction cannot be lost in a later reading of the thesis.
+
+## D029 — Sensitivity analysis over ROI geometry and severity cutpoints
+
+**2026-08-06 · Accepted**
+
+Two arbitrary choices sit upstream of every reported number. If PCI swings with
+either, the pipeline is measuring its own configuration.
+
+Sweep ROI trapezoid ±20% on height and width, and severity quantile splits at
+(25/75), (33/67), (40/60), one at a time. Report change in mean PCI, in coverage and
+interval width, and — the metric that matters — **in the funded segment set**.
+
+Cheap only because of D002 and D003: every value is config, no stage imports another,
+so a sweep is a loop over config files rather than a code change. Instability found is
+a result to report, not a defect to conceal.
+
+## D030 — Policy impact reported on two axes, not ranking churn alone
+
+**2026-08-06 · Accepted · refines D019**
+
+Ranking churn alone is a weak claim: swapping two equally-bad segments is noise, not
+improvement.
+
+**Axis 1, decision change:** Jaccard distance between funded sets; segments
+entering/leaving; Spearman ρ over the full ordering; ₹ reallocated.
+
+**Axis 2, aggregate network condition:** length-weighted network mean PCI after
+treatment; RSL-years gained per ₹ crore; **km of `rsl_lo < 1 yr` left unfunded
+(residual risk)**; `inconclusive` segments funded vs deferred.
+
+The defensible claim is conjunctive: *uncertainty reallocated X% of the budget **and**
+reduced unfunded critical length by Y km.* Axis 1 shows the answer changed; Axis 2
+shows it changed for the better.
+
+## D031 — Shift sweep narrowed to pay for D027–D030
+
+**2026-08-06 · Accepted · consequence of D027–D030**
+
+The four validation additions cost ~4 days against a schedule with little slack.
+Funded by narrowing the synthetic shift sweep from four corruption types to two or
+three; the coverage-versus-severity curve keeps its shape and its finding.
+
+Rater collection is scheduled in week 4 because it depends on other people's
+calendars — the one item in the plan that cannot be compressed by working harder.
+
+Revised cut order if slipping past week 6: shift sweep → sensitivity sweep → policy
+Axis 2. **The validation study (D027) is never cut** — it is the only evidence the
+central quantity is meaningful.

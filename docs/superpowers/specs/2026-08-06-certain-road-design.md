@@ -25,6 +25,19 @@ product.
 
 The novelty is the **integration and the decision**, not the detector.
 
+### Reported results
+
+1. **Coverage** — conformal intervals achieve nominal coverage on held-out data (§2)
+2. **Policy impact** — uncertainty measurably changes the funded repair set, and
+   improves aggregate network condition (§3)
+3. **Validation** — vision-estimated PCI agrees with human condition assessment at
+   band level, relative to the human-human agreement ceiling (§3)
+4. **Shift** — coverage degrades under distribution shift, so a naively deployed
+   guarantee provides false assurance (§2)
+
+Supported by a sensitivity analysis over the two arbitrary upstream choices (ROI
+geometry, severity cutpoints) (§3).
+
 ### Pipeline
 
 ```
@@ -139,7 +152,7 @@ defined on segment PCI, so PCI must exist before it can be calibrated.
 | `ingest` | `frames.parquet` | `frame_id, ts_utc, survey_date, lat, lon, speed_mps, cum_dist_m, segment_id, image_path` |
 | | | *(sample spacing `L` metres and segment length are config, not constants)* |
 | `detect` | `detections.parquet` | `frame_id, det_id, class_name, score, x1, y1, x2, y2, img_w, img_h` |
-| `assess` | `segments_pci.parquet` | `segment_id, survey_date, n_frames, vision_density_by_class_sev, total_deduct, cdv, pci` |
+| `assess` | `segments_pci.parquet` | `segment_id, survey_date, n_frames, vision_density_by_class_apparent_sev, total_deduct, cdv, pci` |
 | `calibrate` | `segments_pci_ci.parquet` | `segment_id, survey_date, pci, pci_lo, pci_hi, alpha, inconclusive` |
 | `rsl` | `segments_rsl.parquet` | `segment_id, survey_date, rsl, rsl_lo, rsl_hi, condition_band` |
 | `optimize` | `priority.parquet` | `segment_id, rank, treatment, cost_inr, benefit, selected, must_fix, rationale` |
@@ -310,15 +323,22 @@ summed over sampled frames in the segment, where ROI is a fixed trapezoid
 approximating the road surface. This is **image-space density, not ASTM physical
 density**, and is named `vision_density` everywhere in code and prose.
 
-**2. Severity (proxy).** RDD2022 carries no severity annotations. Severity is banded
-L/M/H from each detection's own area fraction, using **per-class quantile cutpoints
-computed once on the train split and frozen into config**.
+**2. Apparent severity (visual-prominence proxy).** RDD2022 carries no severity
+annotations. Severity is banded L/M/H from each detection's own area fraction, using
+**per-class quantile cutpoints computed once on the train split and frozen into
+config**. Named `apparent_severity` in code and schemas — never bare `severity`.
 
-> Thesis wording: *"Severity is a vision-derived proxy based on apparent damaged area,
-> because RDD2022 contains no severity annotations."*
+> Thesis wording: *"`apparent_severity` estimates the **visual prominence** of a
+> distress in the image — how large it appears relative to the road surface. It is
+> not ASTM structural severity, which depends on crack width, spalling, depth and
+> ride quality, none of which are observable from a single monocular frame. It is a
+> vision-derived proxy adopted because RDD2022 contains no severity annotations."*
 
-Known weakness, stated rather than hidden: a long thin crack may have small area yet
-high severity; a large patch may have large area yet low severity.
+The distinction is load-bearing, not pedantic: ASTM severity is a *structural*
+judgement, and visual prominence is only correlated with it. A long thin crack may be
+structurally severe yet visually small; a wide shallow patch may be visually dominant
+yet structurally minor. Stated rather than hidden, and partially tested by the
+validation study below.
 
 **3. Deduct values.**
 
@@ -342,6 +362,62 @@ PCI = clip(100 − CDV, 0, 100)
 ```
 
 Output is labelled **vision-estimated PCI** throughout. Never bare "PCI".
+
+### Validation study — band-level agreement with manual assessment
+
+Without this, the project demonstrates a pipeline that runs but never shows that its
+central quantity means anything. This is the experiment that makes vision-estimated
+PCI a measurement rather than an arithmetic artefact.
+
+**Protocol.** Sample 50 evaluation segments spanning the full PCI range (stratified,
+not random — deliberately include good and failed road). For each, render a contact
+sheet of its `K` frames. **Three raters independently assign a condition band**
+(Excellent / Good / Fair / Poor / Failed) from the contact sheet alone, blind to the
+model's output. ~50 judgements per rater, roughly one hour each.
+
+**Reported.**
+
+| Metric | Purpose |
+|---|---|
+| Confusion matrix, predicted band vs modal human band | where the model disagrees, and in which direction |
+| Exact-band and within-one-band agreement | headline accuracy |
+| Quadratic-weighted Cohen's κ | agreement corrected for chance, penalising distant errors |
+| Fleiss' κ between raters | **the ceiling** — the model cannot beat human-human agreement |
+
+Inter-rater agreement is essential and is not a formality: if three humans only agree
+with each other at κ = 0.5, then a model at κ = 0.45 is performing near the ceiling of
+the task, and reporting it without that context understates the result.
+
+**Scope boundary, to be stated wherever this is reported.** Raters judge the same
+monocular images the model consumes. The study therefore validates that *the PCI
+computation agrees with human visual judgement of the same road surface*. It does
+**not** validate against a certified ASTM field survey, which would require
+instrumented ground truth unavailable to this project.
+
+Why it matters despite that boundary: §2's limitation states the conformal interval
+covers detector-induced error and explicitly **not** PCI-model error. This study is
+direct evidence about precisely that uncovered term. It does not close the gap, but it
+bounds it — which is considerably better than declaring it and moving on.
+
+### Sensitivity analysis
+
+Two arbitrary choices sit upstream of every number the system reports: the ROI
+trapezoid geometry, and the severity quantile cutpoints. If PCI swings wildly with
+either, the pipeline is measuring its own configuration.
+
+Sweep both, one at a time:
+
+- **ROI geometry** — ±20% on trapezoid height and width
+- **Severity cutpoints** — quantile splits at (25/75), (33/67), (40/60)
+
+For each setting re-run `assess` → `calibrate` → `optimize` and report the change in
+mean PCI, in conformal coverage and interval width, and — the one that actually
+matters — **in the funded segment set**. A pipeline whose repair list is stable under
+±20% ROI perturbation is defensible; one that reshuffles is reporting noise.
+
+This is cheap precisely because of §1: every one of these values is config, no stage
+imports another, and a sweep is a loop over config files rather than a code change.
+The architecture pays for itself here.
 
 ### PCI → RSL
 
@@ -392,6 +468,38 @@ any need to defend a greedy approximation.
 
 The stage runs **twice** (point RSL vs `rsl_lo`) and diffs the funded sets, producing
 the §2 headline figure as a by-product rather than a bolted-on experiment.
+
+### Measuring policy impact
+
+Ranking churn alone is a weak claim: a reshuffle that swaps two equally-bad segments
+is not an improvement, it is noise. Impact is therefore reported on **two axes** —
+how much the decision changed, and whether the network is better off for it.
+
+**Axis 1 — decision change.**
+
+| Metric | Reads as |
+|---|---|
+| Jaccard distance between funded sets | how much of the budget was reallocated |
+| Count and % of segments entering/leaving funding | churn in plain numbers |
+| Rank correlation (Spearman ρ) over all segments | whether the whole ordering moved or only the margin |
+| Budget reallocated, in ₹ | the figure a highways engineer reacts to |
+
+**Axis 2 — aggregate network condition after treatment.**
+
+| Metric | Reads as |
+|---|---|
+| Network mean PCI, weighted by segment length | overall network health |
+| Total RSL-years gained per ₹ crore | efficiency of the spend |
+| Length (km) of `rsl_lo < 1 yr` segments left unfunded | **residual risk — the failure the policy did not prevent** |
+| Count of `inconclusive` segments funded vs deferred | how uncertainty routed the money |
+
+The claim to make is conjunctive, and only defensible with both axes present:
+*accounting for uncertainty reallocated X% of the budget **and** reduced unfunded
+critical length by Y km.* Axis 1 alone shows only that the answer changed; Axis 2
+shows that it changed for the better.
+
+Reported for both risk-averse (`rsl_lo`) and risk-neutral (point RSL) policies, so the
+comparison is like-for-like.
 
 ### Demonstration network
 
@@ -463,11 +571,17 @@ with coverage table, dual-run ranking diff.
 | 1 | Skeleton, CLI, schemas + versioned IO, import-linter, CI, synthetic fixtures; India subset converted and 4-way split; **training launched**; water-pothole dataset verified |
 | 2 | Detector trained and evaluated *(unattended)*; concurrently ROI geometry, vision density, severity bands |
 | 3 | Deduct curves digitized and fitted, CDV, vision-estimated PCI |
-| 4 | Evaluation segments, split conformal, **coverage table** ← result 1 |
-| 5 | RSL (sourced curve or `pci_only`), DP knapsack, must-fix, **ranking diff** ← core figure |
-| 6 | Synthetic shift sweep ← result 2 |
+| 4 | Evaluation segments, split conformal, **coverage table** ← result 1; rating tool built and **manual assessment collected** (3 raters, ~1h each) |
+| 5 | RSL (sourced curve or `pci_only`), DP knapsack, must-fix, **policy impact on both axes** ← core figure |
+| 6 | Synthetic shift sweep (2–3 corruption types) ← result 2; **band-agreement analysis** ← result 3; **sensitivity sweep** |
 | 7 | Dashboard: synthetic network, Leaflet, Plotly, Decision Replay, print stylesheet |
 | 8 | ONNX export + latency benchmark, thesis writing, buffer |
+
+The four validation additions cost roughly four days. They are paid for by narrowing
+the shift sweep from four corruption types to two or three — the coverage-versus-
+severity curve keeps its shape and its finding at lower cost. Rater collection is
+scheduled in week 4 rather than later because it depends on other people's calendars,
+which is the one thing in this plan that cannot be compressed by working harder.
 
 Eight weeks is only feasible because of the §1 artifact contract: **detector training
 runs unattended for days while `assess` and `calibrate` are built against synthetic
@@ -483,7 +597,10 @@ fixtures.** Those stages do not need the real model until week 4.
 | No published PCI→RSL source found | `mode: pci_only` fallback, decided with mentor by week 5 |
 | Deduct-curve digitization overruns | Hard 3-day timebox; fall back to fewer severity levels (L/H only) |
 | Jetson never arrives | Nothing upstream of `ingest` knows hardware exists; deployment chapter becomes export + benchmark + architecture design |
-| Slipping past week 6 | **Cut the shift sweep before touching the dashboard.** A working demo with one solid result beats two results nobody sees. |
+| Raters unavailable in week 4 | Protocol works with 2 raters (κ still computable, weaker ceiling estimate); absolute floor is 1 rater with agreement reported but no inter-rater κ. Schedule the hour in week 3. |
+| Model-human agreement comes out poor | This is a **result, not a failure** — it bounds PCI-model error, which §2's limitation flags as uncovered. Report it and analyse the direction of disagreement. Do not tune the model against the rating set; it is validation, not a dev set. |
+| Sensitivity sweep shows PCI unstable under ROI perturbation | Also a result, and an important one. Report it and narrow the claims accordingly rather than hiding the sweep. |
+| Slipping past week 6 | **Cut the shift sweep before touching the dashboard.** A working demo with one solid result beats two results nobody sees. Cut order thereafter: sensitivity sweep, then policy Axis 2. **Never cut the validation study** — it is the only evidence the central quantity is meaningful. |
 
 ### Open questions for the mentor
 

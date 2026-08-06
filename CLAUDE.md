@@ -39,8 +39,11 @@ incomplete change.
 - No magic numbers in code. Every tunable lives in `configs/`.
 - Terminology is load-bearing and enforced in review:
   - `vision_density`, never bare `density` (ASTM density is physical area)
+  - `apparent_severity`, never bare `severity` (visual prominence, not structural)
   - `pci_ref` / "reference PCI", never `pci_true`
   - "vision-estimated PCI", never bare "PCI"
   - "evaluation segment" for RDD2022 partitions, never "road segment"
+- The manual-rating set is **validation, never a dev set.** The model is not tuned
+  against it, and poor agreement is a result to report, not a defect to fix.
 - `data/`, `models/` and `runs/` are gitignored. Digitized curve points in
   `configs/assess/curves/` are committed — they are provenance, not data.
