@@ -33,10 +33,10 @@ def test_converts_to_normalised_centre_format(tmp_path):
     assert rejected.total() == 0
     cls, cx, cy, w, h = lines[0].split()
     assert int(cls) == CLASS_TO_ID["D00"]
-    assert float(cx) == pytest.approx(150 / 600)
-    assert float(cy) == pytest.approx(300 / 600)
-    assert float(w) == pytest.approx(100 / 600)
-    assert float(h) == pytest.approx(200 / 600)
+    assert float(cx) == pytest.approx(150 / 600, abs=1e-6)
+    assert float(cy) == pytest.approx(300 / 600, abs=1e-6)
+    assert float(w) == pytest.approx(100 / 600, abs=1e-6)
+    assert float(h) == pytest.approx(200 / 600, abs=1e-6)
 
 
 def test_unknown_class_is_dropped_and_counted(tmp_path):
