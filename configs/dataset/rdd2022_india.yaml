@@ -2,7 +2,6 @@ path: /Users/harshav/PROJECTS/certain-road/data/processed/india
 train: images/train
 val: images/val
 names:
-  0: D00
-  1: D10
-  2: D20
-  3: D40
+  0: linear_crack
+  1: alligator_crack
+  2: pothole

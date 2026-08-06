@@ -1,6 +1,6 @@
 import pytest
 
-from certain_road.detect.dataset.convert import CLASS_TO_ID, convert_directory, to_yolo_lines
+from certain_road.detect.dataset.convert import SOURCE_TO_ID, convert_directory, to_yolo_lines
 from certain_road.detect.dataset.voc import class_census, parse_voc
 
 XML_TEMPLATE = """<annotation>
@@ -32,11 +32,29 @@ def test_converts_to_normalised_centre_format(tmp_path):
     lines, rejected = to_yolo_lines(parse_voc(p))
     assert rejected.total() == 0
     cls, cx, cy, w, h = lines[0].split()
-    assert int(cls) == CLASS_TO_ID["D00"]
+    assert int(cls) == SOURCE_TO_ID["D00"]
     assert float(cx) == pytest.approx(150 / 600, abs=1e-6)
     assert float(cy) == pytest.approx(300 / 600, abs=1e-6)
     assert float(w) == pytest.approx(100 / 600, abs=1e-6)
     assert float(h) == pytest.approx(200 / 600, abs=1e-6)
+
+
+def test_longitudinal_and_transverse_merge_to_one_class_id(tmp_path):
+    """D00 (longitudinal) and D10 (transverse) share one ASTM D6433 deduct curve,
+    so both must collapse to the same class id."""
+    p = write_xml(
+        tmp_path / "a.xml",
+        [
+            dict(name="D00", xmin=10, ymin=10, xmax=50, ymax=50),
+            dict(name="D10", xmin=60, ymin=60, xmax=100, ymax=100),
+        ],
+    )
+    lines, rejected = to_yolo_lines(parse_voc(p))
+    assert rejected.total() == 0
+    assert len(lines) == 2
+    ids = {int(line.split()[0]) for line in lines}
+    assert ids == {SOURCE_TO_ID["D00"]}
+    assert SOURCE_TO_ID["D00"] == SOURCE_TO_ID["D10"] == 0
 
 
 def test_unknown_class_is_dropped_and_counted(tmp_path):

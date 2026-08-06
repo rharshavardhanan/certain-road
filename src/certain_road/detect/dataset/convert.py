@@ -1,7 +1,8 @@
 """VOC -> YOLO label conversion.
 
-Only the four CRDDC2022 classes survive. Everything dropped is counted, so the
-gap between annotation count and label count is always explainable.
+Only the four CRDDC2022 source classes survive, merged into three output classes
+(D00/D10 share one id per ASTM D6433). Everything dropped is counted, so the gap
+between annotation count and label count is always explainable.
 """
 
 import xml.etree.ElementTree as ET
@@ -10,8 +11,13 @@ from pathlib import Path
 
 from certain_road.detect.dataset.voc import VocAnnotation, parse_voc
 
-CLASS_TO_ID = {"D00": 0, "D10": 1, "D20": 2, "D40": 3}
-ID_TO_CLASS = {v: k for k, v in CLASS_TO_ID.items()}
+# RDD2022 source annotation label -> our class id.
+# D00 (longitudinal) and D10 (transverse) collapse to one id: ASTM D6433 treats
+# longitudinal and transverse cracking as a single distress sharing one deduct
+# curve, and D10 alone has too few instances in the India subset to learn.
+SOURCE_TO_ID = {"D00": 0, "D10": 0, "D20": 1, "D40": 2}
+
+ID_TO_CLASS = {0: "linear_crack", 1: "alligator_crack", 2: "pothole"}
 
 
 def to_yolo_lines(ann: VocAnnotation) -> tuple[list[str], Counter]:
@@ -24,7 +30,7 @@ def to_yolo_lines(ann: VocAnnotation) -> tuple[list[str], Counter]:
         return lines, rejected
 
     for obj in ann.objects:
-        if obj.name not in CLASS_TO_ID:
+        if obj.name not in SOURCE_TO_ID:
             rejected[f"unknown_class:{obj.name}"] += 1
             continue
 
@@ -47,7 +53,7 @@ def to_yolo_lines(ann: VocAnnotation) -> tuple[list[str], Counter]:
         w = (xmax - xmin) / ann.width
         h = (ymax - ymin) / ann.height
 
-        lines.append(f"{CLASS_TO_ID[obj.name]} {cx:.6f} {cy:.6f} {w:.6f} {h:.6f}")
+        lines.append(f"{SOURCE_TO_ID[obj.name]} {cx:.6f} {cy:.6f} {w:.6f} {h:.6f}")
 
     return lines, rejected
 

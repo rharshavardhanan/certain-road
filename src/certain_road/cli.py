@@ -63,7 +63,7 @@ def dataset_fetch(country: str = "India") -> None:
 def dataset_census(country: str = "India") -> None:
     """Count every class string in the annotations before converting anything."""
     from certain_road.core.paths import raw_dir
-    from certain_road.detect.dataset.convert import CLASS_TO_ID
+    from certain_road.detect.dataset.convert import SOURCE_TO_ID
     from certain_road.detect.dataset.voc import class_census
 
     xml_dir = raw_dir() / "RDD2022" / country / "train" / "annotations" / "xmls"
@@ -71,10 +71,10 @@ def dataset_census(country: str = "India") -> None:
 
     print(f"{'class':<24} {'count':>8}   status")
     for name, count in counts.most_common():
-        status = "KEEP" if name in CLASS_TO_ID else "DROP"
+        status = "KEEP" if name in SOURCE_TO_ID else "DROP"
         print(f"{name:<24} {count:>8}   {status}")
 
-    kept = sum(c for n, c in counts.items() if n in CLASS_TO_ID)
+    kept = sum(c for n, c in counts.items() if n in SOURCE_TO_ID)
     print(f"\ntotal boxes {counts.total()}, keeping {kept}, dropping {counts.total() - kept}")
 
 

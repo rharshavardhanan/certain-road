@@ -59,6 +59,7 @@ Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](sup
 | D035 | `convert`/`split` fail loud-but-not-fatal on real-data defects; `materialise` reports and self-cleans | Accepted |
 | D036 | RDD2022 archive is nested two levels; corrects D032's flat-layout assumption and image/annotation counts | Accepted |
 | D037 | Real census: RDD2022 India carries six non-CRDDC2022 class strings; `D44` dominates the drop set | Accepted |
+| D038 | D00/D10 merged to one class; three-class set, refines D016 | Accepted |
 
 ---
 
@@ -651,3 +652,41 @@ extension (widening `CLASS_TO_ID` beyond the four CRDDC2022 damage types) would
 need to weigh whether `D44` is a distinct, learnable damage type worth adding or
 an annotation artifact specific to this contributor, before spending a training
 run on it.
+
+## D038 — `D00`/`D10` merged to one class id; three-class set; refines D016
+
+**2026-08-07 · Accepted · refines D016**
+
+D037's census showed RDD2022 India's official `D10` (transverse crack) has only
+**68 boxes total — 43 in `train`, 13 in `calib`.** Too few to learn: a YOLOv8n head
+trained on 43 examples would score near-zero mAP on the class, and most of the
+~103 evaluation segments (D026) contain no `D10` box at all, so the class would
+contribute nothing to vision-estimated PCI while still adding a fourth deduct
+curve to digitize and defend.
+
+This is not a data-balance hack. **ASTM D6433 defines longitudinal and transverse
+cracking as a single distress type for asphalt pavement, sharing one deduct
+curve** — RDD2022 splits them into `D00`/`D10`, but the standard this project
+targets does not. Merging `D00` and `D10` into one class is therefore *more*
+faithful to ASTM, not less: it treats a split that only exists because of RDD2022's
+labeling scheme as what it actually is downstream.
+
+`SOURCE_TO_ID` in `certain_road/detect/dataset/convert.py` now maps `{"D00": 0,
+"D10": 0, "D20": 1, "D40": 2}`. Output classes are renamed for readability:
+`linear_crack` (0, was D00+D10), `alligator_crack` (1, was D20), `pothole` (2, was
+D40). The merge changes only labels, not the underlying boxes: kept count is
+unchanged at 6,831, split sizes are unchanged (train 4,617 / val 757 / calib 1,548
+/ test 784 — verified stable under the same salted-hash assignment, D009), and the
+new per-class kept counts are `linear_crack` 1,623 (1,555 D00 + 68 D10),
+`alligator_crack` 2,021, `pothole` 3,187 — total 6,831, unchanged.
+
+Consequence for D016: deduct-curve digitization drops from **four curves to
+three** — one fewer curve to digitize from WebPlotDigitizer, fit, and commit to
+`configs/assess/curves/`.
+
+**Cost:** comparability with RDD2022's own four-class benchmark is given up — a
+model trained on this three-class set cannot be scored against published
+four-class mAP figures class-for-class. D032 already established that those
+published multi-country figures were not a fair yardstick for an India-only model
+in the first place, so this gives up a comparison that was already flagged as
+unreliable, not one this project was relying on.

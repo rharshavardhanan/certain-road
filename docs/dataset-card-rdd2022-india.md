@@ -49,6 +49,22 @@ annotations. `D44` alone (1,062 boxes) exceeds the kept count of the official `D
 class (68 boxes) by more than 15x — this is a substantial second annotation scheme,
 not annotator typos. Recorded as D037 in the decision log.
 
+**D00 and D10 merge to one output class.** `D10` (transverse crack) has only 68
+boxes total — 43 in `train`, 13 in `calib` — too few to learn on their own, and
+ASTM D6433 defines longitudinal and transverse cracking as a single distress type
+sharing one deduct curve for asphalt pavement, so RDD2022's split is finer than the
+standard it is meant to support. `convert` therefore maps both source labels to
+output class `0` (D038). The source census above is unchanged — D00 and D10 still
+appear as distinct rows — but the **kept per-output-class** counts are:
+
+| Output class | Source label(s) | Boxes kept |
+|---|---|---|
+| `linear_crack` (id 0) | D00 + D10 | 1,623 |
+| `alligator_crack` (id 1) | D20 | 2,021 |
+| `pothole` (id 2) | D40 | 3,187 |
+
+Total kept is still **6,831** — the same boxes, relabelled, not a different sample.
+
 **Reconciliation:** kept boxes (6,831) + dropped boxes (1,372) = 8,203 = census total
 (8,203). The arithmetic closes exactly; there is no unexplained gap between the
 annotation-level census and the conversion output.
