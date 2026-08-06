@@ -5,6 +5,7 @@ we fetch the whole archive once and extract only the country we need.
 """
 
 import hashlib
+import shutil
 import subprocess
 import zipfile
 from pathlib import Path
@@ -14,6 +15,22 @@ import requests
 FIGSHARE_API = "https://api.figshare.com/v2/articles/21431547"
 ZIP_NAME = "RDD2022_released_through_CRDDC2022.zip"
 ZIP_URL = "https://ndownloader.figshare.com/files/38030910"
+
+# Figshare redirects this URL to S3 (s3-eu-west-1.amazonaws.com), which throttles
+# *per connection* — measured at ~0.75 MB/s on a link that otherwise sustains
+# 12.8 MB/s. S3 honours byte-range requests (HTTP 206), so parallel connections
+# multiply observed throughput: aria2c -x16 measured 7.4 MB/s, cutting a 4.4-hour
+# download to ~28 minutes (D034). This is why aria2c is preferred over a single
+# -threaded curl here specifically — not a general aria2c-over-curl preference —
+# so don't "simplify" this back to curl alone.
+#
+# Caveat: aria2c cannot resume a partial file that curl (or anything else)
+# started, because it needs its own `.aria2` control file to track which byte
+# ranges landed. Resuming a curl-started partial with aria2c silently falls back
+# to a single connection, losing the speedup. Switching downloaders mid-transfer
+# means discarding the partial file, not resuming it.
+ARIA2_CONNECTIONS = 16
+
 COUNTRIES = {
     "China_Drone",
     "China_MotorBike",
@@ -43,6 +60,30 @@ def sha256_of(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _download_with_aria2(url: str, dest_dir: Path, filename: str) -> None:
+    subprocess.run(
+        [
+            "aria2c",
+            f"-x{ARIA2_CONNECTIONS}",
+            f"-s{ARIA2_CONNECTIONS}",
+            "-k",
+            "10M",
+            "--file-allocation=none",
+            "--continue=true",
+            "-d",
+            str(dest_dir),
+            "-o",
+            filename,
+            url,
+        ],
+        check=True,
+    )
+
+
+def _download_with_curl(url: str, zip_path: Path) -> None:
+    subprocess.run(["curl", "-L", "-C", "-", "--fail", "-o", str(zip_path), url], check=True)
+
+
 def download_rdd2022(dest: Path) -> Path:
     """Download the archive, resuming if a partial file is present."""
     dest.mkdir(parents=True, exist_ok=True)
@@ -54,10 +95,10 @@ def download_rdd2022(dest: Path) -> Path:
         return zip_path
 
     print(f"downloading {expected / 1e9:.2f} GB -> {zip_path}")
-    subprocess.run(
-        ["curl", "-L", "-C", "-", "--fail", "-o", str(zip_path), ZIP_URL],
-        check=True,
-    )
+    if shutil.which("aria2c"):
+        _download_with_aria2(ZIP_URL, dest, ZIP_NAME)
+    else:
+        _download_with_curl(ZIP_URL, zip_path)
 
     actual = zip_path.stat().st_size
     if actual != expected:

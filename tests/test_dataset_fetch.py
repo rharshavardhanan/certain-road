@@ -3,6 +3,7 @@ import zipfile
 
 import pytest
 
+from certain_road.detect.dataset import fetch
 from certain_road.detect.dataset.fetch import extract_country, sha256_of
 
 
@@ -35,3 +36,38 @@ def test_extract_country_rejects_unknown_country(tmp_path):
     _fake_zip(zip_path)
     with pytest.raises(ValueError, match="Atlantis"):
         extract_country(zip_path, "Atlantis", tmp_path / "raw")
+
+
+def _recorder(dest, expected_size):
+    """Fake subprocess.run that records the command and materializes the expected file."""
+    calls = []
+
+    def fake_run(cmd, check=True):
+        calls.append(cmd)
+        (dest / fetch.ZIP_NAME).write_bytes(b"0" * expected_size)
+
+    return calls, fake_run
+
+
+def test_download_prefers_aria2c_when_available(tmp_path, monkeypatch):
+    monkeypatch.setattr(fetch, "expected_zip_size", lambda: 4)
+    monkeypatch.setattr(fetch.shutil, "which", lambda name: "/usr/local/bin/aria2c")
+    calls, fake_run = _recorder(tmp_path, 4)
+    monkeypatch.setattr(fetch.subprocess, "run", fake_run)
+
+    fetch.download_rdd2022(tmp_path)
+
+    assert len(calls) == 1
+    assert calls[0][0] == "aria2c"
+
+
+def test_download_falls_back_to_curl_when_aria2c_missing(tmp_path, monkeypatch):
+    monkeypatch.setattr(fetch, "expected_zip_size", lambda: 4)
+    monkeypatch.setattr(fetch.shutil, "which", lambda name: None)
+    calls, fake_run = _recorder(tmp_path, 4)
+    monkeypatch.setattr(fetch.subprocess, "run", fake_run)
+
+    fetch.download_rdd2022(tmp_path)
+
+    assert len(calls) == 1
+    assert calls[0][0] == "curl"

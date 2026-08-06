@@ -55,6 +55,7 @@ Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](sup
 | D031 | Shift sweep narrowed to 2–3 corruptions to pay for D027–D030 | Accepted |
 | D032 | Verified dataset facts; Python pinned to 3.12 | Accepted |
 | D033 | Synthetic fixtures vary detection count, not defect character | Accepted |
+| D034 | `aria2c` preferred over `curl` for the RDD2022 download, with curl fallback | Accepted |
 
 ---
 
@@ -487,3 +488,31 @@ Deliberately deferred to week 2, once `assess` exists and can reveal what
 variation the deduct curves actually need from the fixtures — building that
 coupling now would be guessing at a shape the real computation hasn't specified
 yet.
+
+## D034 — `aria2c` preferred over `curl` for the RDD2022 download, with curl fallback
+
+**2026-08-06 · Accepted**
+
+`download_rdd2022` used a single-connection `curl -L -C -` to fetch the 13.26 GB
+RDD2022 archive. Measured on 2026-08-06: Figshare redirects to
+`s3-eu-west-1.amazonaws.com`, which **throttles per connection** at ~0.75 MB/s,
+well under the machine's link speed of 12.8 MB/s. S3 honours HTTP byte-range
+requests (206 Partial Content), so parallel connections multiply observed
+throughput rather than sharing one throttled pipe. Switching to `aria2c -x16`
+measured 7.4 MB/s — the same 13.26 GB drops from a ~4.4-hour download to ~28
+minutes.
+
+`download_rdd2022` now uses `aria2c` when it is present on `PATH`
+(`shutil.which("aria2c")`), with the original single-connection `curl` invocation
+kept unchanged as a fallback for machines without it. The early-return for an
+already-complete file (checked against `expected_zip_size()` from the Figshare
+API) and the post-download size check are both unchanged. `ARIA2_CONNECTIONS = 16`
+is a named constant rather than a literal in the `aria2c` invocation.
+
+Consequence to record: **aria2c cannot resume a partial file that curl started.**
+`aria2c` splits a download using its own `.aria2` control file to track which
+byte ranges have landed; a partial file left behind by `curl` has no such control
+file, so `aria2c` treats it as an ordinary partial and silently falls back to a
+single connection, losing the whole speedup. Switching downloaders mid-transfer
+therefore means discarding the in-flight partial and restarting, not resuming it
+in place.
