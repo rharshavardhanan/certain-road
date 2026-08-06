@@ -17,8 +17,8 @@ STAGE_HELP = {
     "ingest": "Video/camera + track -> frames.parquet",
     "detect": "YOLOv8n training and inference",
     "assess": "Detections -> vision-estimated PCI per segment",
-    "calibrate": "Fit or apply conformal intervals on segment PCI",
-    "rsl": "PCI interval -> remaining service life interval",
+    "calibrate": "Fit or apply conformal intervals on segment vision-estimated PCI",
+    "rsl": "Vision-estimated PCI interval -> remaining service life interval",
     "optimize": "Budget-constrained repair selection",
     "report": "Self-contained offline HTML report",
 }
