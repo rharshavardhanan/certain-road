@@ -26,6 +26,14 @@ def _check_columns(df: pd.DataFrame, model: type[ArtifactModel]) -> None:
         raise SchemaMismatch(f"{model.artifact_name}: unexpected columns {extra}")
 
 
+def _validate_rows(df: pd.DataFrame, model: type[ArtifactModel], artifact_name: str) -> None:
+    for i, record in enumerate(df.to_dict("records")):
+        try:
+            model.model_validate(record)
+        except ValidationError as exc:
+            raise SchemaMismatch(f"{artifact_name}: row {i} invalid: {exc}") from exc
+
+
 def write_artifact(
     df: pd.DataFrame,
     path: Path,
@@ -38,11 +46,7 @@ def write_artifact(
     df = df[model.columns()]
 
     if validate_rows:
-        for i, record in enumerate(df.to_dict("records")):
-            try:
-                model.model_validate(record)
-            except ValidationError as exc:
-                raise SchemaMismatch(f"{model.artifact_name}: row {i} invalid: {exc}") from exc
+        _validate_rows(df, model, model.artifact_name)
 
     table = pa.Table.from_pandas(df, preserve_index=False)
     table = table.replace_schema_metadata(
@@ -85,10 +89,6 @@ def read_artifact(
     df = df[model.columns()]
 
     if validate_rows:
-        for i, record in enumerate(df.to_dict("records")):
-            try:
-                model.model_validate(record)
-            except ValidationError as exc:
-                raise SchemaMismatch(f"{name}: row {i} invalid: {exc}") from exc
+        _validate_rows(df, model, name)
 
     return df

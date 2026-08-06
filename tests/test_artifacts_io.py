@@ -1,8 +1,10 @@
+from datetime import UTC, date, datetime
+
 import pandas as pd
 import pytest
 
 from certain_road.artifacts.io import SchemaMismatch, read_artifact, write_artifact
-from certain_road.artifacts.schema import DetectionRow
+from certain_road.artifacts.schema import DetectionRow, FrameRow
 
 
 def _valid_df() -> pd.DataFrame:
@@ -73,3 +75,30 @@ def test_row_validation_catches_bad_value(tmp_path):
     df.loc[0, "score"] = "not a number"
     with pytest.raises(SchemaMismatch):
         write_artifact(df, tmp_path / "d.parquet", DetectionRow)
+
+
+def test_frame_row_round_trip_preserves_temporal_types(tmp_path):
+    """FrameRow is the only model with date/datetime fields; Parquet fidelity matters."""
+    original = pd.DataFrame(
+        [
+            {
+                "frame_id": "f000001",
+                "ts_utc": datetime(2026, 1, 1, 6, 0, 0, tzinfo=UTC),
+                "survey_date": date(2026, 1, 1),
+                "lat": 13.0827,
+                "lon": 80.2707,
+                "speed_mps": 7.5,
+                "cum_dist_m": 6.0,
+                "segment_id": "seg0000",
+                "image_path": "synthetic/seg0000/f000001.jpg",
+            }
+        ]
+    )
+    path = tmp_path / "frames.parquet"
+    write_artifact(original, path, FrameRow)
+    restored = read_artifact(path, FrameRow, validate_rows=True)
+
+    assert restored.loc[0, "survey_date"] == date(2026, 1, 1)
+    assert restored.loc[0, "ts_utc"] == pd.Timestamp("2026-01-01 06:00:00", tz="UTC")
+    assert restored.loc[0, "lat"] == 13.0827
+    assert restored.loc[0, "image_path"] == "synthetic/seg0000/f000001.jpg"
