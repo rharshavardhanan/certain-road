@@ -95,6 +95,47 @@ def dataset_convert(country: str = "India") -> None:
             print(f"  {reason:<30} {count}")
 
 
+@dataset_app.command("split")
+def dataset_split(country: str = "India") -> None:
+    """Build the deterministic four-way split and the ultralytics data yaml."""
+    import yaml
+
+    from certain_road.core.paths import processed_dir, raw_dir, repo_root
+    from certain_road.detect.dataset.convert import ID_TO_CLASS
+    from certain_road.detect.dataset.split import build_splits, materialise, write_manifest
+
+    root = processed_dir() / country.lower()
+    label_src = root / "labels_all"
+    image_src = raw_dir() / "RDD2022" / country / "train" / "images"
+
+    stems = sorted(p.stem for p in label_src.glob("*.txt"))
+    if not stems:
+        raise SystemExit(f"no labels in {label_src}; run `dataset convert` first")
+
+    splits = build_splits(stems)
+    materialise(splits, image_src, label_src, root)
+    write_manifest(splits, root / "splits.json")
+
+    for name, names in splits.items():
+        print(f"{name:<6} {len(names):>6}")
+
+    data_yaml = repo_root() / "configs" / "dataset" / f"rdd2022_{country.lower()}.yaml"
+    data_yaml.parent.mkdir(parents=True, exist_ok=True)
+    data_yaml.write_text(
+        yaml.safe_dump(
+            {
+                "path": str(root),
+                "train": "images/train",
+                "val": "images/val",
+                "names": {i: ID_TO_CLASS[i] for i in sorted(ID_TO_CLASS)},
+            },
+            sort_keys=False,
+        )
+    )
+    print(f"\nwrote {data_yaml}")
+    print("calib and test are deliberately absent from the yaml: ultralytics must never see them")
+
+
 def main() -> None:
     app()
 
