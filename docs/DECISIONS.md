@@ -60,6 +60,7 @@ Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](sup
 | D036 | RDD2022 archive is nested two levels; corrects D032's flat-layout assumption and image/annotation counts | Accepted |
 | D037 | Real census: RDD2022 India carries six non-CRDDC2022 class strings; `D44` dominates the drop set | Accepted |
 | D038 | D00/D10 merged to one class; three-class set, refines D016 | Accepted |
+| D039 | Water-pothole dataset: NO-GO as secondary shift experiment | Accepted |
 
 ---
 
@@ -690,3 +691,41 @@ four-class mAP figures class-for-class. D032 already established that those
 published multi-country figures were not a fair yardstick for an India-only model
 in the first place, so this gives up a comparison that was already flagged as
 unreliable, not one this project was relying on.
+
+## D039 — Water-pothole dataset: NO-GO as secondary shift experiment
+
+**2026-08-07 · Accepted**
+
+Timeboxed spike per D025/D032 (see `docs/water-pothole-viability.md` for full
+evidence). Downloaded and extracted Mendeley `tp95cdvgm8`'s `Potholes.zip`
+(290,505,592 bytes): 713 images, 713 PASCAL VOC XML annotations, 713 YOLO TXT
+annotations, plus a `ReadMe.txt` and two dashcam videos not anticipated in D032.
+
+`class_census` over `XML/` found a single annotated class, `pothole` (1,156
+boxes), plus one apparent mislabel (`o`, 1 box). Images are geometrically
+heterogeneous — 66 distinct `(width, height)` pairs across 713 files, no
+dominant size — consistent with images drawn from varied sources rather than one
+capture rig.
+
+**Decision: NO-GO.** Two independent reasons, neither alone decisive but
+compounding:
+
+1. The dataset's premise — a genuine water-filled vs. dry distribution shift —
+   is unverifiable within this timebox. The bundled `ReadMe.txt` says nothing
+   about water content; only the Mendeley page's own title ("An Annotated
+   Water-Filled, and Dry Potholes Dataset...") asserts it, and the annotation
+   vocabulary has no class or attribute that could confirm it computationally.
+   A single undifferentiated `pothole` class is exactly what an incidentally
+   wet collection would also produce — the data cannot distinguish the two
+   without a human opening all 713 images by hand, which this spike's timebox
+   does not cover.
+2. The dataset is single-class (`pothole` only) against our three-class set
+   (`linear_crack`, `alligator_crack`, `pothole`, D038). Any use would compute
+   reference PCI and vision-estimated PCI restricted to the pothole
+   contribution only, narrowing the comparison relative to the primary
+   RDD2022-based results.
+
+Consequence: the synthetic corruption sweep (D031) remains the sole
+distribution-shift experiment for the thesis — exactly the fallback D025 and
+D031 already planned around. No other week-1/week-2 work is blocked or delayed
+by this verdict.

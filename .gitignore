@@ -16,3 +16,6 @@ __pycache__/
 
 # macOS
 .DS_Store
+
+# Pretrained checkpoints downloaded by ultralytics
+*.pt
