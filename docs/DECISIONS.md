@@ -62,6 +62,7 @@ Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](sup
 | D038 | D00/D10 merged to one class; three-class set, refines D016 | Accepted |
 | D039 | Water-pothole dataset: NO-GO as secondary shift experiment | Accepted |
 | D040 | Ultralytics resolves a relative data-yaml `path` against its own `datasets_dir`, not cwd; `detect train` resolves against `repo_root()` at runtime | Accepted |
+| D041 | Multi-country training, India-only calibration; refines D025 | Accepted |
 
 ---
 
@@ -767,3 +768,58 @@ about ultralytics internals that turned out to be wrong. Anyone tempted to
 it will train against the wrong directory, or against nothing, with no error
 until the trainer already claims a GPU/MPS device and starts scanning for
 images.
+
+## D041 — Multi-country training, India-only calibration; refines D025
+
+**2026-08-07 · Accepted · refines D025**
+
+D025 cut the dataset to India only, for time reasons: multi-country meant 13.26 GB
+extracted six more times and 25–40h of training instead of 4–6h, against an 8-week
+timeline. The India-only baseline has now actually finished (mAP50 0.4238, mAP50-95
+0.1791 at epoch 84, weights at `runs/detect/models/yolo/india_v1/weights/best.pt`),
+so per-epoch cost is measured rather than estimated, and the time constraint that
+justified restricting training data no longer binds — extending the detector's
+training set to all six additional RDD2022 countries costs known, bounded wall-clock
+time, not an open-ended risk.
+
+**Decision:** the detector trains on all seven RDD2022 countries. Conformal
+calibration and testing stay India-only — `calib` and `test` are **unchanged** from
+the India-only split (train 4,617 / val 757 / calib 1,548 / test 784). Concretely:
+
+- `train` = India's existing train stems + every annotated non-India image
+- `val` = India's existing val stems only (early stopping tracks Indian performance,
+  since that is what deployment cares about)
+- `calib` = India's existing calib stems, unchanged
+- `test` = India's existing test stems, unchanged
+
+**Why the guarantee must stay anchored to a describable population:** a conformal
+interval is only meaningful relative to the exchangeable population it was
+calibrated against. Calibrating on a blend of six countries' images would produce
+intervals valid for an artificial mixture that exists nowhere as a deployment
+target. Deployment is Indian roads, so the calibration and test populations must
+stay Indian even though the detector itself benefits from more and more varied
+training data. This is the same reasoning D010 already applied to evaluation
+segments (partitioned within-country, never mixed) — D041 extends it to the
+train/calib boundary rather than only the segment boundary.
+
+**India's four-way split assignment is unchanged.** `build_splits` assigns by
+salted SHA-256 hash of the filename stem (D009), which is a pure function of the
+stem and the fixed salt `certain-road-v1` — independent of what else is in the
+training set. Extraction and conversion of the six new countries (this task) added
+zero new India stems and touched no existing `data/processed/india` files, so
+India's split cannot have changed; the split-redesign work that actually re-runs
+`build_splits` against the combined stem set is separate follow-on work, not part
+of this task, and must re-verify the same India counts (train 4,617 / val 757 /
+calib 1,548 / test 784) before proceeding — if any differ, that is a bug to stop
+and report, not an expected consequence of adding countries.
+
+**Ablation reference:** the India-only baseline (mAP50 0.4238, mAP50-95 0.1791,
+epoch 84) is preserved at `runs/detect/models/yolo/india_v1/` specifically so the
+multi-country run can be compared against it later. That directory is not touched
+by this decision or by the extraction/conversion work that accompanies it.
+
+**Scope of this entry:** records the design decision and the now-extracted,
+converted, seven-country label corpus (`docs/dataset-multicountry-summary.md`).
+It does not itself change `configs/dataset/rdd2022_india.yaml`, does not run
+`dataset split` against the combined stem set, and does not launch training —
+those are separate, later steps.
