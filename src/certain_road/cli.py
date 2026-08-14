@@ -4,6 +4,8 @@ Stages are wired here and nowhere else; this module is the only place allowed
 to know about more than one stage at a time.
 """
 
+from pathlib import Path
+
 import typer
 
 app = typer.Typer(
@@ -95,28 +97,85 @@ def dataset_convert(country: str = "India") -> None:
             print(f"  {reason:<30} {count}")
 
 
+def _country_stems(country: str, processed_dir, raw_dir) -> tuple[list[str], Path, Path]:
+    root = processed_dir() / country.lower()
+    label_src = root / "labels_all"
+    image_src = raw_dir() / "RDD2022" / country / "train" / "images"
+    stems = sorted(p.stem for p in label_src.glob("*.txt"))
+    return stems, image_src, label_src
+
+
 @dataset_app.command("split")
-def dataset_split(country: str = "India") -> None:
-    """Build the deterministic four-way split and the ultralytics data yaml."""
+def dataset_split(
+    country: str = "India",
+    train_only: list[str] = typer.Option(
+        [],
+        "--train-only",
+        help=(
+            "Additional country whose annotated images join `train` only "
+            "(no calib/test/val); repeatable. Building a multi-country split "
+            "this way writes to a new output root and configs/dataset/"
+            "rdd2022_multicountry.yaml (D041)."
+        ),
+    ),
+) -> None:
+    """Build the deterministic split and the ultralytics data yaml.
+
+    With no `--train-only`, this is the single-country four-way split, exactly
+    as before. With one or more `--train-only <Country>`, `country` still gets
+    the ordinary four-way split (unchanged) and every `--train-only` country's
+    stems join `train` alone — never four-way split, since their calib/test
+    portions would never be used (D041).
+    """
     from certain_road.core.paths import processed_dir, raw_dir, repo_root
     from certain_road.detect.dataset.split import (
+        build_multicountry_splits,
         build_splits,
         materialise,
+        materialise_multicountry,
         write_data_yaml,
         write_manifest,
     )
 
-    root = processed_dir() / country.lower()
-    label_src = root / "labels_all"
-    image_src = raw_dir() / "RDD2022" / country / "train" / "images"
+    primary_stems, primary_image_src, primary_label_src = _country_stems(
+        country, processed_dir, raw_dir
+    )
+    if not primary_stems:
+        raise SystemExit(f"no labels for {country}; run `dataset convert` first")
 
-    stems = sorted(p.stem for p in label_src.glob("*.txt"))
-    if not stems:
-        raise SystemExit(f"no labels in {label_src}; run `dataset convert` first")
+    if not train_only:
+        splits = build_splits(primary_stems)
+        reports = materialise(
+            splits, primary_image_src, primary_label_src, processed_dir() / country.lower()
+        )
+        out_root = processed_dir() / country.lower()
+        data_yaml = repo_root() / "configs" / "dataset" / f"rdd2022_{country.lower()}.yaml"
+    else:
+        stem_sources: dict[str, tuple[Path, Path]] = {
+            stem: (primary_image_src, primary_label_src) for stem in primary_stems
+        }
+        non_primary_stems: list[str] = []
+        for extra_country in train_only:
+            stems, image_src, label_src = _country_stems(extra_country, processed_dir, raw_dir)
+            if not stems:
+                raise SystemExit(f"no labels for {extra_country}; run `dataset convert` first")
+            non_primary_stems += stems
+            stem_sources |= {stem: (image_src, label_src) for stem in stems}
 
-    splits = build_splits(stems)
-    reports = materialise(splits, image_src, label_src, root)
-    write_manifest(splits, root / "splits.json")
+        collisions = sorted(set(primary_stems) & set(non_primary_stems))
+        if collisions:
+            shown = collisions[:5]
+            more = f" (+{len(collisions) - 5} more)" if len(collisions) > 5 else ""
+            raise SystemExit(
+                f"stem collision between {country} and --train-only countries: {shown}{more}"
+            )
+
+        splits = build_multicountry_splits(primary_stems, non_primary_stems)
+        out_root = processed_dir() / "multicountry"
+        reports = materialise_multicountry(splits, stem_sources, out_root)
+        data_yaml = repo_root() / "configs" / "dataset" / "rdd2022_multicountry.yaml"
+
+    write_manifest(splits, out_root / "splits.json")
 
     for name, names in splits.items():
         print(f"{name:<6} {len(names):>6}")
@@ -138,20 +197,30 @@ def dataset_split(country: str = "India") -> None:
             "(images without annotations) but confirm the counts above look right"
         )
 
-    data_yaml = repo_root() / "configs" / "dataset" / f"rdd2022_{country.lower()}.yaml"
-    write_data_yaml(data_yaml, root, repo_root())
+    write_data_yaml(data_yaml, out_root, repo_root())
     print(f"\nwrote {data_yaml}")
     print("calib and test are deliberately absent from the yaml: ultralytics must never see them")
 
 
 @STAGE_APPS["detect"].command("train")
-def detect_train(smoke: bool = False, country: str = "India") -> None:
-    """Train YOLOv8n. Use --smoke for a two-epoch setup check."""
+def detect_train(
+    smoke: bool = False,
+    country: str = "India",
+    config: Path = Path("configs/train/yolov8n.yaml"),
+) -> None:
+    """Train YOLOv8. Use --smoke for a two-epoch setup check.
+
+    `--config` selects the training hyperparameter file (model, epochs, batch,
+    ...); `--country` selects the dataset yaml, `configs/dataset/rdd2022_
+    <country>.yaml` — pass `--country multicountry` for the D041 multi-country
+    dataset.
+    """
     from certain_road.core.paths import repo_root
     from certain_road.detect.train import train
 
+    config_path = config if config.is_absolute() else repo_root() / config
     save_dir = train(
-        repo_root() / "configs" / "train" / "yolov8n.yaml",
+        config_path,
         repo_root() / "configs" / "dataset" / f"rdd2022_{country.lower()}.yaml",
         smoke=smoke,
     )

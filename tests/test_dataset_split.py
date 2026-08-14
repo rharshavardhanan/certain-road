@@ -7,8 +7,10 @@ from certain_road.detect.dataset.convert import ID_TO_CLASS
 from certain_road.detect.dataset.split import (
     SPLIT_BOUNDS,
     assign_split,
+    build_multicountry_splits,
     build_splits,
     materialise,
+    materialise_multicountry,
     write_data_yaml,
     write_manifest,
 )
@@ -65,8 +67,8 @@ def test_adding_files_does_not_move_existing_ones():
 def _make_fake_dataset(tmp_path, stems, with_image=True, with_label=True):
     image_src = tmp_path / "images"
     label_src = tmp_path / "labels_all"
-    image_src.mkdir(exist_ok=True)
-    label_src.mkdir(exist_ok=True)
+    image_src.mkdir(exist_ok=True, parents=True)
+    label_src.mkdir(exist_ok=True, parents=True)
     for stem in stems:
         if with_image:
             (image_src / f"{stem}.jpg").write_bytes(b"fake-jpeg-bytes")
@@ -185,3 +187,80 @@ def test_write_manifest_counts_match_actual_split_sizes(tmp_path):
     for name, names in splits.items():
         assert data["counts"][name] == len(names)
         assert sorted(data["stems"][name]) == sorted(names)
+
+
+# --- Multi-country split (D041): India gets the four-way split, every other
+# country contributes to `train` only. ---
+
+NON_INDIA_STEMS = [f"Czech_{i:06d}" for i in range(1500)]
+
+
+def test_non_india_stems_land_only_in_train():
+    splits = build_multicountry_splits(STEMS, NON_INDIA_STEMS)
+    assert set(NON_INDIA_STEMS) <= set(splits["train"])
+    for name in ("val", "calib", "test"):
+        assert not (set(NON_INDIA_STEMS) & set(splits[name])), (
+            f"non-India stems must never reach {name}"
+        )
+
+
+def test_india_splits_unchanged_when_non_india_countries_are_added():
+    """The whole point of D041: adding countries must not perturb India's split."""
+    india_only = build_splits(STEMS)
+    multicountry = build_multicountry_splits(STEMS, NON_INDIA_STEMS)
+
+    for name in ("val", "calib", "test"):
+        assert multicountry[name] == india_only[name]
+
+    assert set(india_only["train"]) <= set(multicountry["train"])
+    assert set(multicountry["train"]) - set(india_only["train"]) == set(NON_INDIA_STEMS)
+
+
+def test_non_india_countries_are_not_four_way_split():
+    """Splitting non-India calib/test would waste extraction for portions never used."""
+    splits = build_multicountry_splits(STEMS, NON_INDIA_STEMS)
+    total_non_india_placed = sum(
+        len(set(NON_INDIA_STEMS) & set(names)) for names in splits.values()
+    )
+    assert total_non_india_placed == len(NON_INDIA_STEMS)
+
+
+NON_INDIA_FAKE_STEMS = [f"Czech_{i:04d}" for i in range(100)]
+
+
+def test_materialise_multicountry_merges_train_and_keeps_calib_india_only(tmp_path):
+    """The calib firewall, verified on disk, with a merged multi-country train set."""
+    india_image_src, india_label_src = _make_fake_dataset(tmp_path / "india", FAKE_STEMS)
+    czech_image_src, czech_label_src = _make_fake_dataset(tmp_path / "czech", NON_INDIA_FAKE_STEMS)
+    out_root = tmp_path / "out"
+
+    splits = build_multicountry_splits(FAKE_STEMS, NON_INDIA_FAKE_STEMS)
+    stem_sources = {stem: (india_image_src, india_label_src) for stem in FAKE_STEMS}
+    stem_sources |= {stem: (czech_image_src, czech_label_src) for stem in NON_INDIA_FAKE_STEMS}
+
+    reports = materialise_multicountry(splits, stem_sources, out_root)
+
+    train_images = {p.stem for p in (out_root / "images" / "train").glob("*.jpg")}
+    assert set(NON_INDIA_FAKE_STEMS) <= train_images
+    assert set(FAKE_STEMS) & set(splits["train"]) <= train_images
+    assert reports["train"].linked == len(splits["train"])
+
+    for name in SPLIT_BOUNDS:
+        images = {p.stem for p in (out_root / "images" / name).glob("*.jpg")}
+        labels = {p.stem for p in (out_root / "labels" / name).glob("*.txt")}
+        assert images == labels
+
+    calib_images = {p.name for p in (out_root / "images" / "calib").glob("*.jpg")}
+    test_images = {p.name for p in (out_root / "images" / "test").glob("*.jpg")}
+    train_images_names = {p.name for p in (out_root / "images" / "train").glob("*.jpg")}
+    val_images_names = {p.name for p in (out_root / "images" / "val").glob("*.jpg")}
+    assert not (calib_images & train_images_names)
+    assert not (calib_images & val_images_names)
+    assert not (test_images & train_images_names)
+    assert not (test_images & val_images_names)
+
+    # Non-India stems must not have leaked into calib/test/val on disk either.
+    non_india_names = {f"{s}.jpg" for s in NON_INDIA_FAKE_STEMS}
+    for name in ("val", "calib", "test"):
+        on_disk = {p.name for p in (out_root / "images" / name).glob("*.jpg")}
+        assert not (non_india_names & on_disk)

@@ -8,6 +8,7 @@ void every conformal guarantee in the project (D009).
 
 import hashlib
 import json
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -54,6 +55,26 @@ def build_splits(stems: list[str], salt: str = SALT) -> dict[str, list[str]]:
     return splits
 
 
+def build_multicountry_splits(
+    india_stems: list[str],
+    non_india_stems: list[str],
+    salt: str = SALT,
+) -> dict[str, list[str]]:
+    """India gets the ordinary four-way split; every other country joins `train` only.
+
+    Non-India countries are never four-way split — `assign_split` is not even
+    called on them. Their calib/test portions would be unused (D041 keeps
+    calibration and test India-only, since a conformal guarantee is only
+    meaningful relative to a describable deployment population) and computing
+    them would just waste extracted data. India's own assignment is produced by
+    the exact same `build_splits` call as the India-only path, so adding
+    countries here cannot perturb it.
+    """
+    splits = build_splits(india_stems, salt)
+    splits["train"] = sorted(splits["train"] + non_india_stems)
+    return splits
+
+
 @dataclass(frozen=True)
 class SplitMaterialiseReport:
     """What actually landed on disk for one split, vs. what was requested.
@@ -81,19 +102,16 @@ def _clear_managed_files(directory: Path, suffix: str) -> None:
         path.unlink()
 
 
-def materialise(
+def _materialise_with_sources(
     splits: dict[str, list[str]],
-    image_src: Path,
-    label_src: Path,
+    resolve_source: Callable[[str], tuple[Path, Path]],
     out_root: Path,
 ) -> dict[str, SplitMaterialiseReport]:
-    """Lay out images/<split>/ and labels/<split>/ for ultralytics.
+    """Shared implementation behind `materialise` and `materialise_multicountry`.
 
-    Images are symlinked rather than copied: same result, no duplicated GB.
-    Each split's managed files are cleared before repopulating, so a stem
-    dropped from `labels_all` since the last run does not leave a stale
-    symlink or label behind. Returns a per-split report of what happened,
-    since a missing image is silently skipped rather than raised.
+    `resolve_source(stem)` returns the (image_src, label_src) pair that stem
+    should be read from, letting the single-country and multi-country cases
+    share one code path without either duplicating it.
     """
     reports: dict[str, SplitMaterialiseReport] = {}
 
@@ -110,6 +128,7 @@ def materialise(
         skipped_missing_image = 0
 
         for stem in stems:
+            image_src, label_src = resolve_source(stem)
             source_image = image_src / f"{stem}{IMAGE_SUFFIX}"
             if not source_image.exists():
                 skipped_missing_image += 1
@@ -129,6 +148,39 @@ def materialise(
         )
 
     return reports
+
+
+def materialise(
+    splits: dict[str, list[str]],
+    image_src: Path,
+    label_src: Path,
+    out_root: Path,
+) -> dict[str, SplitMaterialiseReport]:
+    """Lay out images/<split>/ and labels/<split>/ for ultralytics.
+
+    Images are symlinked rather than copied: same result, no duplicated GB.
+    Each split's managed files are cleared before repopulating, so a stem
+    dropped from `labels_all` since the last run does not leave a stale
+    symlink or label behind. Returns a per-split report of what happened,
+    since a missing image is silently skipped rather than raised.
+    """
+    return _materialise_with_sources(splits, lambda _stem: (image_src, label_src), out_root)
+
+
+def materialise_multicountry(
+    splits: dict[str, list[str]],
+    stem_sources: dict[str, tuple[Path, Path]],
+    out_root: Path,
+) -> dict[str, SplitMaterialiseReport]:
+    """Like `materialise`, but stems come from more than one country's raw tree.
+
+    `stem_sources` maps every stem in `splits` to the (image_src, label_src)
+    pair it should be read from — built by the caller from each country's own
+    `labels_all` directory, never inferred from the stem string, so there is
+    no risk of two similarly-prefixed countries (e.g. `China_Drone` /
+    `China_MotorBike`) being confused with each other.
+    """
+    return _materialise_with_sources(splits, stem_sources.__getitem__, out_root)
 
 
 def write_data_yaml(out_path: Path, data_root: Path, repo_root: Path) -> None:

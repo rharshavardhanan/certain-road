@@ -1,0 +1,7 @@
+path: data/processed/multicountry
+train: images/train
+val: images/val
+names:
+  0: linear_crack
+  1: alligator_crack
+  2: pothole

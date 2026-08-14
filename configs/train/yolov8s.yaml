@@ -1,0 +1,36 @@
+# YOLOv8s on the RDD2022 multi-country corpus (D042).
+# Every value here is a knob; none may be hardcoded in train.py.
+#
+# epochs/patience are sized from a completed 2-epoch smoke test against the
+# real 35,296-image merged train set (2026-08-14, batch 16, MPS): epoch 1 took
+# 1661.73s, epoch 2 took 1529.24s, mean 1595.48s = 26.591 min/epoch. Target
+# wall-clock is ~12h: 720 min / 26.591 min/epoch = 27.08 epochs -> epochs: 27
+# (27 * 26.591 min = 11.97h), inside the floor-20/ceiling-40 bound. patience =
+# round(27 / 3) = 9. The merged train set is 7.6x India's (35,296 vs 4,617
+# images), so at batch 16 (2,206 vs 289 steps/epoch) 27 epochs here is ~2.06x
+# the india_v1 baseline's total gradient steps (27*2,206=59,562 vs
+# 100*289=28,900) — above the 20-epoch/~1.5x floor because the measured
+# per-epoch cost allows it. See docs/DECISIONS.md D042 and
+# v8s-launch-report.md for the full arithmetic.
+
+model: yolov8s.pt
+epochs: 27
+patience: 9
+imgsz: 640
+batch: 16
+device: mps
+workers: 8
+seed: 0
+project: models/yolo
+name: multicountry_v8s
+exist_ok: false
+
+# Augmentation. Defaults are close to right for road imagery; vertical flip is
+# off because road scenes have a fixed up-down orientation.
+fliplr: 0.5
+flipud: 0.0
+degrees: 0.0
+translate: 0.1
+scale: 0.5
+mosaic: 1.0
+close_mosaic: 5

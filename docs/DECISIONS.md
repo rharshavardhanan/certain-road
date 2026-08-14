@@ -63,6 +63,7 @@ Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](sup
 | D039 | Water-pothole dataset: NO-GO as secondary shift experiment | Accepted |
 | D040 | Ultralytics resolves a relative data-yaml `path` against its own `datasets_dir`, not cwd; `detect train` resolves against `repo_root()` at runtime | Accepted |
 | D041 | Multi-country training, India-only calibration; refines D025 | Accepted |
+| D042 | YOLOv8s over v8n for the multi-country run; combined before/after vs. india_v1 | Accepted |
 
 ---
 
@@ -823,3 +824,58 @@ converted, seven-country label corpus (`docs/dataset-multicountry-summary.md`).
 It does not itself change `configs/dataset/rdd2022_india.yaml`, does not run
 `dataset split` against the combined stem set, and does not launch training —
 those are separate, later steps.
+
+## D042 — YOLOv8s over v8n for the multi-country run; combined before/after vs. india_v1
+
+**2026-08-14 · Accepted**
+
+D041 extended the detector's training set to all seven RDD2022 countries but kept
+`india_v1`'s YOLOv8n model. Two facts argue for moving to YOLOv8s at the same time:
+the merged train set is 7.6x larger (35,296 vs 4,617 images, D041), so a
+higher-capacity backbone has enough data to actually use; and v8n's original
+justification — edge deployment on a Jetson (D001) — has weakened, since the
+Jetson was never approved and no procurement is scheduled. A model sized for a
+board that does not exist is optimizing for the wrong constraint.
+
+**Decision:** the multi-country run trains YOLOv8s (11.1M params, 28.6 GFLOPs at
+`imgsz=640`), not YOLOv8n (3.01M params). `configs/train/yolov8s.yaml` carries the
+new hyperparameter set; `configs/train/yolov8n.yaml` (india_v1's config) is
+untouched.
+
+**This is a combined change, and must be reported as one.** Model capacity and
+training data both change at once — v8s instead of v8n, and 7.6x the training
+images. Any comparison against `india_v1` (mAP50 0.4238, mAP50-95 0.1791, epoch
+84) is therefore a combined before/after of *both* factors together. It must never
+be attributed to "more data" alone or "a bigger model" alone — no ablation isolates
+the two (a v8s-on-India-only or v8n-on-multi-country run was not budgeted), so any
+delta reported against `india_v1` is scoped as "capacity + data, combined" in the
+thesis and in the dashboard, not decomposed into a per-factor contribution that
+this experiment design cannot support.
+
+**Epoch sizing, measured not guessed.** A 2-epoch smoke test
+(`uv run certain-road detect train --config configs/train/yolov8s.yaml --country
+multicountry --smoke`) ran to completion against the real 35,296-image merged
+train set on MPS, batch 16: epoch 1 took 1661.73s, epoch 2 took 1529.24s, mean
+1595.48s = 26.591 min/epoch. Target wall-clock for the full run is ~12h (this
+machine's other constraints — see D025 — still favour same-day-or-next-day
+turnaround over an open-ended multi-day run):
+
+```
+720 min / 26.591 min/epoch = 27.08 epochs -> epochs = 27
+27 * 26.591 min = 717.9 min ≈ 11.97 h
+```
+
+27 sits inside the mandated floor-20/ceiling-40 bound. `patience = round(27 / 3) =
+9`. `close_mosaic: 5` (unchanged from the initial config). At batch 16 the merged
+set is 2,206 steps/epoch (35,296/16) against India's 289 (4,617/16, rounded up);
+27 epochs here is `27*2,206 = 59,562` total gradient steps versus `india_v1`'s
+`100*289 = 28,900` — **~2.06x**, above the ~1.5x/20-epoch floor because the
+measured per-epoch cost allows more, per the instruction to prefer more epochs
+when the measurement supports it rather than stopping at the floor.
+
+**Full run launched:** `runs/detect/models/yolo/multicountry_v8s/`, log at
+`runs/logs/train_multicountry_v8s.log`. Full arithmetic and verbatim launch output
+in `.superpowers/sdd/2026-08-06-week-1-foundation/v8s-launch-report.md`.
+
+**india_v1 is preserved, untouched, as the reference point** (D041) — this
+decision does not retrain or overwrite it.
