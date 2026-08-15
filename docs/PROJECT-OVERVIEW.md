@@ -124,7 +124,7 @@ error cancels in the comparison that matters.
 ASTM severity depends on crack width, spalling, depth and ride quality — none of which are
 observable from one monocular frame. RDD2022 has no severity labels at all.
 
-So severity is banded Low/Medium/High from each detection's **area fraction**, using
+So `apparent_severity` is banded Low/Medium/High from each detection's **area fraction**, using
 per-class quantile cutpoints computed once on the train split and **frozen into config**.
 This measures *visual prominence*, not structural severity, and is named
 `apparent_severity` so the distinction cannot be lost (D014, D028).
@@ -173,7 +173,7 @@ guarantee: P(pci_ref ∈ interval) ≥ 1 − α
 
 **The limitation, which belongs in the thesis in bold:** the interval covers
 **detector-induced error only**. It does not cover error in the PCI model, the
-vision-density proxy, the severity proxy, or the RSL curve — because `pci_ref` is itself
+vision-density proxy, the apparent-severity proxy, or the RSL curve — because `pci_ref` is itself
 defined through those same models. It answers *"where would the estimate land if detection
 were perfect?"*, not *"what is this road's true ASTM PCI?"*
 
@@ -477,7 +477,7 @@ of the task; reporting the first number without the second understates the resul
 | Week | Work | Status |
 |---|---|---|
 | 1 | Skeleton, artifact contract, dataset, split, training launched | ✅ **done** |
-| 2 | `assess` — ROI, vision density, severity, deduct curves, CDV | 📋 planned |
+| 2 | `assess` — ROI, vision density, apparent severity, deduct curves, CDV | 📋 planned |
 | 3 | Evaluation segments, split conformal, **coverage table** | ← result 1 |
 | 4 | Manual rating collection + band-agreement analysis | ← result 3 |
 | 5 | `rsl`, DP knapsack, **policy impact on both axes** | ← core figure |
