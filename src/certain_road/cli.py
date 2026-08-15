@@ -259,6 +259,97 @@ def detect_predict(
     print(f"{len(df)} detections over {n_frames_with_detections} frames with detections -> {out}")
 
 
+@STAGE_APPS["detect"].command("eval")
+def detect_eval(
+    weights: Path = typer.Option(..., "--weights", help="YOLO weights (.pt) to evaluate"),
+    split: str = typer.Option("test", "--split", help="Dataset split to evaluate on"),
+    class_map: str = typer.Option(
+        "identity_3class",
+        "--class-map",
+        help="Named remap from configs/eval/class_maps.yaml (identity_3class for our own models)",
+    ),
+    country: str = typer.Option(
+        "india",
+        "--country",
+        help="Processed country whose split to read; only 'india' currently has calib/test (D041)",
+    ),
+    out: Path = typer.Option(None, "--out", help="Optional path to write the markdown report"),
+    device: str = typer.Option("mps", "--device"),
+) -> None:
+    """Evaluate weights on a processed split: mAP + the operating-threshold sweep + latency.
+
+    One inference pass at `map_conf_floor` (configs/eval/thresholds.yaml)
+    feeds both the mAP computation and every row of the operating-point
+    sweep -- the sweep filters that single prediction set by score rather
+    than re-running inference per threshold. See `certain_road.detect.
+    evaluate` for the metric-implementation rationale (D045).
+    """
+    import torch
+
+    from certain_road.core.paths import processed_dir
+    from certain_road.detect.dataset.convert import ID_TO_CLASS
+    from certain_road.detect.evaluate import (
+        compute_map,
+        compute_operating_metrics,
+        load_ground_truth,
+        measure_latency,
+        render_report,
+    )
+    from certain_road.detect.predict import load_class_map, load_thresholds, predict_to_detections
+
+    if device == "mps" and not torch.backends.mps.is_available():
+        raise RuntimeError("device=mps requested but MPS is unavailable")
+
+    images_dir = processed_dir() / country.lower() / "images" / split
+    labels_dir = processed_dir() / country.lower() / "labels" / split
+    thresholds = load_thresholds()
+
+    gt = load_ground_truth(labels_dir, images_dir)
+    preds = predict_to_detections(
+        weights,
+        images_dir,
+        class_map=load_class_map(class_map),
+        conf=thresholds["map_conf_floor"],
+        device=device,
+        imgsz=thresholds["imgsz"],
+    )
+
+    map_metrics = compute_map(preds, gt, num_classes=len(ID_TO_CLASS))
+    operating_thresholds = thresholds["operating_thresholds"]
+    operating_metrics = [
+        compute_operating_metrics(preds, gt, conf=conf) for conf in operating_thresholds
+    ]
+    latency = measure_latency(
+        weights,
+        device=device,
+        imgsz=thresholds["imgsz"],
+        reps=thresholds["latency_reps"],
+        warmup=thresholds["latency_warmup"],
+    )
+
+    n_images = len(list(labels_dir.glob("*.txt")))
+    n_positive = gt["frame_id"].nunique()
+    n_empty = n_images - n_positive
+
+    report = render_report(
+        weights=weights,
+        country=country,
+        split=split,
+        class_map=class_map,
+        n_images=n_images,
+        n_positive=n_positive,
+        n_empty=n_empty,
+        map_metrics=map_metrics,
+        operating_thresholds=operating_thresholds,
+        operating_metrics=operating_metrics,
+        latency=latency,
+    )
+    print(report)
+    if out is not None:
+        out.write_text(report)
+        print(f"\nwrote {out}")
+
+
 @STAGE_APPS["detect"].command("train")
 def detect_train(
     smoke: bool = False,

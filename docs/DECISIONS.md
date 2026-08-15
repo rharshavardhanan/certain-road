@@ -66,6 +66,7 @@ Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](sup
 | D042 | YOLOv8s over v8n for the multi-country run; combined before/after vs. india_v1 | Accepted |
 | D043 | multicountry_v8s continued 23 epochs from existing weights, low-LR, no resume | Accepted |
 | D044 | Detector eval harness: predictions remapped onto our taxonomy, not labels; D00+D10 merge extended to predictions | Accepted |
+| D045 | Detector eval harness metrics: reuse `ultralytics.utils.metrics`, not `torchmetrics`; Task-4 validation diverges 0.029 mAP50 from `model.val()`'s `rect=True` default, cause identified | Accepted |
 
 ---
 
@@ -1020,3 +1021,92 @@ current-model benchmark, and the candidate registry are follow-on tasks in
 the same plan (`docs/superpowers/plans/2026-08-15-detector-evaluation-harness.md`)
 and are not part of this decision. No training was run and no candidate
 weights were downloaded to implement this.
+
+## D045 — Detector eval harness metrics: `ultralytics.utils.metrics`, not `torchmetrics`; Task-4 divergence traced to `model.val()`'s `rect=True` default
+
+**2026-08-15 · Accepted**
+
+**Metric-implementation decision.** The plan's Task 3 suggested `torchmetrics.
+detection.MeanAveragePrecision`; that suggestion was not binding, and the
+plan's own Task 4 constraint — the harness must reproduce
+`model.val()`'s pre-registered mAP50 ≈ 0.4220 / mAP50-95 ≈ 0.1857 for
+`multicountry_v8s` within ±0.01 — made `torchmetrics` the wrong choice.
+`torchmetrics`'s detection metric is backed by `pycocotools` (or
+`faster_coco_eval`), an independently-coded implementation with its own IoU-
+matching, IoU-threshold sweep, and IoU-envelope-interpolation conventions. A
+correct implementation from a different codebase can legitimately differ from
+ultralytics' own number by more than ±0.01 purely from those conventions,
+which would make a harness bug indistinguishable from an implementation
+difference — precisely the ambiguity Task 4 exists to rule out. Comparability
+to the pre-registered number, and later to published ultralytics-based
+RDD2022 benchmarks, requires reusing ultralytics' own machinery.
+
+`certain_road.detect.evaluate.compute_map` therefore imports
+`ultralytics.utils.metrics.box_iou` and `ap_per_class` unmodified — the same
+two functions `model.val()` calls internally to build its PR curve and
+integrate AP. The one piece that could not be imported directly,
+`BaseValidator.match_predictions`'s greedy IoU matching, is an instance
+method requiring a live validator; `_match_predictions` in `evaluate.py` is a
+standalone re-implementation of that same algorithm, not a new one, so it can
+run over a plain DataFrame pair instead of a dataloader. No third-party
+mAP dependency was added.
+
+**Task 4 result: the harness does not reproduce 0.4220 within ±0.01, and the
+harness was not tuned to force it to.** Running `certain-road detect eval`
+on `multicountry_v8s/weights/best.pt` over the India test split (784 images,
+330 positive, 454 empty, `identity_3class`) measured **mAP50 = 0.3932,
+mAP50-95 = 0.1662** — a divergence of **-0.0288 mAP50 / -0.0195 mAP50-95**
+from the pre-registered 0.4220 / 0.1857, outside tolerance.
+
+**Root cause, isolated and confirmed, not assumed.** Four diagnostics ruled
+candidates in or out in order:
+
+1. **Checkpoint identity.** `best.pt` and `last.pt` were suspected first,
+   since D043's 0.4220 number was measured against `last.pt` and Task 4 asks
+   for `best.pt`. Running ultralytics' own `model.val()` directly on
+   `best.pt` reproduced **0.4220305393408599 / 0.18573762572421756** exactly
+   — bit-for-bit the same as D043's `last.pt` number. The checkpoint choice
+   is not the cause.
+2. **`multi_label` NMS default.** `DetectionValidator.postprocess` (used by
+   `model.val()`) calls `non_max_suppression(..., multi_label=True)`
+   explicitly; `DetectionPredictor.postprocess` (used by `model.predict()`,
+   which `predict_to_detections` calls) does not pass `multi_label`, so it
+   defaults to `False`. Monkeypatching `predict_to_detections`'s underlying
+   NMS call to force `multi_label=True` changed raw detection count
+   (41,595 → 46,484) but moved mAP50 by only +0.0009 (0.3932 → 0.3941).
+   Ruled out as the dominant cause.
+3. **Per-image coordinate comparison.** Capturing the top-10 boxes for one
+   positive image (`India_000027`) from both pipelines showed `model.val()`'s
+   top box measurably offset (~20-50px on a 720px image) from both the
+   ground-truth box and `model.predict()`'s corresponding box, despite
+   near-identical confidence and class.
+4. **Preprocessed tensor shape — the actual cause.** Hooking both
+   pipelines' `preprocess` methods for that image showed `model.val()`
+   feeds the model a **(16, 3, 672, 672)** batch tensor (`ratio_pad =
+   (0.888…, 0.888…)`, `pad = (16, 16)`), while `model.predict()` feeds a
+   **(1, 3, 640, 640)** tensor for the same `imgsz=640` request. `model.val()`
+   defaults to **`rect=True`** (rectangular/stride-rounded batch inference);
+   `model.predict()` always uses a plain square letterbox. Confirmed
+   conclusively by re-running `model.val()` with `rect` forced both ways on
+   the same weights/data: **`rect=True` → mAP50 0.4220 / mAP50-95 0.1857**
+   (the reference); **`rect=False` → mAP50 0.3937 / mAP50-95 0.1661** —
+   matching the harness's independently-measured 0.3932 / 0.1662 to within
+   0.0005, i.e. within the residual noise already explained by (2).
+
+**Conclusion.** `compute_map` correctly reproduces ultralytics' own AP
+algorithm — proven by matching `model.val(rect=False)` almost exactly, and by
+independently reproducing a non-obvious quirk of `ap_per_class` (a perfect
+detector saturates at AP 0.995, not 1.0, under 101-point interpolation;
+verified directly against `ultralytics.utils.metrics.compute_ap`). The 0.029
+mAP50 gap is entirely attributable to `predict_to_detections` (D044, Task 2)
+calling `model.predict()`, whose square-letterbox preprocessing at
+`imgsz=640` is not equivalent to `model.val()`'s default rectangular-batch
+preprocessing at the same nominal `imgsz`. This is a real, understood
+divergence in inference preprocessing, not a bug in the metric computation,
+and per the plan's explicit instruction it is reported as such rather than
+closed by tuning the harness (e.g. by switching to `model.val()` internally,
+which would silently reintroduce the exact per-model-source coupling D044
+was written to avoid) until the number matched. Whether `predict_to_detections`
+should adopt rect-style preprocessing to raise fidelity to `model.val()` is
+left as an open question for whoever picks up Task 5/6 or a future revision
+of D044 — not resolved unilaterally here.
