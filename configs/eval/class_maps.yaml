@@ -1,0 +1,20 @@
+# Remaps external model class indices onto our frozen taxonomy:
+#   0 = linear_crack, 1 = alligator_crack, 2 = pothole
+#
+# Indices DO NOT align across taxonomies. External class 2 is alligator
+# crack; ours is pothole. Evaluating without a remap silently scores
+# potholes against alligator cracks and produces plausible-looking wrong
+# numbers - the exact failure this project exists to prevent.
+
+maps:
+  identity_3class:
+    description: our own models, already in the frozen taxonomy
+    mapping: {0: 0, 1: 1, 2: 2}
+
+  rdd2022_4class:
+    description: >
+      Standard RDD2022 taxonomy (D00, D10, D20, D40). D00 and D10 both map
+      to linear_crack, matching D038's merge of the same two classes in our
+      labels. Merging is a pure relabel of predictions: boxes are not
+      combined or deduplicated.
+    mapping: {0: 0, 1: 0, 2: 1, 3: 2}

@@ -65,6 +65,7 @@ Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](sup
 | D041 | Multi-country training, India-only calibration; refines D025 | Accepted |
 | D042 | YOLOv8s over v8n for the multi-country run; combined before/after vs. india_v1 | Accepted |
 | D043 | multicountry_v8s continued 23 epochs from existing weights, low-LR, no resume | Accepted |
+| D044 | Detector eval harness: predictions remapped onto our taxonomy, not labels; D00+D10 merge extended to predictions | Accepted |
 
 ---
 
@@ -968,3 +969,54 @@ interchangeable.
 **Full run launched:** `runs/detect/models/yolo/multicountry_v8s_ext/`, log at
 `runs/logs/train_v8s_continue.log`. `runs/detect/models/yolo/multicountry_v8s/`
 is untouched and preserved as the pre-continuation reference point.
+
+## D044 — Detector eval harness: predictions remapped onto our taxonomy, not labels; D00+D10 merge extended to predictions
+
+**2026-08-15 · Accepted**
+
+The project cannot yet compare its own detector against external RDD2022
+models: there is no inference path, and external models use CRDDC2022's
+four-class taxonomy (`D00` longitudinal, `D10` transverse, `D20` alligator,
+`D40` pothole) while ours is the frozen three-class set from D038
+(`linear_crack`, `alligator_crack`, `pothole`). The indices do not align —
+external class `2` is alligator crack, ours is pothole — so scoring an
+external model's raw output against our labels would silently score potholes
+against alligator cracks and produce plausible-looking, wrong numbers.
+
+**Decision:** remap happens on **predictions**, not labels, and it is a pure
+relabel — boxes are never combined, deduplicated, or NMS'd across the merge.
+`configs/eval/class_maps.yaml` defines two named maps: `identity_3class` (a
+no-op, for our own models) and `rdd2022_4class`, which sends `D00 -> 0`,
+`D10 -> 0`, `D20 -> 1`, `D40 -> 2`. `D00` and `D10` both collapsing onto
+`linear_crack` **extends D038's label-side merge to predictions**, for the
+same ASTM D6433 reason: longitudinal and transverse cracking share one deduct
+curve, so evaluating them as separate classes would penalise a correct
+call as a misclassification. `certain_road.detect.predict.remap_class_ids`
+raises `ValueError` naming the offending id if a prediction's class is absent
+from the map — silently dropping an unmapped class is exactly the failure
+this decision exists to prevent.
+
+**`certain_road.detect.predict.predict_to_detections`** is the first
+inference path the project has had: weights + an image directory in,
+a `DetectionRow`-conformant frame out, with the class map applied before
+return. The ultralytics-calling code (`_raw_predictions`) is kept separate
+from the remap/schema logic so the latter can be unit-tested without a
+trained model — the automated suite never invokes a real detector. Wired onto
+the existing stage as `certain-road detect predict`, not a parallel app.
+
+**Confidence floor is a separate config from the operating-point sweep.**
+`configs/eval/thresholds.yaml` sets `map_conf_floor: 0.001` (mAP integrates
+the whole precision-recall curve; raising the threshold truncates it and
+depresses mAP artificially, it does not "tune" it) and
+`operating_thresholds: [0.10, 0.15, 0.20, 0.25]` for precision/recall/F1
+sweeps at evaluation time (Task 3, not yet implemented). `detect predict`
+defaults its own `--conf` to `map_conf_floor` so one prediction pass at the
+low floor serves both purposes; the operating sweep filters scores after the
+fact rather than re-running inference at each threshold.
+
+**Scope: Tasks 1–2 of the harness only.** `detect eval` (mAP/operating
+metrics), the harness-validation check against the known 0.4220 mAP50, the
+current-model benchmark, and the candidate registry are follow-on tasks in
+the same plan (`docs/superpowers/plans/2026-08-15-detector-evaluation-harness.md`)
+and are not part of this decision. No training was run and no candidate
+weights were downloaded to implement this.

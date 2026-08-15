@@ -202,6 +202,63 @@ def dataset_split(
     print("calib and test are deliberately absent from the yaml: ultralytics must never see them")
 
 
+@STAGE_APPS["detect"].command("predict")
+def detect_predict(
+    weights: Path = typer.Option(..., "--weights", help="YOLO weights (.pt) to run inference with"),
+    images: Path = typer.Option(..., "--images", help="Directory of images to run inference over"),
+    out: Path = typer.Option(
+        ..., "--out", help="Output path for the DetectionRow parquet artifact"
+    ),
+    class_map: str = typer.Option(
+        "identity_3class",
+        "--class-map",
+        help="Named remap from configs/eval/class_maps.yaml (identity_3class for our own models)",
+    ),
+    conf: float = typer.Option(
+        None,
+        "--conf",
+        help="Confidence floor; defaults to map_conf_floor in configs/eval/thresholds.yaml",
+    ),
+    device: str = typer.Option("mps", "--device"),
+    imgsz: int = typer.Option(
+        None,
+        "--imgsz",
+        help="Inference image size; defaults to imgsz in configs/eval/thresholds.yaml",
+    ),
+) -> None:
+    """Run detection over a directory of images and write a DetectionRow artifact.
+
+    Applies the named class remap before writing, so a 4-class external
+    model's predictions land on our frozen 3-class taxonomy (see
+    `configs/eval/class_maps.yaml`) instead of being scored against the wrong
+    classes.
+    """
+    import torch
+
+    from certain_road.artifacts.io import write_artifact
+    from certain_road.artifacts.schema import DetectionRow
+    from certain_road.detect.predict import load_class_map, load_thresholds, predict_to_detections
+
+    if device == "mps" and not torch.backends.mps.is_available():
+        raise RuntimeError("device=mps requested but MPS is unavailable")
+
+    thresholds = load_thresholds()
+    resolved_conf = conf if conf is not None else thresholds["map_conf_floor"]
+    resolved_imgsz = imgsz if imgsz is not None else thresholds["imgsz"]
+
+    df = predict_to_detections(
+        weights,
+        images,
+        class_map=load_class_map(class_map),
+        conf=resolved_conf,
+        device=device,
+        imgsz=resolved_imgsz,
+    )
+    write_artifact(df, out, DetectionRow)
+    n_frames_with_detections = df["frame_id"].nunique()
+    print(f"{len(df)} detections over {n_frames_with_detections} frames with detections -> {out}")
+
+
 @STAGE_APPS["detect"].command("train")
 def detect_train(
     smoke: bool = False,

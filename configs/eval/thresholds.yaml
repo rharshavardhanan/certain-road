@@ -1,0 +1,15 @@
+# mAP is computed over the full precision-recall curve, so it uses a minimal
+# floor. Raising the confidence threshold truncates the curve and depresses
+# mAP artificially - it does not "tune" it.
+map_conf_floor: 0.001
+
+# The owner-requested sweep. These apply to OPERATING-POINT metrics
+# (precision, recall, F1, per-class recall), not to mAP. 0.10 is the
+# optimum reported by one external benchmark; it is swept rather than
+# assumed.
+operating_thresholds: [0.10, 0.15, 0.20, 0.25]
+
+iou_thresholds_map50: 0.50
+imgsz: 640
+latency_warmup: 5
+latency_reps: 50
