@@ -44,6 +44,17 @@
 #
 # Everything else (device, imgsz, batch, seed, augmentation) is unchanged
 # from configs/train/yolov8s.yaml.
+#
+# name: multicountry_v8s_ext2 — the first attempt (`_ext`) was killed after one
+# epoch when macOS entered 'Maintenance Sleep' on battery; it was not a crash.
+# Its checkpoint DID retain optimizer state (a killed run is not stripped), but
+# `resume=True` fails on it: ultralytics rebuilds the detection head at the
+# COCO default nc=80 and then cannot load the 3-class EMA weights
+# (RuntimeError: size mismatch for model.22.cv3.*, [3,128,1,1] vs
+# [80,128,1,1]). That resume path does not honour the class count of a custom
+# starting checkpoint, so this restarts the continuation from the 27-epoch
+# endpoint instead, losing only that one epoch. Launch under `caffeinate -i`
+# so idle sleep cannot kill it again.
 
 model: runs/detect/models/yolo/multicountry_v8s/weights/last.pt
 epochs: 23
@@ -54,7 +65,7 @@ device: mps
 workers: 8
 seed: 0
 project: models/yolo
-name: multicountry_v8s_ext
+name: multicountry_v8s_ext2
 exist_ok: false
 
 lr0: 0.001
