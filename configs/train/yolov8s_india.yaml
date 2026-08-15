@@ -1,0 +1,49 @@
+# YOLOv8s on the RDD2022 India subset — the clean capacity ablation.
+#
+# This file is a BYTE-FOR-BYTE copy of configs/train/yolov8n.yaml except for
+# `model:` and `name:`. That is deliberate and must stay true: the whole point
+# is to change exactly one variable against the india_v1 baseline, so any
+# difference in the result is attributable to model capacity alone.
+#
+# Why this run exists. D042's multi-country v8s run changed model capacity AND
+# training data at the same time, so its +3.4% mAP50 over the v8n baseline
+# could not be attributed to either. This run isolates capacity:
+#
+#   india_v1        v8n (3.01M)  · India 4,617 · 100 ep -> India test mAP50 0.4081
+#   multicountry_v8s v8s (11.1M) · Multi 35,296 · 27 ep -> India test mAP50 0.4220
+#   THIS RUN        v8s (11.1M)  · India 4,617 · 100 ep -> ?
+#
+# It also tests the negative-transfer hypothesis directly. `linear_crack`
+# regressed from 0.3103 (v8n India) to 0.2855 (v8s multi) despite going from
+# 1,623 to 37,846 training boxes. If this run's linear_crack beats the
+# multi-country run's, foreign linear cracks demonstrably hurt Indian
+# performance and the regression was domain mismatch, not undertraining.
+#
+# patience: 20 with close_mosaic: 10 is inherited unchanged from the baseline.
+# Note the known interaction (see D043 and the ext2 post-mortem): early stopping
+# can in principle fire before the final mosaic-off phase. It did not on
+# india_v1, whose best landed at epoch 84 and which ran the full 100, so the
+# same settings are kept here rather than "improved" — changing them would
+# break the like-for-like comparison this run exists to provide.
+
+model: yolov8s.pt
+epochs: 100
+patience: 20
+imgsz: 640
+batch: 16
+device: mps
+workers: 8
+seed: 0
+project: models/yolo
+name: india_v8s
+exist_ok: false
+
+# Augmentation. Defaults are close to right for road imagery; vertical flip is
+# off because road scenes have a fixed up-down orientation.
+fliplr: 0.5
+flipud: 0.0
+degrees: 0.0
+translate: 0.1
+scale: 0.5
+mosaic: 1.0
+close_mosaic: 10
