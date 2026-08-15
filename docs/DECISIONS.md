@@ -64,6 +64,7 @@ Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](sup
 | D040 | Ultralytics resolves a relative data-yaml `path` against its own `datasets_dir`, not cwd; `detect train` resolves against `repo_root()` at runtime | Accepted |
 | D041 | Multi-country training, India-only calibration; refines D025 | Accepted |
 | D042 | YOLOv8s over v8n for the multi-country run; combined before/after vs. india_v1 | Accepted |
+| D043 | multicountry_v8s continued 23 epochs from existing weights, low-LR, no resume | Accepted |
 
 ---
 
@@ -879,3 +880,91 @@ in `.superpowers/sdd/2026-08-06-week-1-foundation/v8s-launch-report.md`.
 
 **india_v1 is preserved, untouched, as the reference point** (D041) — this
 decision does not retrain or overwrite it.
+
+## D043 — multicountry_v8s continued 23 epochs from existing weights, low-LR, no resume
+
+**2026-08-15 · Accepted**
+
+The 27-epoch `multicountry_v8s` run (D042) completed its full 11.6h wall-clock
+budget, but it was **truncated by a time-budget-sized epoch count, not
+converged**: mAP50-95 landed on the final epoch (27/27) with the early-stop
+counter at 0/9, and it rose monotonically across the last five epochs (0.1979 ->
+0.2025 -> 0.2065 -> 0.2090 -> 0.2105). D042's epoch count was sized to a ~12h
+wall-clock target, not to convergence — the right lesson going forward is that
+epochs should be sized generously and `patience` should decide the stopping
+point, not a clock. This run puts that into effect: it continues training toward
+an effective 50 epochs total (27 already done + 23 more) with `patience: 15`
+generous enough that the run is expected to actually converge and stop on its
+own before exhausting 23 epochs, rather than being cut off again.
+
+**A true resume was impossible.** `resume=True` requires optimizer state, an
+epoch counter, and LR-schedule position from the checkpoint. Both `best.pt` and
+`last.pt` from the finished run have `epoch: -1` and stripped optimizer state
+(ultralytics strips it on normal completion), and `save_period: -1` meant no
+per-epoch checkpoints were kept along the way. There is nothing to resume from.
+
+**Decision:** `configs/train/yolov8s_continue.yaml` starts a **new** training run
+that loads `runs/detect/models/yolo/multicountry_v8s/weights/last.pt` as plain
+pretrained weights (`last.pt`, not `best.pt` — `last.pt` is the true end state of
+the finished optimisation trajectory; this run's own best/last are epoch 27's
+best anyway) and trains it 23 further epochs, writing to a **new** directory,
+`runs/detect/models/yolo/multicountry_v8s_ext/`, so the original run's
+`weights/` are never touched.
+
+**The low-LR continuation, and why.** The finished run used ultralytics' default
+linear LR decay from `lr0=0.01` down to `lr0*lrf=0.0001` over its 27 epochs. A
+fresh run started at the config default `lr0=0.01` would re-warm the model to
+full learning rate and knock it backwards, destroying most of the 11.6h already
+invested chasing a lower loss. `yolov8s_continue.yaml` instead sets `lr0: 0.001`
+and `warmup_epochs: 0`, picking the schedule up near where the prior run ended
+rather than restarting it — an order of magnitude above the prior run's terminal
+~0.0001 (headroom to keep making progress against the still-rising mAP50-95),
+and two orders of magnitude below the original `lr0=0.01` (no backslide). All
+other hyperparameters (`device: mps`, `imgsz: 640`, `batch: 16`, `seed: 0`,
+augmentation) are unchanged from `configs/train/yolov8s.yaml`.
+
+**`optimizer` must be pinned explicitly, or the low-LR config is silently
+void.** The first launch attempt of this run was killed within its first
+epoch: ultralytics' default `optimizer: auto` unconditionally *discards*
+whatever `lr0`/`momentum` the config sets and substitutes its own heuristic —
+logged as `'optimizer=auto' found, ignoring 'lr0=0.001' and 'momentum=0.937'`,
+resolving to `MuSGD(lr=0.01, momentum=0.9)` — which is exactly the
+full-LR restart this entire config exists to prevent. `optimizer: MuSGD` (the
+same optimizer class the finished run's own `optimizer=auto` had resolved to,
+since `iterations > 10000` at this train-set size) and `momentum: 0.9` are now
+pinned explicitly in `yolov8s_continue.yaml` so the configured `lr0=0.001`
+actually takes effect. Caught by reading the launch log before letting the
+run proceed, per this task's own instruction to confirm the reported LR is
+~0.001 rather than ~0.01 — recorded here because it is a real trap in any
+future continue-from-weights config, not specific to this run.
+
+**`detect train`'s `model:` config value now accepts a filesystem checkpoint
+path, not just a bare ultralytics model name.** Ultralytics resolves a relative
+model path against the process cwd (`check_file`), never the repo root — the
+same class of bug D040 already fixed for the data yaml's `path:`.
+`certain_road.detect.train.resolve_model_path` now resolves a `model:` value
+containing a path separator against `repo_root()`, and leaves a bare name (e.g.
+`yolov8s.pt`) untouched so ultralytics can still resolve or download it itself.
+Covered by three new cases in `tests/test_train_config.py`.
+
+**Starting point, measured before continuing.** Before launching the extended
+run, `last.pt` was verified as the intended checkpoint (fused: 130->73 layers,
+**11,126,745 parameters**, `nc=3`) and evaluated on the India **test** split
+(784 images, `calib`/`test` never seen by training, D009): **mAP50 = 0.4220,
+mAP50-95 = 0.1857** — matches the pre-registered expectation (~0.4220 /
+~0.1857). This is the definite before-number the extended run is measured
+against.
+
+**Honest scope: this is a continuation, not a clean 50-epoch run.** Because the
+LR schedule was restarted at a low value rather than continuing ultralytics'
+own decay curve exactly, and because the optimizer momentum/state was lost at
+the boundary, the resulting model is **not identical to a single run trained 50
+epochs from scratch** — there is a discontinuity in the LR trajectory and a
+reset of optimizer state at epoch 27. Any report of the final numbers must
+describe this as "27 epochs + a 23-epoch low-LR continuation, ~50 effective
+epochs," never as "a 50-epoch run," and must not assume the two are
+interchangeable.
+
+**Full run launched:** `runs/detect/models/yolo/multicountry_v8s_ext/`, log at
+`runs/logs/train_v8s_continue.log`. `runs/detect/models/yolo/multicountry_v8s/`
+is untouched and preserved as the pre-continuation reference point.

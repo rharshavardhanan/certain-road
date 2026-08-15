@@ -1,0 +1,73 @@
+# Continuation of the D042 multi-country YOLOv8s run from existing weights
+# (D043). This is NOT a resume: both `best.pt` and `last.pt` from
+# multicountry_v8s have `epoch: -1` and stripped optimizer state (ultralytics
+# strips it on normal completion) and no per-epoch checkpoints were kept
+# (save_period: -1), so there is no optimizer state, LR-schedule position, or
+# epoch counter to resume from. Instead this loads `last.pt` as plain
+# pretrained weights and trains it further under a fresh but low-LR schedule.
+#
+# model: last.pt, not best.pt — last.pt is the true end state of the finished
+# optimisation trajectory (best.pt is just whichever epoch had the best
+# fitness, D042's run ended with best == final epoch anyway).
+#
+# lr0: 0.001 / warmup_epochs: 0 — the finished run used ultralytics' default
+# linear decay from lr0=0.01 down to lr0*lrf=0.0001 over its 27 epochs. A
+# fresh run at the default lr0=0.01 would re-warm to full LR and knock the
+# model backwards, destroying most of the 11.6h already invested. Starting
+# instead near where the prior schedule ended (~0.0001) and warming up over 0
+# epochs continues the decay rather than restarting it. lr0=0.001 is
+# deliberately an order of magnitude above the prior run's terminal ~0.0001,
+# not equal to it: an exact match risks a LR too small to make further
+# progress against mAP50-95 that was still rising at the 27th epoch, and 0.001
+# is still far below the original lr0=0.01 that would cause backsliding.
+#
+# optimizer: MuSGD, momentum: 0.9 — the ultralytics default `optimizer: auto`
+# silently DISCARDS whatever `lr0`/`momentum` this file sets and replaces them
+# with its own heuristic (`lr=0.01, momentum=0.9`, logged as "ignoring
+# lr0=... and momentum=..."), which recreates exactly the backsliding this
+# entire config exists to avoid — caught by inspecting the launch log before
+# letting the run continue (D043). MuSGD is also what the finished run's own
+# `optimizer=auto` resolved to (`iterations > 10000` at this train-set size),
+# so pinning it explicitly continues the same optimizer class rather than
+# switching update rules mid-trajectory; only lr0/momentum are lowered.
+#
+# patience: 15 — generous on purpose. The 27-epoch run was cut short by a
+# time-budget-sized epoch count, not converged: best mAP50-95 landed on the
+# final epoch (27/27) with the early-stop counter at 0/9, and mAP50-95 rose
+# monotonically across the last five epochs (0.1979 -> 0.2025 -> 0.2065 ->
+# 0.2090 -> 0.2105). This run's point is to let patience decide the stopping
+# point instead of a clock (see docs/DECISIONS.md D043).
+#
+# epochs: 23 — 27 already completed + 23 more = 50 effective epochs total.
+#
+# close_mosaic: 5 — unchanged from yolov8s.yaml.
+#
+# Everything else (device, imgsz, batch, seed, augmentation) is unchanged
+# from configs/train/yolov8s.yaml.
+
+model: runs/detect/models/yolo/multicountry_v8s/weights/last.pt
+epochs: 23
+patience: 15
+imgsz: 640
+batch: 16
+device: mps
+workers: 8
+seed: 0
+project: models/yolo
+name: multicountry_v8s_ext
+exist_ok: false
+
+lr0: 0.001
+warmup_epochs: 0
+optimizer: MuSGD
+momentum: 0.9
+
+# Augmentation. Defaults are close to right for road imagery; vertical flip is
+# off because road scenes have a fixed up-down orientation.
+fliplr: 0.5
+flipud: 0.0
+degrees: 0.0
+translate: 0.1
+scale: 0.5
+mosaic: 1.0
+close_mosaic: 5

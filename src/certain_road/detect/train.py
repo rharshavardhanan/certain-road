@@ -26,6 +26,23 @@ def load_train_config(path: Path) -> dict:
     return yaml.safe_load(Path(path).read_text())
 
 
+def resolve_model_path(model_name: str) -> str:
+    """Resolve a `model:` config value that is a filesystem checkpoint path.
+
+    Ultralytics resolves a relative model path against the process cwd (via
+    `check_file`), never the repo root — the same class of bug D040 already
+    fixed for `data_yaml`'s `path:`. A bare model name with no path separator
+    (e.g. `yolov8s.pt`) is left untouched so ultralytics can still resolve or
+    download it itself; anything with a path separator (a checkpoint under
+    `runs/`, e.g. for continuing training from existing weights) is resolved
+    against the repo root so training does not depend on the caller's cwd.
+    """
+    path = Path(model_name)
+    if path.is_absolute() or len(path.parts) == 1:
+        return model_name
+    return str(repo_root() / path)
+
+
 def _check_data_yaml_has_no_calib_firewall_breach(data_yaml: Path) -> None:
     data_cfg = yaml.safe_load(Path(data_yaml).read_text())
     found = [key for key in FORBIDDEN_DATA_YAML_KEYS if key in data_cfg]
@@ -82,6 +99,6 @@ def train(config_path: Path, data_yaml: Path, *, smoke: bool = False) -> Path:
 
     with tempfile.TemporaryDirectory() as tmp:
         resolved_yaml = resolve_data_yaml(data_yaml, Path(tmp))
-        model = YOLO(model_name)
+        model = YOLO(resolve_model_path(model_name))
         results = model.train(data=str(resolved_yaml), **cfg)
     return Path(results.save_dir)

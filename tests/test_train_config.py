@@ -5,6 +5,7 @@ from certain_road.detect.train import (
     _check_data_yaml_has_no_calib_firewall_breach,
     load_train_config,
     resolve_data_yaml,
+    resolve_model_path,
 )
 
 CONFIG = repo_root() / "configs" / "train" / "yolov8n.yaml"
@@ -68,6 +69,26 @@ def test_relative_data_yaml_path_is_resolved_against_repo_root(tmp_path, monkeyp
     resolved_cfg = load_train_config(resolved_yaml)
 
     assert resolved_cfg["path"] == str(fake_repo_root / "data" / "processed" / "india")
+
+
+def test_resolve_model_path_leaves_bare_model_name_untouched():
+    """`yolov8s.pt` has no path separator; ultralytics must resolve/download it
+    itself, so it must pass through unchanged."""
+    assert resolve_model_path("yolov8s.pt") == "yolov8s.pt"
+
+
+def test_resolve_model_path_resolves_relative_checkpoint_against_repo_root():
+    """A checkpoint path (e.g. under `runs/`) must resolve against the repo
+    root, not the caller's cwd — ultralytics' own resolution (`check_file`)
+    is cwd-relative, the same class of bug D040 already fixed for the data
+    yaml's `path:`."""
+    relative = "runs/detect/models/yolo/multicountry_v8s/weights/last.pt"
+    assert resolve_model_path(relative) == str(repo_root() / relative)
+
+
+def test_resolve_model_path_leaves_absolute_checkpoint_path_untouched(tmp_path):
+    checkpoint = tmp_path / "weights" / "last.pt"
+    assert resolve_model_path(str(checkpoint)) == str(checkpoint)
 
 
 def test_resolve_data_yaml_raises_clear_error_when_split_missing(tmp_path):
