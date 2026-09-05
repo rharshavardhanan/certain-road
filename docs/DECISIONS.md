@@ -67,6 +67,9 @@ Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](sup
 | D043 | multicountry_v8s continued 23 epochs from existing weights, low-LR, no resume | Accepted |
 | D044 | Detector eval harness: predictions remapped onto our taxonomy, not labels; D00+D10 merge extended to predictions | Accepted |
 | D045 | Detector eval harness metrics: reuse `ultralytics.utils.metrics`, not `torchmetrics`; Task-4 validation diverges 0.029 mAP50 from `model.val()`'s `rect=True` default, cause identified | Accepted |
+| D046 | Timeline fixed to 7 dated weeks (2026-08-17 → 2026-10-05); shift sweep cut; detector freezes 2026-08-30; refines D025 | Refined by D047 |
+| D047 | Jetson + GPS brought into scope as a 3-week partition sequenced last; 4-partition schedule 2026-08-18 → 2026-10-05; sensitivity analysis cut | Refined by D048 |
+| D048 | Jetson arrives 2026-08-18: risky bring-up pulled into a bounded weeks-1–4 parallel track; only `ingest`+`detect` ship to the edge | Accepted |
 
 ---
 
@@ -1110,3 +1113,133 @@ was written to avoid) until the number matched. Whether `predict_to_detections`
 should adopt rect-style preprocessing to raise fidelity to `model.val()` is
 left as an open question for whoever picks up Task 5/6 or a future revision
 of D044 — not resolved unilaterally here.
+
+## D046 — Timeline fixed to 7 dated weeks (2026-08-17 → 2026-10-05); shift sweep cut; detector freezes 2026-08-30
+
+**2026-08-16 · Accepted · Refines D025**
+
+D025 cut the timeline from 16 weeks to 8 but never anchored it to dates. The real
+window is **2026-08-17 to 2026-10-05 — 49 days, exactly 7.0 weeks.** Week 1 of the
+8-week plan is complete, so seven weeks of planned work remain against seven weeks of
+calendar, with **zero buffer** and with the detector work added after D025 (the
+evaluation harness, D044/D045, plus candidate benchmarking) not accounted for at all.
+
+**Three structural facts resolve the shortfall.**
+
+1. **Detector work is GPU-bound, not developer-bound.** Runs 3 and 4 are unattended
+   overnight compute; only ~2.5 days of remaining detector work is attended. Training
+   therefore runs in parallel with pipeline development rather than consuming a week.
+   This is the sole reason the scope fits.
+2. **Blockers 1–3 close on day 1 or not at all.** Deduct curves block `assess` in week
+   1; the PCI→RSL citation blocks `rsl`; the three raters must be booked on 2026-08-17
+   for a week-3 session. The rating session is the one deliverable that more effort
+   cannot compress.
+3. **The detector freezes 2026-08-30, end of week 2.** Changing weights after that
+   invalidates `q̂`, the coverage table and the band-agreement analysis simultaneously.
+   Candidate selection and benchmarking must therefore complete inside weeks 1–2.
+
+**Cut: the synthetic distribution-shift sweep**, and with it Result 4. This is D025's
+own designated first cut and D031 had already narrowed it to 2–3 corruptions. Results
+1 (coverage), 2 (policy impact) and 3 (validation) all survive.
+
+**Contingency ladder, in order:** sensitivity sweep → policy Axis 2 → Decision Replay
+panel → the dashboard map. **Never cut** the validation study (D027) or the coverage
+table — the first is the only evidence the central quantity is meaningful, the second
+is Result 1.
+
+Full dated schedule with per-week done-when conditions and the hard-date table:
+[`superpowers/plans/2026-08-16-seven-week-schedule.md`](superpowers/plans/2026-08-16-seven-week-schedule.md).
+
+D025 is **not** superseded: its scope cuts (India subset, ONNX-instead-of-Jetson,
+normalized CP to future work) all stand. Only its week count and undated framing are
+replaced.
+
+## D047 — Jetson + GPS brought into scope as a 3-week partition sequenced last; 4-partition schedule 2026-08-18 → 2026-10-05
+
+**2026-08-17 · Accepted · Refines D046, reverses D025's hardware reduction**
+
+D025 reduced Jetson deployment to "ONNX export plus latency benchmark" because the
+hardware was never approved, and D046's 7-week schedule contained no hardware work at
+all. The project owner has now asked for edge deployment — Jetson Orin Nano, CSI camera,
+u-blox GPS — planned as real work with roughly three weeks allocated.
+
+**Schedule: four partitions over 48 days (≈7 weeks), 2026-08-18 → 2026-10-05.**
+
+| Partition | Weeks | Dates | Content |
+|---|---|---|---|
+| P1 | 1–2 | Aug 18–31 | Research core: `assess`, conformal, coverage table, detector freeze |
+| P2 | 3–4 | Sep 1–14 | Decision layer + validation: raters, `rsl`, knapsack, policy impact |
+| P3 | 5–7 | Sep 15–Oct 5 | Edge deployment: Jetson, camera, GPS, `ingest`, ONNX/TensorRT, real capture |
+| P4 | 1–7 | Aug 18–Oct 5 | Dashboard + thesis, written continuously rather than terminally |
+
+**The load-bearing decision is the ordering: hardware is sequenced LAST.** All three
+thesis results are complete and frozen by Sep 14, before the Jetson is touched. Hardware
+slip, DOA units, customs delay or non-approval then cost the *deployment chapter* only,
+never the thesis. Sequencing hardware earlier would put a procurement risk on the
+critical path of the degree, which is not an acceptable trade for a demonstration.
+
+**`ingest` becomes real work.** It was unscheduled in D046 because a photo dataset has no
+video to ingest. A camera and GPS track make it a genuine component — video + NMEA fixes
+→ distance-sampled frames → evaluation segments — so it holds a full week inside P3
+rather than being absorbed into hardware bring-up.
+
+**Paid for by:** the sensitivity analysis (D029) is **cut**, joining the already-cut shift
+sweep (D031); the dedicated dashboard week and dedicated write-up week are dissolved into
+the continuous P4. **Not cut:** the validation study (D027) and the coverage table.
+
+**Procurement gate.** Nothing in P3 is achievable without hardware in hand by Sep 15, so
+the order must be placed 2026-08-18 with approval secured at that day's mentor meeting.
+If hardware is not present by **Sep 22**, P3 reverts to D025's original degraded chapter —
+ONNX export, MPS latency benchmark, a simulated GPS track over recorded dashcam video,
+architecture documented rather than demonstrated. That call is made on Sep 22, not in
+October.
+
+Full schedule with per-week done-when conditions and the hard-date table:
+[`superpowers/plans/2026-08-16-seven-week-schedule.md`](superpowers/plans/2026-08-16-seven-week-schedule.md).
+
+## D048 — Jetson arrives 2026-08-18: risky bring-up pulled into a bounded weeks-1–4 parallel track; only `ingest`+`detect` ship to the edge
+
+**2026-08-17 · Accepted · Refines D047**
+
+D047 sequenced hardware last because the dominant risk was **procurement**. The board now
+arrives 2026-08-18, which closes that risk and replaces it with **integration** risk —
+the opposite kind, since integration failures are cheap to find early and unrecoverable
+to find late.
+
+**P3's dates do not move.** Its deliverables genuinely need a frozen detector (Aug 31) and
+a finished pipeline (Sep 14), so the demonstration stays in weeks 5–7. What moves earlier
+is everything that can fail *independently* of the pipeline: flashing, on-device runtime,
+camera driver, GPS/NMEA, and the ONNX→TensorRT export path — pulled into a **bounded
+parallel track across weeks 1–4, timeboxed to one half-day per week plus unattended
+downloads, which never displaces P1 or P2.** A task exceeding its box is parked and
+carried into P3. The failure mode being guarded against is hardware stealing focus from
+the coverage table.
+
+**The export path is proven in week 2 against the *current* `multicountry_v8s` weights**,
+so that the Aug 31 freeze is followed by re-running a known-good path rather than
+debugging one under deadline. A **pilot capture drive in week 3** then yields the real
+video and GPS track that `ingest` is built against in weeks 3–4, surfacing mounting,
+vibration, exposure and time-sync problems while there is still time to fix them.
+
+**Three day-1 verifications can invalidate P3 and are therefore done first:** board
+identity (a legacy 2019 Jetson Nano is EOL at JetPack 4.6 / Python 3.6 / 4 GB and cannot
+carry this stack, unlike the assumed Orin Nano); camera driver enumeration (JetPack
+officially supports IMX219/IMX477 — the Pi Camera Module 3's IMX708 is **not** officially
+supported, so an unsupported sensor must be swapped in week 1, not September); and the
+fact that **TensorRT engines are device- and version-specific and must be built on the
+Jetson**, never exported from the Mac.
+
+**Deployment surface, and why the architecture already permits it.** JetPack ships Python
+3.10 (JetPack 6 / Ubuntu 22.04), not the 3.12 this project pins, so `uv sync` of the whole
+project on-device is explicitly *not* the deployment path. It is unnecessary: stage
+isolation (D003) means the edge device need only emit the two artifacts the rest of the
+pipeline consumes, so **only `ingest` and `detect` run on the Jetson** — against a
+TensorRT engine and a Parquet writer, a dependency surface small enough to tolerate Python
+3.10 without touching the pin. `assess` onward stay on the Mac, reading the two copied
+Parquet files. This is the stage-isolation contract paying for itself rather than a
+workaround.
+
+**The fallback becomes an integration gate, decided by Sep 7** (legacy board, no camera
+driver obtainable within a week, or runtime not working), reverting to D025's degraded
+chapter. Deciding on Sep 7 rather than Sep 22 is possible precisely because the parallel
+track has already answered the question by then.

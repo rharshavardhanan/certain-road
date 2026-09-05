@@ -68,7 +68,7 @@ Camera / recorded video
 Why that matters practically: `assess`, `calibrate`, `optimize` and `report` are all
 buildable and testable against **synthetic fixtures**, with no trained model, no GPU, no
 camera and no Jetson. Hardware procurement and 12-hour training runs never block
-development. This single architectural choice is what makes an 8-week timeline possible.
+development. This single architectural choice is what makes a 7-week timeline possible.
 
 ---
 
@@ -472,21 +472,25 @@ of the task; reporting the first number without the second understates the resul
 
 ## 8. Timeline and where we are
 
-8 weeks total (cut from 16 — D025).
+**≈7 weeks in four partitions: 2026-08-18 → 2026-10-05** — 48 days (D047, bringing Jetson
+and GPS into scope; refines D046, which refined D025). Full schedule:
+[`superpowers/plans/2026-08-16-seven-week-schedule.md`](superpowers/plans/2026-08-16-seven-week-schedule.md).
 
-| Week | Work | Status |
-|---|---|---|
-| 1 | Skeleton, artifact contract, dataset, split, training launched | ✅ **done** |
-| 2 | `assess` — ROI, vision density, apparent severity, deduct curves, CDV | 📋 planned |
-| 3 | Evaluation segments, split conformal, **coverage table** | ← result 1 |
-| 4 | Manual rating collection + band-agreement analysis | ← result 3 |
-| 5 | `rsl`, DP knapsack, **policy impact on both axes** | ← core figure |
-| 6 | Synthetic shift sweep + sensitivity analysis | ← results 2, 4 |
-| 7 | Dashboard: synthetic network, Decision Replay | |
-| 8 | ONNX export, latency benchmark, thesis, buffer | |
+| # | Weeks | Dates | Partition | Status |
+|---|---|---|---|---|
+| P0 | — | — | Skeleton, artifact contract, dataset, split, training, eval harness | ✅ **done** |
+| **P1** | 1–2 | Aug 18–31 | Research core: `assess`, conformal, **coverage table**, ⛔ detector freeze | ← result 1 |
+| **P2** | 3–4 | Sep 1–14 | Decision layer + validation: raters, `rsl`, DP knapsack, **policy impact** | ← results 2, 3 |
+| **P3** | 5–7 | Sep 15–Oct 5 | Edge deployment: Jetson, camera, GPS, `ingest`, ONNX/TensorRT, real capture | |
+| **P4** | 1–7 | Aug 18–Oct 5 | Dashboard + thesis, written continuously · **submit Oct 5** | |
 
-**Cut order if slipping:** shift sweep → sensitivity sweep → policy Axis 2. **Never cut the
-validation study** — it is the only evidence the central quantity is meaningful.
+**Hardware is sequenced last on purpose:** all three results are frozen by Sep 14, so a
+procurement slip costs the deployment chapter rather than the thesis. If hardware is not
+in hand by **Sep 22**, P3 reverts to D025's degraded chapter (ONNX export, MPS latency,
+simulated GPS track).
+
+**Cut to fit:** the synthetic shift sweep (result 4) and the sensitivity analysis. **Never
+cut the validation study** — it is the only evidence the central quantity is meaningful.
 
 ### Week 1, delivered
 
