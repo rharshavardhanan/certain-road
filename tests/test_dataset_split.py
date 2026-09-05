@@ -3,8 +3,8 @@ from pathlib import Path
 
 import yaml
 
-from certain_road.detect.dataset.convert import ID_TO_CLASS
-from certain_road.detect.dataset.split import (
+from certain_road.perception.dataset.convert import ID_TO_CLASS
+from certain_road.perception.dataset.split import (
     SPLIT_BOUNDS,
     assign_split,
     build_multicountry_splits,

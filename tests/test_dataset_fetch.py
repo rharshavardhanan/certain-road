@@ -4,8 +4,8 @@ import zipfile
 
 import pytest
 
-from certain_road.detect.dataset import fetch
-from certain_road.detect.dataset.fetch import extract_country, sha256_of
+from certain_road.perception.dataset import fetch
+from certain_road.perception.dataset.fetch import extract_country, sha256_of
 
 
 def test_sha256_matches_hashlib(tmp_path):

@@ -4,7 +4,7 @@ from certain_road.cli import app
 
 runner = CliRunner()
 
-STAGES = ["ingest", "detect", "assess", "calibrate", "rsl", "optimize", "report"]
+STAGES = ["perception", "driving", "survey", "dashboard", "sim"]
 
 
 def test_help_lists_every_stage():

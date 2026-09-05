@@ -13,7 +13,7 @@ from datetime import UTC, datetime, timedelta
 import numpy as np
 import pandas as pd
 
-from certain_road.detect.dataset.convert import ID_TO_CLASS
+from certain_road.perception.dataset.convert import ID_TO_CLASS
 
 CLASS_NAMES = [ID_TO_CLASS[i] for i in sorted(ID_TO_CLASS)]
 IMG_W, IMG_H = 600, 600

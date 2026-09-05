@@ -22,7 +22,7 @@ import yaml
 
 from certain_road.artifacts.schema import DetectionRow
 from certain_road.core.paths import repo_root
-from certain_road.detect.dataset.convert import ID_TO_CLASS
+from certain_road.perception.dataset.convert import ID_TO_CLASS
 
 CLASS_MAPS_PATH = repo_root() / "configs" / "eval" / "class_maps.yaml"
 THRESHOLDS_PATH = repo_root() / "configs" / "eval" / "thresholds.yaml"

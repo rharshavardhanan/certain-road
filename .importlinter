@@ -1,29 +1,64 @@
 [importlinter]
 root_package = certain_road
 
-[importlinter:contract:stages-are-independent]
-name = Stages must never import each other
+[importlinter:contract:pipelines-are-independent]
+name = Drive and survey pipelines must never import each other
 type = independence
 modules =
-    certain_road.ingest
-    certain_road.detect
-    certain_road.assess
-    certain_road.calibrate
-    certain_road.rsl
-    certain_road.optimize
-    certain_road.report
+    certain_road.driving
+    certain_road.survey
+
+[importlinter:contract:steering-loop-is-clean]
+name = driving and canbus must not import survey or dashboard
+type = forbidden
+source_modules =
+    certain_road.driving
+    certain_road.canbus
+forbidden_modules =
+    certain_road.survey
+    certain_road.dashboard
+
+[importlinter:contract:survey-does-not-drive]
+name = survey and dashboard must not import driving or canbus
+type = forbidden
+source_modules =
+    certain_road.survey
+    certain_road.dashboard
+forbidden_modules =
+    certain_road.driving
+    certain_road.canbus
+
+[importlinter:contract:perception-is-a-leaf]
+name = perception must not import the pipelines that consume it
+type = forbidden
+source_modules =
+    certain_road.perception
+forbidden_modules =
+    certain_road.driving
+    certain_road.canbus
+    certain_road.survey
+    certain_road.dashboard
+    certain_road.sim
+
+[importlinter:contract:sim-does-not-survey]
+name = sim is a composition root for driving only
+type = forbidden
+source_modules =
+    certain_road.sim
+forbidden_modules =
+    certain_road.survey
+    certain_road.dashboard
 
 [importlinter:contract:contract-layer-is-a-leaf]
-name = artifacts and core must not import stages
+name = artifacts and core must not import feature packages
 type = forbidden
 source_modules =
     certain_road.artifacts
     certain_road.core
 forbidden_modules =
-    certain_road.ingest
-    certain_road.detect
-    certain_road.assess
-    certain_road.calibrate
-    certain_road.rsl
-    certain_road.optimize
-    certain_road.report
+    certain_road.perception
+    certain_road.driving
+    certain_road.canbus
+    certain_road.survey
+    certain_road.dashboard
+    certain_road.sim

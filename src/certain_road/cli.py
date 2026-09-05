@@ -16,13 +16,11 @@ app = typer.Typer(
 )
 
 STAGE_HELP = {
-    "ingest": "Video/camera + track -> frames.parquet",
-    "detect": "YOLOv8n training and inference",
-    "assess": "Detections -> vision-estimated PCI per segment",
-    "calibrate": "Fit or apply conformal intervals on segment vision-estimated PCI",
-    "rsl": "Vision-estimated PCI interval -> remaining service life interval",
-    "optimize": "Budget-constrained repair selection",
-    "report": "Self-contained offline HTML report",
+    "perception": "Road-damage detection: train, predict, evaluate",
+    "driving": "Drive pipeline: is the hazard in my path, and what do I do?",
+    "survey": "Survey pipeline: detections -> segments -> vision-estimated PCI",
+    "dashboard": "The product screen",
+    "sim": "Simulator: repeatable scenario trials",
 }
 
 # Keep references so later tasks attach commands to the right stage rather than
@@ -43,7 +41,7 @@ app.add_typer(dataset_app, name="dataset")
 def dataset_fetch(country: str = "India") -> None:
     """Download RDD2022 and extract one country."""
     from certain_road.core.paths import raw_dir
-    from certain_road.detect.dataset.fetch import download_rdd2022, extract_country, sha256_of
+    from certain_road.perception.dataset.fetch import download_rdd2022, extract_country, sha256_of
 
     zip_path = download_rdd2022(raw_dir())
     checksum = sha256_of(zip_path)
@@ -65,8 +63,8 @@ def dataset_fetch(country: str = "India") -> None:
 def dataset_census(country: str = "India") -> None:
     """Count every class string in the annotations before converting anything."""
     from certain_road.core.paths import raw_dir
-    from certain_road.detect.dataset.convert import SOURCE_TO_ID
-    from certain_road.detect.dataset.voc import class_census
+    from certain_road.perception.dataset.convert import SOURCE_TO_ID
+    from certain_road.perception.dataset.voc import class_census
 
     xml_dir = raw_dir() / "RDD2022" / country / "train" / "annotations" / "xmls"
     counts = class_census(xml_dir)
@@ -84,7 +82,7 @@ def dataset_census(country: str = "India") -> None:
 def dataset_convert(country: str = "India") -> None:
     """Convert VOC XML annotations to YOLO label files."""
     from certain_road.core.paths import processed_dir, raw_dir
-    from certain_road.detect.dataset.convert import convert_directory
+    from certain_road.perception.dataset.convert import convert_directory
 
     xml_dir = raw_dir() / "RDD2022" / country / "train" / "annotations" / "xmls"
     label_dir = processed_dir() / country.lower() / "labels_all"
@@ -128,7 +126,7 @@ def dataset_split(
     portions would never be used (D041).
     """
     from certain_road.core.paths import processed_dir, raw_dir, repo_root
-    from certain_road.detect.dataset.split import (
+    from certain_road.perception.dataset.split import (
         build_multicountry_splits,
         build_splits,
         materialise,
@@ -202,7 +200,7 @@ def dataset_split(
     print("calib and test are deliberately absent from the yaml: ultralytics must never see them")
 
 
-@STAGE_APPS["detect"].command("predict")
+@STAGE_APPS["perception"].command("predict")
 def detect_predict(
     weights: Path = typer.Option(..., "--weights", help="YOLO weights (.pt) to run inference with"),
     images: Path = typer.Option(..., "--images", help="Directory of images to run inference over"),
@@ -237,7 +235,11 @@ def detect_predict(
 
     from certain_road.artifacts.io import write_artifact
     from certain_road.artifacts.schema import DetectionRow
-    from certain_road.detect.predict import load_class_map, load_thresholds, predict_to_detections
+    from certain_road.perception.predict import (
+        load_class_map,
+        load_thresholds,
+        predict_to_detections,
+    )
 
     if device == "mps" and not torch.backends.mps.is_available():
         raise RuntimeError("device=mps requested but MPS is unavailable")
@@ -259,7 +261,7 @@ def detect_predict(
     print(f"{len(df)} detections over {n_frames_with_detections} frames with detections -> {out}")
 
 
-@STAGE_APPS["detect"].command("eval")
+@STAGE_APPS["perception"].command("eval")
 def detect_eval(
     weights: Path = typer.Option(..., "--weights", help="YOLO weights (.pt) to evaluate"),
     split: str = typer.Option("test", "--split", help="Dataset split to evaluate on"),
@@ -281,21 +283,25 @@ def detect_eval(
     One inference pass at `map_conf_floor` (configs/eval/thresholds.yaml)
     feeds both the mAP computation and every row of the operating-point
     sweep -- the sweep filters that single prediction set by score rather
-    than re-running inference per threshold. See `certain_road.detect.
+    than re-running inference per threshold. See `certain_road.perception.
     evaluate` for the metric-implementation rationale (D045).
     """
     import torch
 
     from certain_road.core.paths import processed_dir
-    from certain_road.detect.dataset.convert import ID_TO_CLASS
-    from certain_road.detect.evaluate import (
+    from certain_road.perception.dataset.convert import ID_TO_CLASS
+    from certain_road.perception.evaluate import (
         compute_map,
         compute_operating_metrics,
         load_ground_truth,
         measure_latency,
         render_report,
     )
-    from certain_road.detect.predict import load_class_map, load_thresholds, predict_to_detections
+    from certain_road.perception.predict import (
+        load_class_map,
+        load_thresholds,
+        predict_to_detections,
+    )
 
     if device == "mps" and not torch.backends.mps.is_available():
         raise RuntimeError("device=mps requested but MPS is unavailable")
@@ -350,7 +356,7 @@ def detect_eval(
         print(f"\nwrote {out}")
 
 
-@STAGE_APPS["detect"].command("train")
+@STAGE_APPS["perception"].command("train")
 def detect_train(
     smoke: bool = False,
     country: str = "India",
@@ -364,7 +370,7 @@ def detect_train(
     dataset.
     """
     from certain_road.core.paths import repo_root
-    from certain_road.detect.train import train
+    from certain_road.perception.train import train
 
     config_path = config if config.is_absolute() else repo_root() / config
     save_dir = train(

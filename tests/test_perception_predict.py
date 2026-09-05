@@ -14,7 +14,7 @@ from PIL import Image
 
 from certain_road.artifacts.io import write_artifact
 from certain_road.artifacts.schema import DetectionRow
-from certain_road.detect.predict import load_class_map, load_thresholds, predict_to_detections
+from certain_road.perception.predict import load_class_map, load_thresholds, predict_to_detections
 
 RAW_COLUMNS = ["frame_id", "det_id", "class_id", "score", "x1", "y1", "x2", "y2", "img_w", "img_h"]
 
@@ -62,7 +62,7 @@ def test_predict_to_detections_conforms_to_detection_row_and_remaps(tmp_path, mo
             columns=RAW_COLUMNS,
         )
 
-    monkeypatch.setattr("certain_road.detect.predict._raw_predictions", fake_raw)
+    monkeypatch.setattr("certain_road.perception.predict._raw_predictions", fake_raw)
 
     out = predict_to_detections(
         tmp_path / "weights.pt",
@@ -114,7 +114,7 @@ def test_image_with_zero_detections_produces_no_rows_but_does_not_drop_others(
             columns=RAW_COLUMNS,
         )
 
-    monkeypatch.setattr("certain_road.detect.predict._raw_predictions", fake_raw)
+    monkeypatch.setattr("certain_road.perception.predict._raw_predictions", fake_raw)
 
     out = predict_to_detections(
         tmp_path / "weights.pt",
@@ -140,7 +140,7 @@ def test_empty_prediction_set_is_a_well_formed_empty_frame(tmp_path, monkeypatch
     def fake_raw(weights, image_dir, *, conf, device, imgsz):
         return pd.DataFrame(columns=RAW_COLUMNS)
 
-    monkeypatch.setattr("certain_road.detect.predict._raw_predictions", fake_raw)
+    monkeypatch.setattr("certain_road.perception.predict._raw_predictions", fake_raw)
 
     out = predict_to_detections(
         tmp_path / "weights.pt",
@@ -181,7 +181,7 @@ def test_predict_to_detections_rejects_unmapped_class_id(tmp_path, monkeypatch):
             columns=RAW_COLUMNS,
         )
 
-    monkeypatch.setattr("certain_road.detect.predict._raw_predictions", fake_raw)
+    monkeypatch.setattr("certain_road.perception.predict._raw_predictions", fake_raw)
 
     with pytest.raises(ValueError, match="9"):
         predict_to_detections(

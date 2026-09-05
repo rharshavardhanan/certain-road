@@ -2,7 +2,7 @@ import pandas as pd
 
 from certain_road.artifacts.io import read_artifact, write_artifact
 from certain_road.artifacts.schema import DetectionRow, FrameRow
-from certain_road.detect.dataset.convert import ID_TO_CLASS
+from certain_road.perception.dataset.convert import ID_TO_CLASS
 from tests.fixtures.synthetic import CLASS_NAMES, synthetic_detections, synthetic_frames
 
 CLASSES = set(ID_TO_CLASS.values())

@@ -32,8 +32,8 @@ import torch
 from PIL import Image
 from ultralytics.utils.metrics import ap_per_class, box_iou
 
-from certain_road.detect.dataset.convert import ID_TO_CLASS
-from certain_road.detect.predict import load_thresholds
+from certain_road.perception.dataset.convert import ID_TO_CLASS
+from certain_road.perception.predict import load_thresholds
 
 CLASS_NAME_TO_ID = {name: class_id for class_id, name in ID_TO_CLASS.items()}
 

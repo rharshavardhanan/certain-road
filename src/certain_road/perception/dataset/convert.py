@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 from collections import Counter
 from pathlib import Path
 
-from certain_road.detect.dataset.voc import VocAnnotation, parse_voc
+from certain_road.perception.dataset.voc import VocAnnotation, parse_voc
 
 # RDD2022 source annotation label -> our class id.
 # D00 (longitudinal) and D10 (transverse) collapse to one id: ASTM D6433 treats

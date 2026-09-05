@@ -1,4 +1,4 @@
-"""Tests for `certain_road.detect.evaluate`.
+"""Tests for `certain_road.perception.evaluate`.
 
 Every metric-computation function here is exercised with small, fully
 hand-computed synthetic frames -- never a trained model -- per the plan's
@@ -14,7 +14,11 @@ import pandas as pd
 import pytest
 from PIL import Image
 
-from certain_road.detect.evaluate import compute_map, compute_operating_metrics, load_ground_truth
+from certain_road.perception.evaluate import (
+    compute_map,
+    compute_operating_metrics,
+    load_ground_truth,
+)
 
 PRED_COLUMNS = [
     "frame_id",

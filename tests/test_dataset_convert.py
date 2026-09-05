@@ -1,7 +1,7 @@
 import pytest
 
-from certain_road.detect.dataset.convert import SOURCE_TO_ID, convert_directory, to_yolo_lines
-from certain_road.detect.dataset.voc import class_census, parse_voc
+from certain_road.perception.dataset.convert import SOURCE_TO_ID, convert_directory, to_yolo_lines
+from certain_road.perception.dataset.voc import class_census, parse_voc
 
 XML_TEMPLATE = """<annotation>
   <size><width>{w}</width><height>{h}</height><depth>3</depth></size>

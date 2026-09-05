@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from certain_road.detect.predict import load_class_map, remap_class_ids
+from certain_road.perception.predict import load_class_map, remap_class_ids
 
 
 def test_rdd2022_map_merges_d00_and_d10():

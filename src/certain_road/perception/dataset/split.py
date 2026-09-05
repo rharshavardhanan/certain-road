@@ -14,7 +14,7 @@ from pathlib import Path
 
 import yaml
 
-from certain_road.detect.dataset.convert import ID_TO_CLASS
+from certain_road.perception.dataset.convert import ID_TO_CLASS
 
 SALT = "certain-road-v1"
 
@@ -189,7 +189,7 @@ def write_data_yaml(out_path: Path, data_root: Path, repo_root: Path) -> None:
     A relative `path` keeps the file usable on any machine. It is *not*
     resolved against the process working directory by ultralytics — it
     resolves against ultralytics' own `datasets_dir` setting instead
-    (D040) — so `certain_road.detect.train` resolves it against
+    (D040) — so `certain_road.perception.train` resolves it against
     `repo_root()` itself before handing anything to `YOLO().train()`.
     `calib` and `test` are deliberately absent: ultralytics must never see
     them (D009).

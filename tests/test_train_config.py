@@ -1,7 +1,7 @@
 import pytest
 
 from certain_road.core.paths import repo_root
-from certain_road.detect.train import (
+from certain_road.perception.train import (
     _check_data_yaml_has_no_calib_firewall_breach,
     load_train_config,
     resolve_data_yaml,
@@ -56,7 +56,7 @@ def test_relative_data_yaml_path_is_resolved_against_repo_root(tmp_path, monkeyp
     fake_repo_root = tmp_path / "fake_repo"
     (fake_repo_root / "data" / "processed" / "india" / "images" / "train").mkdir(parents=True)
     (fake_repo_root / "data" / "processed" / "india" / "images" / "val").mkdir(parents=True)
-    monkeypatch.setattr("certain_road.detect.train.repo_root", lambda: fake_repo_root)
+    monkeypatch.setattr("certain_road.perception.train.repo_root", lambda: fake_repo_root)
 
     config_dir = tmp_path / "config"
     config_dir.mkdir()
