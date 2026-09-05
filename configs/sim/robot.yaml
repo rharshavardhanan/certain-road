@@ -1,0 +1,23 @@
+# Simulated robot and camera geometry.
+#
+# These describe the SIMULATED vehicle, not the lab robot — its real wheelbase
+# and steering limits are unknown until the chassis is identified (open blocker,
+# sprint plan §10). Replace these once it is.
+#
+# The camera block drives sim/project.py, an idealised pinhole projection with
+# no lens distortion. It exists so the REAL driving/corridor.py runs against
+# simulated geometry; it is never a substitute for camera calibration.
+
+robot:
+  wheelbase_m: 0.25          # front-to-rear axle
+  length_m: 0.35
+  width_m: 0.22
+  max_speed_mps: 0.6         # deliberately slow: indoor test track
+  max_steer_rad: 0.52        # ~30 degrees
+
+camera:
+  height_m: 0.18             # lens height above ground
+  pitch_rad: 0.26            # ~15 degrees downward tilt
+  hfov_rad: 1.20             # ~69 degrees horizontal
+  img_w: 640
+  img_h: 640

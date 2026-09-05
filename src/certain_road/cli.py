@@ -387,3 +387,34 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+@STAGE_APPS["sim"].command("run")
+def sim_run(scenario: str = "centre", out: str = "runs/sim") -> None:
+    """Run a simulated scenario and render it. No hardware required."""
+    from pathlib import Path as _Path
+
+    from certain_road.core.paths import repo_root
+    from certain_road.driving.corridor import load_corridor
+    from certain_road.sim.model import load_robot
+    from certain_road.sim.run import run_scenario
+    from certain_road.sim.scenario import SCENARIOS
+    from certain_road.sim.view import render
+
+    if scenario not in SCENARIOS:
+        raise SystemExit(f"unknown scenario {scenario!r}; have {sorted(SCENARIOS)}")
+
+    robot = load_robot(repo_root() / "configs" / "sim" / "robot.yaml")
+    corridor = load_corridor(repo_root() / "configs" / "driving" / "corridor.yaml")
+    sc = SCENARIOS[scenario]
+
+    trace = run_scenario(sc, robot, corridor)
+    path = render(sc, trace, robot, corridor, _Path(out) / f"{scenario}.png")
+
+    frames_in_path = sum(trace.in_path)
+    print(f"scenario   : {sc.name}")
+    print(f"frames     : {len(trace.states)}")
+    print(f"in path    : {frames_in_path}/{len(trace.states)}")
+    print(f"urgency    : {sorted(set(trace.urgency))}")
+    print(f"final pose : x={trace.states[-1].x:.2f} y={trace.states[-1].y:.2f}")
+    print(f"rendered   : {path}")
