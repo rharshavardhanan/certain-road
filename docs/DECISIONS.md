@@ -70,6 +70,7 @@ Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](sup
 | D046 | Timeline fixed to 7 dated weeks (2026-08-17 → 2026-10-05); shift sweep cut; detector freezes 2026-08-30; refines D025 | Refined by D047 |
 | D047 | Jetson + GPS brought into scope as a 3-week partition sequenced last; 4-partition schedule 2026-08-18 → 2026-10-05; sensitivity analysis cut | Refined by D048 |
 | D048 | Jetson arrives 2026-08-18: risky bring-up pulled into a bounded weeks-1–4 parallel track; only `ingest`+`detect` ship to the edge | Accepted |
+| D049 | Project pivots to an autonomous road-inspection robot; perception feeds two independent pipelines; control transport is abstract | Accepted |
 
 ---
 
@@ -1243,3 +1244,51 @@ workaround.
 driver obtainable within a week, or runtime not working), reverting to D025's degraded
 chapter. Deciding on Sep 7 rather than Sep 22 is possible precisely because the parallel
 track has already answered the question by then.
+
+## D049 — Project pivots to an autonomous road-inspection robot; perception feeds two independent pipelines; control transport is abstract
+
+**2026-09-05 · Accepted · Refines D001, supersedes the passive-survey framing**
+
+The deliverable changes from a passive camera survey to a **mobile robot that acts on what
+it sees**: it detects a pothole, decides whether the pothole lies in its own driving path,
+avoids it through commanded steering, and *simultaneously* records road-damage data for the
+existing condition-assessment pipeline. Demo date **2026-09-20**; the 2026-10-05 date from
+D046 survives for the survey and thesis work, so nothing is cut — only resequenced.
+
+**The architectural rule.** One detector feeds **two pipelines that never touch**:
+
+- **Drive** — "what should the robot do right now?" — corridor test, state machine, motor command.
+- **Survey** — "what do we know about this road, and how certain are we?" — segment, vision-estimated PCI, conformal interval, human review.
+
+**Conformal prediction is never in the steering loop.** Real-time avoidance needs immediate
+perception; CP applies to the slower condition estimate. `import-linter` enforces it:
+`driving/` and `canbus/` may not import `survey/`, and `survey/` may not import `driving/`.
+If CP ever creeps into the steering path, CI fails.
+
+**The control transport is abstract, and this is what saves the schedule.** No CAN hardware
+exists — the Orin Nano has CAN controllers on its 40-pin header but no transceiver, and the
+robot side needs an MCU to translate CAN to PWM. Both are procurement items on the critical
+path of a 15-day sprint. So `decision.py` emits a `Command` to a `Transport` interface with
+three implementations: `SerialTransport` (works day 1, no new hardware), `CanTransport`
+(when parts arrive), `NullTransport` (bench tests). **CAN becomes a one-module swap rather
+than a rewrite**, and the robot moves on day 2 regardless of shipping.
+
+**Repository restructure.** `detect/` → `perception/` (all 1,138 lines reused unchanged);
+the five empty stage stubs become `survey/` modules; `driving/` and `canbus/` are new.
+Named `canbus/` and not `can/` because `python-can` owns the top-level `can` module.
+Nothing is deleted — superseded plans move to `plans/archive/`, matching the decision log's
+append-never-delete rule.
+
+**Where work runs, restated because ignoring it causes most integration pain.** All
+training, dataset work, PCI, conformal and dashboard development happen on the MacBook;
+the Jetson does camera, live inference, control and recording. **TensorRT engines are
+device-specific and must be built on the Jetson** (D048). Every `driving/` module is pure
+logic over a `Detection` list, so it is developed and unit-tested on the MacBook against
+synthetic detections — the Jetson is needed only to run it.
+
+**Priority order, not to be reversed:** control link → camera → YOLO on device →
+pothole-in-path → avoidance → safety STOP → survey recording → PCI → conformal → dashboard
+→ measurement. A dashboard on a robot that cannot move is a failed robotics product.
+
+Full day-by-day plan, per-task done-when conditions, the MacBook/Jetson split table and the
+risk register: [`superpowers/plans/2026-09-05-robot-sprint.md`](superpowers/plans/2026-09-05-robot-sprint.md).
