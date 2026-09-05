@@ -18,9 +18,10 @@ from certain_road.driving.confirm import Confirmer
 from certain_road.driving.controller import command_for
 from certain_road.driving.corridor import (
     Corridor,
+    Zone,
     in_path,
     lateral_offset,
-    shifted,
+    lateral_zone,
     urgency,
 )
 from certain_road.driving.decision import DriveState, Hazard, Perception, Policy, next_state
@@ -29,9 +30,9 @@ from certain_road.sim.project import project_pothole
 from certain_road.sim.scenario import Scenario, Trace
 
 
-def _escape_offset() -> float:
+def _escape_lanes() -> float:
     raw = yaml.safe_load((repo_root() / "configs" / "driving" / "corridor.yaml").read_text())
-    return float(raw["escape_offset"])
+    return float(raw["escape_lanes"])
 
 
 def run_scenario(
@@ -43,9 +44,7 @@ def run_scenario(
     frames: int | None = None,
 ) -> Trace:
     """Drive the scenario under closed-loop control."""
-    offset = _escape_offset()
-    left_corridor = shifted(corridor, -offset)
-    right_corridor = shifted(corridor, +offset)
+    escape_lanes = _escape_lanes()
 
     trace = Trace()
     state = scenario.start
@@ -74,14 +73,22 @@ def run_scenario(
                 score=nearest.score,
             )
 
+        # Escape clearance by zone, not by a shifted corridor: zones are adjacent
+        # and disjoint, so a hazard on the driving line can never read as blocking
+        # both escapes (see corridor.lateral_zone).
+        #
+        # The governing hazard is excluded. Once the robot starts swerving, that
+        # hazard drifts out of PATH and into the escape zone on the side being
+        # steered away from — counting it would make the robot block its own
+        # manoeuvre and stop mid-avoidance. The question is whether something
+        # ELSE occupies the escape lane.
+        others = [d for d in dets if d is not nearest]
+        zones = [lateral_zone(d, corridor, escape_lanes=escape_lanes) for d in others]
+
         perception = Perception(
             hazard=hazard,
-            left_blocked=any(
-                in_path(d, left_corridor, min_overlap=left_corridor.min_overlap) for d in dets
-            ),
-            right_blocked=any(
-                in_path(d, right_corridor, min_overlap=right_corridor.min_overlap) for d in dets
-            ),
+            left_blocked=Zone.LEFT in zones,
+            right_blocked=Zone.RIGHT in zones,
             frame_age=0,
             healthy=True,
         )

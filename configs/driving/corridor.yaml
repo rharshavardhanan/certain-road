@@ -34,7 +34,17 @@ min_overlap: 0.30
 near_proximity: 0.55
 imminent_proximity: 0.75
 
-# How far to each side the escape corridors sit, as a fraction of image width.
-# "Is there room to go around?" is the same in-path test asked of the lane
-# beside us, so it uses the same geometry shifted sideways.
-escape_offset: 0.30
+# Width of each escape lane, in corridor half-widths, measured along the same
+# normalised lateral axis the corridor itself uses.
+#
+# NOT an offset for a shifted corridor. That was tried and is structurally
+# broken: shifted trapezoids overlap the driving lane near the frame bottom, so a
+# hazard on the driving line reads as blocking both escapes. Zones measured on
+# one axis are adjacent and disjoint by construction.
+escape_lanes: 5.0
+#
+# Sized from the manoeuvre, not fitted to the tests. At the decision distance
+# (~0.93 m, the corridor's look-ahead limit) the corridor half-width is ~0.10 m
+# of real ground, and a swerve moves the robot ~0.4 m laterally - about 3.9
+# half-widths. 5.0 covers ~0.51 m, giving margin. Re-derive this once the real
+# camera height and pitch are known, since both feed that 0.10 m.

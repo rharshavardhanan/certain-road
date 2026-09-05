@@ -249,21 +249,56 @@ def lateral_offset(det: Detection, corridor: Corridor) -> float:
     return _clamp((box_cx - corridor_cx) / half_width_px, -1.0, 1.0)
 
 
-def shifted(corridor: Corridor, dx: float) -> Corridor:
-    """The same corridor translated sideways by `dx` (fraction of image width).
+class Zone(StrEnum):
+    """Where a detection sits relative to the driving line."""
 
-    Used to build the left and right *escape* corridors: the question "is there
-    room to go around?" is the same in-path test, asked of the lane beside us.
-    Reusing the geometry means an escape route is judged by exactly the same
-    rule as the driving line, not a second approximation of it.
-    """
-    return Corridor(
-        center_x=corridor.center_x + dx,
-        top_y=corridor.top_y,
-        top_half_width=corridor.top_half_width,
-        bottom_y=corridor.bottom_y,
-        bottom_half_width=corridor.bottom_half_width,
-        min_overlap=corridor.min_overlap,
-        near_proximity=corridor.near_proximity,
-        imminent_proximity=corridor.imminent_proximity,
+    PATH = "path"  # on the driving line
+    LEFT = "left"  # in the left escape lane
+    RIGHT = "right"  # in the right escape lane
+    OUTSIDE = "outside"  # too far aside to constrain the manoeuvre
+
+
+def _normalised_offset(det: Detection, corridor: Corridor) -> float:
+    """Signed offset in corridor half-widths at the box's depth. NOT clamped."""
+    box_cx = (det.x1 + det.x2) / 2.0
+    corridor_cx = corridor.center_x * det.img_w
+    depth = _clamp(
+        (det.y2 / det.img_h - corridor.top_y) / (corridor.bottom_y - corridor.top_y),
+        0.0,
+        1.0,
     )
+    half_width_frac = corridor.top_half_width + depth * (
+        corridor.bottom_half_width - corridor.top_half_width
+    )
+    half_width_px = half_width_frac * det.img_w
+    if half_width_px <= 0:
+        return 0.0
+    return (box_cx - corridor_cx) / half_width_px
+
+
+def lateral_zone(det: Detection, corridor: Corridor, *, escape_lanes: float) -> Zone:
+    """Classify `det` into the driving lane, an escape lane, or outside.
+
+    **Why zones rather than shifted corridors.** The obvious implementation is to
+    translate the corridor sideways and re-run `in_path` on it. That is wrong here
+    and was tried: with a bottom half-width of 0.3 and any offset small enough to
+    stay inside the frame, the shifted trapezoids *overlap* the driving lane near
+    the frame bottom. A hazard on the driving line then registers as blocking both
+    escapes once it is near, and the machine stops instead of going around.
+    Disjoint escapes would need an offset that puts their centres outside the
+    frame, so the overlap is structural rather than a tuning error.
+
+    Zones are measured along the same normalised axis `lateral_offset` uses, so
+    they are **adjacent and disjoint by construction** — a detection is in exactly
+    one of them, and no amount of tuning can make it be in two.
+
+    `escape_lanes` is the escape lane's width in corridor half-widths.
+    """
+    k = _normalised_offset(det, corridor)
+    if abs(k) <= 1.0:
+        return Zone.PATH
+    if 1.0 < k <= 1.0 + escape_lanes:
+        return Zone.RIGHT
+    if -(1.0 + escape_lanes) <= k < -1.0:
+        return Zone.LEFT
+    return Zone.OUTSIDE

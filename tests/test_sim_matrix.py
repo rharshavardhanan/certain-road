@@ -18,16 +18,6 @@ ROBOT = load_robot(repo_root() / "configs" / "sim" / "robot.yaml")
 CORRIDOR = load_corridor(repo_root() / "configs" / "driving" / "corridor.yaml")
 POLICY = load_policy(repo_root() / "configs" / "driving" / "decision.yaml")
 
-# Known-failing, with a diagnosed structural cause — see the module docstring in
-# sim/run.py and the escape-corridor note in configs/driving/corridor.yaml.
-# strict=True: if a fix lands, this test starts failing and demands attention
-# rather than silently passing.
-ESCAPE_OVERLAP = pytest.mark.xfail(
-    strict=True,
-    reason="escape corridors overlap the driving corridor near the frame bottom, so a "
-    "hazard on the driving line registers as blocking both escapes once near",
-)
-
 
 @pytest.mark.parametrize(
     "name",
@@ -37,8 +27,8 @@ ESCAPE_OVERLAP = pytest.mark.xfail(
         "left",
         "right",
         "multiple",
-        pytest.param("blocked_left", marks=ESCAPE_OVERLAP),
-        pytest.param("blocked_right", marks=ESCAPE_OVERLAP),
+        "blocked_left",
+        "blocked_right",
         "blocked_both",
     ],
 )
