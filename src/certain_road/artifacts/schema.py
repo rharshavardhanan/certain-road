@@ -5,6 +5,7 @@ Every artifact written to disk is described here by exactly one model. Bumping
 stale-shaped artifact is the failure mode this guards against.
 """
 
+from dataclasses import dataclass
 from datetime import date, datetime
 from typing import ClassVar
 
@@ -47,6 +48,28 @@ class DetectionRow(ArtifactModel):
 
     frame_id: str
     det_id: str
+    class_name: str
+    score: float
+    x1: float
+    y1: float
+    x2: float
+    y2: float
+    img_w: int
+    img_h: int
+
+
+@dataclass(frozen=True)
+class Detection:
+    """One detection as a lightweight in-memory value, for real-time pipelines.
+
+    Same fields as `DetectionRow`, but not a pydantic Parquet row model:
+    `driving/` (and eventually `canbus/`) need a per-frame list they construct
+    and discard many times a second, where pydantic validation overhead and a
+    Parquet-oriented shape are the wrong tool. `Detection` lives beside
+    `DetectionRow` in this leaf module so both the drive and survey pipelines
+    can depend on it without depending on each other.
+    """
+
     class_name: str
     score: float
     x1: float

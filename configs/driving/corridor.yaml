@@ -1,0 +1,28 @@
+# Driving corridor geometry.
+#
+# This is NOT the survey ROI. The survey ROI (once built, under
+# configs/survey/) answers "what road surface can the camera see" -- it is
+# wide, and it is the denominator of vision_density. This corridor answers a
+# different question -- "where will my wheels actually go" -- and is
+# deliberately narrow. A hazard can sit well inside the survey ROI and still
+# not matter here. The two must never share a config file or a trapezoid:
+# doing so would silently couple the drive and survey pipelines that D049
+# exists to keep apart (see docs/DECISIONS.md).
+#
+# All geometry is expressed as fractions of image width/height, in [0, 1], so
+# this file has no dependency on a specific camera resolution.
+#
+# The corridor is a trapezoid that narrows toward the horizon (top of frame)
+# and widens toward the camera (bottom of frame) -- the perspective
+# projection of two parallel wheel tracks converging toward the vanishing
+# point. `center_x` is the trapezoid's vertical axis of symmetry.
+center_x: 0.5
+top_y: 0.45
+top_half_width: 0.08
+bottom_y: 1.0
+bottom_half_width: 0.30
+
+# A detection counts as "in path" only when at least this fraction of its box
+# area lies inside the corridor polygon; below this it is a near-miss the
+# robot can safely ignore.
+min_overlap: 0.30
