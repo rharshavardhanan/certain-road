@@ -33,3 +33,8 @@ min_overlap: 0.30
 # IMMINENT at or above imminent_proximity.
 near_proximity: 0.55
 imminent_proximity: 0.75
+
+# How far to each side the escape corridors sit, as a fraction of image width.
+# "Is there room to go around?" is the same in-path test asked of the lane
+# beside us, so it uses the same geometry shifted sideways.
+escape_offset: 0.30

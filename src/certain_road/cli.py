@@ -404,11 +404,14 @@ def sim_run(scenario: str = "centre", out: str = "runs/sim") -> None:
     if scenario not in SCENARIOS:
         raise SystemExit(f"unknown scenario {scenario!r}; have {sorted(SCENARIOS)}")
 
+    from certain_road.driving.decision import load_policy
+
     robot = load_robot(repo_root() / "configs" / "sim" / "robot.yaml")
     corridor = load_corridor(repo_root() / "configs" / "driving" / "corridor.yaml")
+    policy = load_policy(repo_root() / "configs" / "driving" / "decision.yaml")
     sc = SCENARIOS[scenario]
 
-    trace = run_scenario(sc, robot, corridor)
+    trace = run_scenario(sc, robot, corridor, policy)
     path = render(sc, trace, robot, corridor, _Path(out) / f"{scenario}.png")
 
     frames_in_path = sum(trace.in_path)
@@ -416,5 +419,8 @@ def sim_run(scenario: str = "centre", out: str = "runs/sim") -> None:
     print(f"frames     : {len(trace.states)}")
     print(f"in path    : {frames_in_path}/{len(trace.states)}")
     print(f"urgency    : {sorted(set(trace.urgency))}")
+    print(f"states     : {sorted(trace.states_seen)}")
+    verdict = "REACHED" if sc.expect in trace.states_seen else "NOT REACHED"
+    print(f"expected   : {sc.expect}  -> {verdict}")
     print(f"final pose : x={trace.states[-1].x:.2f} y={trace.states[-1].y:.2f}")
     print(f"rendered   : {path}")

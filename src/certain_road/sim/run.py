@@ -1,44 +1,100 @@
-"""Run a scenario: kinematics, projection, and the REAL corridor decision.
+"""Closed-loop scenario runner: perception → confirmation → decision → actuation.
 
 This is the composition root. `sim/` may import `driving/` and `canbus/` — wiring
-them is its job — but never `survey/` or `dashboard/` (D049, enforced by
-import-linter).
+them together is its job — but never `survey/` or `dashboard/` (D049, enforced).
+
+Every module in the chain is the **real** one. The only synthetic parts are the
+projection (world → image) and the actuation (command → motion). That is what
+makes a passing scenario evidence about the shipping code rather than about a
+parallel implementation.
 """
 
 from __future__ import annotations
 
-from certain_road.driving.corridor import Corridor, in_path, urgency
+import yaml
+
+from certain_road.core.paths import repo_root
+from certain_road.driving.confirm import Confirmer
+from certain_road.driving.controller import command_for
+from certain_road.driving.corridor import (
+    Corridor,
+    in_path,
+    lateral_offset,
+    shifted,
+    urgency,
+)
+from certain_road.driving.decision import DriveState, Hazard, Perception, Policy, next_state
 from certain_road.sim.model import Robot, step
 from certain_road.sim.project import project_pothole
 from certain_road.sim.scenario import Scenario, Trace
 
 
-def run_scenario(scenario: Scenario, robot: Robot, corridor: Corridor) -> Trace:
-    """Drive the fixed command sequence, judging each frame with the real corridor code.
+def _escape_offset() -> float:
+    raw = yaml.safe_load((repo_root() / "configs" / "driving" / "corridor.yaml").read_text())
+    return float(raw["escape_offset"])
 
-    Only the nearest visible pothole is judged per frame — the state machine (Day 6)
-    is what will reason about several at once.
-    """
+
+def run_scenario(
+    scenario: Scenario,
+    robot: Robot,
+    corridor: Corridor,
+    policy: Policy,
+    *,
+    frames: int | None = None,
+) -> Trace:
+    """Drive the scenario under closed-loop control."""
+    offset = _escape_offset()
+    left_corridor = shifted(corridor, -offset)
+    right_corridor = shifted(corridor, +offset)
+
     trace = Trace()
     state = scenario.start
+    drive_state = DriveState.NORMAL
+    confirmer = Confirmer(policy.required, policy.window)
+    n = frames if frames is not None else len(scenario.commands)
 
-    for command in scenario.commands:
+    for _ in range(n):
+        dets = [
+            d
+            for p in scenario.potholes
+            if (d := project_pothole(p.x, p.y, p.radius, state, robot.camera)) is not None
+        ]
+
+        # Nearest hazard on the driving line governs; lower in frame is nearer.
+        ahead = [d for d in dets if in_path(d, corridor, min_overlap=corridor.min_overlap)]
+        nearest = max(ahead, key=lambda d: d.y2) if ahead else None
+
+        confirmed = confirmer.update(nearest is not None)
+
+        hazard = None
+        if confirmed and nearest is not None:
+            hazard = Hazard(
+                lateral_offset=lateral_offset(nearest, corridor),
+                urgency=urgency(nearest, corridor),
+                score=nearest.score,
+            )
+
+        perception = Perception(
+            hazard=hazard,
+            left_blocked=any(
+                in_path(d, left_corridor, min_overlap=left_corridor.min_overlap) for d in dets
+            ),
+            right_blocked=any(
+                in_path(d, right_corridor, min_overlap=right_corridor.min_overlap) for d in dets
+            ),
+            frame_age=0,
+            healthy=True,
+        )
+
+        drive_state = next_state(drive_state, perception, policy)
+        command = command_for(drive_state, policy)
         state = step(state, command, scenario.dt, robot)
 
-        best = None
-        for p in scenario.potholes:
-            det = project_pothole(p.x, p.y, p.radius, state, robot.camera)
-            if det is not None and (best is None or det.y2 > best.y2):
-                best = det  # lower in frame == nearer
-
-        if best is None:
-            trace.in_path.append(False)
-            trace.urgency.append("none")
-        else:
-            trace.in_path.append(in_path(best, corridor, min_overlap=corridor.min_overlap))
-            trace.urgency.append(str(urgency(best, corridor)))
-
         trace.states.append(state)
-        trace.detections.append(best)
+        trace.detections.append(nearest)
+        trace.in_path.append(nearest is not None)
+        trace.urgency.append(str(hazard.urgency) if hazard else "none")
+        trace.drive_state.append(str(drive_state))
+        trace.commands.append(command)
 
     return trace

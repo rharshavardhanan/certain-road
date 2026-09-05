@@ -32,28 +32,82 @@ class Scenario:
     commands: list[Command]
     dt: float = 0.1
     description: str = ""
+    expect: str = ""  # the DriveState this run must reach; asserted in tests
 
 
 def _straight(n: int, speed: float = 1.0) -> list[Command]:
     return [Command(Action.FORWARD, speed, 0.0, Mode.AUTONOMOUS) for _ in range(n)]
 
 
+def _scenario(name: str, potholes: list[Pothole], expect: str, description: str) -> Scenario:
+    return Scenario(
+        name=name,
+        potholes=potholes,
+        start=RobotState(0.0, 0.0, 0.0, 0.0),
+        commands=_straight(60),
+        description=description,
+        expect=expect,
+    )
+
+
+# The trial matrix. This is the unit Day 8 and Day 14 measure over: deterministic,
+# headless, and re-runnable after any change — which staging obstacles physically
+# can never be.
+#
+# `expect` is the state the run MUST reach at some point. It is asserted in the
+# test suite, so a regression in the state machine breaks the build rather than
+# being noticed on the floor.
 SCENARIOS: dict[str, Scenario] = {
-    "centre": Scenario(
-        name="centre",
-        potholes=[Pothole(x=1.5, y=0.0, radius=0.18)],
-        start=RobotState(0.0, 0.0, 0.0, 0.0),
-        commands=_straight(40),
-        description="One pothole dead ahead. The robot drives straight at it on fixed "
-        "commands; the corridor test should flip to in-path as it closes.",
+    "clear": _scenario(
+        "clear",
+        [],
+        "normal",
+        "Empty road. Must never leave NORMAL — a false manoeuvre here is as bad as a missed one.",
     ),
-    "offset": Scenario(
-        name="offset",
-        potholes=[Pothole(x=1.5, y=0.45, radius=0.18)],
-        start=RobotState(0.0, 0.0, 0.0, 0.0),
-        commands=_straight(40),
-        description="Pothole to the left of the driving line — should be seen but "
-        "judged out of path, so no manoeuvre is warranted.",
+    "centre": _scenario(
+        "centre",
+        [Pothole(1.5, 0.0)],
+        "avoid_right",
+        "Pothole dead ahead, both sides clear. Uses the configured tie-break.",
+    ),
+    "left": _scenario(
+        "left",
+        [Pothole(1.5, 0.18)],
+        "avoid_right",
+        "Pothole left of the driving line: steer away from it, to the right.",
+    ),
+    "right": _scenario(
+        "right",
+        [Pothole(1.5, -0.18)],
+        "avoid_left",
+        "Pothole right of the driving line: steer left.",
+    ),
+    "multiple": _scenario(
+        "multiple",
+        [Pothole(1.2, 0.10), Pothole(2.0, -0.12), Pothole(2.8, 0.05)],
+        "avoid_right",
+        "Three hazards in sequence. The nearest one governs.",
+    ),
+    "blocked_left": _scenario(
+        "blocked_left",
+        [Pothole(1.5, -0.15), Pothole(1.5, 0.45)],
+        "avoid_right",
+        "Hazard on the driving line plus one blocking the LEFT escape: the "
+        "machine must take the right even though the hazard sits right of centre. "
+        "Blocker at 0.45 m lateral, not 0.75 m — at the decision distance the "
+        "camera only sees +/-0.64 m, so a wider placement is invisible.",
+    ),
+    "blocked_right": _scenario(
+        "blocked_right",
+        [Pothole(1.5, 0.15), Pothole(1.5, -0.45)],
+        "avoid_left",
+        "Mirror of blocked_left.",
+    ),
+    "blocked_both": _scenario(
+        "blocked_both",
+        [Pothole(1.5, 0.0), Pothole(1.5, 0.45), Pothole(1.5, -0.45)],
+        "stop",
+        "Hazard ahead, both escapes blocked. Must STOP — never guess a side.",
     ),
 }
 
@@ -66,3 +120,9 @@ class Trace:
     in_path: list[bool] = field(default_factory=list)
     urgency: list[str] = field(default_factory=list)
     detections: list[object] = field(default_factory=list)  # Detection | None per frame
+    drive_state: list[str] = field(default_factory=list)
+    commands: list[object] = field(default_factory=list)
+
+    @property
+    def states_seen(self) -> set[str]:
+        return set(self.drive_state)

@@ -11,6 +11,7 @@ from certain_road.canbus.protocol import Action
 from certain_road.core.paths import repo_root
 from certain_road.driving.confirm import Confirmer
 from certain_road.driving.controller import command_for
+from certain_road.driving.corridor import Urgency
 from certain_road.driving.decision import (
     DriveState,
     Hazard,
@@ -18,7 +19,6 @@ from certain_road.driving.decision import (
     load_policy,
     next_state,
 )
-from certain_road.driving.corridor import Urgency
 
 POLICY = load_policy(repo_root() / "configs" / "driving" / "decision.yaml")
 

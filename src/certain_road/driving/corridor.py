@@ -247,3 +247,23 @@ def lateral_offset(det: Detection, corridor: Corridor) -> float:
         return 0.0
 
     return _clamp((box_cx - corridor_cx) / half_width_px, -1.0, 1.0)
+
+
+def shifted(corridor: Corridor, dx: float) -> Corridor:
+    """The same corridor translated sideways by `dx` (fraction of image width).
+
+    Used to build the left and right *escape* corridors: the question "is there
+    room to go around?" is the same in-path test, asked of the lane beside us.
+    Reusing the geometry means an escape route is judged by exactly the same
+    rule as the driving line, not a second approximation of it.
+    """
+    return Corridor(
+        center_x=corridor.center_x + dx,
+        top_y=corridor.top_y,
+        top_half_width=corridor.top_half_width,
+        bottom_y=corridor.bottom_y,
+        bottom_half_width=corridor.bottom_half_width,
+        min_overlap=corridor.min_overlap,
+        near_proximity=corridor.near_proximity,
+        imminent_proximity=corridor.imminent_proximity,
+    )
