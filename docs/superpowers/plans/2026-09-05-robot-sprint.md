@@ -64,6 +64,44 @@ decision.py  ──►  Command(dataclass)  ──►  Transport (interface)
 `decision.py` and `controller.py` **never know which transport is active.** CAN becomes a
 swap of one module, not a rewrite. The robot moves on Day 2 regardless of shipping.
 
+### 2b. The simulator is a fourth transport
+
+**Robot for the demo, simulator for the numbers.** Both are built; neither replaces the other.
+
+```
+                                              └── SimTransport  ──► kinematic model ──► top-down view
+```
+
+`corridor.py` and `decision.py` **cannot tell simulation from hardware** — whatever avoids a
+pothole in the simulator is the identical module that avoids one on the robot, not a
+reimplementation. That is what makes this cheap.
+
+**What it is:** recorded road video → **real** YOLO → **real** corridor test → **real** state
+machine → `SimTransport` → a bicycle-model robot on a 2D top-down view. Genuine detections
+driving genuine decisions; only the actuation is synthetic.
+
+**What it is NOT:** Gazebo, Isaac Sim or CARLA. Those want a serious NVIDIA GPU, will not run
+well on the MacBook, and would burn 3–5 days on setup with real failure risk.
+
+**Why it earns its place — three reasons, in order:**
+
+1. **It is the test harness Days 5–6 need anyway.** The corridor and state machine must be
+   tested against *something*. The simulator is that something, so it costs hours rather than
+   a day.
+2. **It produces Day 14's measurements.** ≥20 obstacle presentations staged physically are
+   slow, inconsistent and hard to reproduce. In simulation they are deterministic, instant,
+   assertable in CI, and re-runnable after any code change.
+3. **It unblocks Days 5–8 from hardware.** Avoidance logic is finished and proven on the
+   MacBook while the Jetson is still being flashed and CAN parts are in transit.
+
+**What it cannot test, and must not be claimed to:** motion blur, vibration, lighting change,
+real command latency, real actuator dynamics. Those appear only on the robot.
+
+**Framing for the demo — this matters.** The simulator is the *development and validation
+environment*; the robot is the *deliverable*. Show the robot moving first, then show the
+simulator as how 20+ scenarios were validated that could not be staged physically. In that
+order it reads as rigour. Reversed, it reads as avoiding the hard part.
+
 **Order the CAN parts on Day 1 regardless** — SN65HVD230 or TJA1050 transceivers ×2, and
 an ESP32/STM32 with CAN if the lab robot has no CAN-native controller.
 
@@ -108,7 +146,11 @@ src/certain_road/
 │                       conformal.py                PCI → interval → accept/review
 │                       rsl.py  optimize.py         (deferred to Oct 5)
 │
-└── dashboard/          report.py                   the one screen
+├── dashboard/          report.py                   the one screen
+│
+└── sim/                model.py                    bicycle-model kinematics
+                        scenario.py                 the repeatable trial matrix
+                        view.py                     top-down render
 ```
 
 **`canbus/` not `can/`** — `python-can` owns the top-level `can` module and shadowing it
@@ -126,6 +168,9 @@ Rewritten for the new module set. **The new rule that matters: `driving/` and `c
 must never import `survey/`, and `survey/` must never import `driving/`.** That contract
 is the architectural rule from §1 made mechanical — if CP ever creeps into the steering
 loop, CI fails.
+
+`sim/` is a **composition root**, like `cli.py`: it may import `driving/` and `canbus/`
+because its job is to wire them together. It may **not** import `survey/`.
 
 ---
 
@@ -202,15 +247,17 @@ Each day carries: **Goal · Why · Where · Done when.**
 
 - **Goal:** the robot knows whether a detection is *in its path*.
 - **Why:** first genuinely robotic reasoning. Without it the robot avoids potholes it would never have hit.
-- **Where:** MacBook (logic + tests) → Jetson (overlay).
-- **Done when:** corridor drawn on the live view · a pothole at frame edge → `IN_PATH = False` · centred → `True` · unit tests cover both plus the straddling case.
+- **Where:** MacBook (logic + tests + simulator) → Jetson (overlay).
+- **Also today:** `sim/model.py` and `sim/view.py` — the bicycle model and top-down render. Built here because the corridor test needs something to be tested against, and the simulator is that something.
+- **Done when:** corridor drawn on the live view · a pothole at frame edge → `IN_PATH = False` · centred → `True` · unit tests cover both plus the straddling case · **the simulator renders a robot driving past a pothole**.
 
 ### Day 6 — state machine
 
 - **Goal:** `NORMAL / WARNING / AVOID_LEFT / AVOID_RIGHT / STOP` with correct transitions.
 - **Why:** decisions must be provably right *before* they drive actuators. Debugging a state bug while the robot moves is dangerous and slow.
 - **Where:** MacBook — **pure logic, fully unit-tested, no hardware.**
-- **Done when:** every transition covered by a test · **ambiguous/blocked-both-sides → `STOP`, never a guessed direction** · stale detections (>N frames old) → `STOP`.
+- **Also today:** `sim/scenario.py` — the trial matrix (left / right / centre / multiple / blocked-left / blocked-right / blocked-both), runnable headless.
+- **Done when:** every transition covered by a test · **ambiguous/blocked-both-sides → `STOP`, never a guessed direction** · stale detections (>N frames old) → `STOP` · **every scenario in the matrix passes in simulation before any actuator moves**.
 
 ### Day 7 — autonomous avoidance ← **MVP**
 
@@ -224,7 +271,8 @@ Each day carries: **Goal · Why · Where · Done when.**
 - **Goal:** avoidance survives the awkward cases.
 - **Why:** a demo that works once is not a product. The failure cases are what a mentor will probe.
 - **Where:** Jetson + robot.
-- **Done when:** pothole left / right / centre / multiple / blocked-left / blocked-right / blocked-both all behave correctly · **blocked-both → STOP** · camera-loss, detector-crash and transport-loss each → STOP.
+- **Done when:** the full scenario matrix passes **in simulation** *and* the four physically stageable cases (left / right / centre / blocked-both) pass **on the robot** · camera-loss, detector-crash and transport-loss each → STOP.
+- **Note:** simulation carries the exhaustive matrix; the robot carries the cases that prove simulation matches reality. Neither alone is sufficient.
 
 ### Day 9 — survey recording
 
@@ -267,7 +315,8 @@ Each day carries: **Goal · Why · Where · Done when.**
 - **Goal:** the five scenarios run repeatedly, with numbers recorded.
 - **Why:** the report needs measured results. **Numbers are measured, never invented.**
 - **Where:** Jetson + robot.
-- **Done when:** ≥20 obstacle presentations logged with detected / avoided / false-avoidance / collision counts · command latency and inference FPS measured · one run produces both a drive log *and* a survey report.
+- **Done when:** **≥20 simulated presentations** logged with detected / avoided / false-avoidance / collision counts · **≥5 physical presentations** logged the same way, to show simulation and reality agree · command latency and inference FPS measured **on the robot** · one run produces both a drive log *and* a survey report.
+- **Report both columns separately.** Never present simulated trials as physical ones.
 
 ### Day 15 — rehearsed demo
 
@@ -303,7 +352,8 @@ Each day carries: **Goal · Why · Where · Done when.**
 | **IMX708 not JetPack-supported** | No camera | Verify Day 1; swap to IMX219/IMX477 immediately if it fails. |
 | **Deduct curves unsourced** | Day 11 blocked | Resolve by Day 9. Fallbacks: published coefficients by DOI, or a documented linear approximation labelled as such. |
 | **TensorRT export fails** | Day 4 slips | Fall back to PyTorch inference on Jetson; slower but sufficient at ~1.4 fps. |
-| **Robot damages itself** | Days lost | E-stop on Day 2, before any autonomy. Low speed throughout. |
+| **Robot damages itself** | Days lost | E-stop on Day 2, before any autonomy. Low speed throughout. **Every scenario passes in simulation before an actuator moves.** |
+| **Robot/CAN/Jetson all fail** | No demo | The simulator demonstrates the full decision pipeline end to end. Weaker, but not nothing. |
 
 **Contingency ladder if slipping:** dashboard polish → conformal (Day 12) → PCI (Day 11) →
 segmentation (Day 10). **Never cut** avoidance, the safety STOP, or survey recording.

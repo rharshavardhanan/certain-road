@@ -71,6 +71,7 @@ Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](sup
 | D047 | Jetson + GPS brought into scope as a 3-week partition sequenced last; 4-partition schedule 2026-08-18 → 2026-10-05; sensitivity analysis cut | Refined by D048 |
 | D048 | Jetson arrives 2026-08-18: risky bring-up pulled into a bounded weeks-1–4 parallel track; only `ingest`+`detect` ship to the edge | Accepted |
 | D049 | Project pivots to an autonomous road-inspection robot; perception feeds two independent pipelines; control transport is abstract | Accepted |
+| D050 | Simulator is a fourth `Transport`; robot for the demo, simulation for the trial matrix | Accepted |
 
 ---
 
@@ -1292,3 +1293,44 @@ pothole-in-path → avoidance → safety STOP → survey recording → PCI → c
 
 Full day-by-day plan, per-task done-when conditions, the MacBook/Jetson split table and the
 risk register: [`superpowers/plans/2026-09-05-robot-sprint.md`](superpowers/plans/2026-09-05-robot-sprint.md).
+
+## D050 — Simulator is a fourth `Transport`; robot for the demo, simulation for the trial matrix
+
+**2026-09-05 · Accepted · Refines D049**
+
+Both are built and neither replaces the other: the **robot demonstrates the concept live**,
+the **simulator produces the repeatable trials and the measurement table**.
+
+This costs very little because D049 already made the control transport abstract. The
+simulator is a fourth implementation alongside `SerialTransport`, `CanTransport` and
+`NullTransport`, so `corridor.py` and `decision.py` **cannot tell simulation from hardware**.
+Whatever avoids a pothole in simulation is the identical module that avoids one on the robot
+— not a reimplementation.
+
+**Design:** recorded road video → real YOLO → real corridor test → real state machine →
+`SimTransport` → bicycle-model robot on a 2D top-down view. Genuine detections driving
+genuine decisions; only actuation is synthetic.
+
+**Rejected: Gazebo, Isaac Sim, CARLA.** All want a serious NVIDIA GPU, none run well on the
+MacBook, and setup alone would consume 3–5 of 15 days with real failure risk.
+
+**Three reasons it earns its place.** It is the test harness Days 5–6 need anyway, so it
+costs hours rather than a day. It produces Day 14's ≥20 presentations, which staged
+physically are slow, inconsistent and unrepeatable — in simulation they are deterministic and
+assertable in CI. And it unblocks Days 5–8 from hardware entirely while the Jetson is being
+flashed and CAN parts are in transit.
+
+**What it cannot test, and must not be claimed to:** motion blur, vibration, lighting change,
+real command latency, real actuator dynamics.
+
+**Reporting rule:** simulated and physical trials are reported in **separate columns**.
+Simulated trials are never presented as physical ones. Day 8 requires the exhaustive matrix
+in simulation *and* the four stageable cases on the robot — simulation proves coverage,
+hardware proves the simulation matches reality, and neither alone is sufficient.
+
+**Demo framing:** robot first, simulator second, presented as how scenarios that could not be
+staged physically were validated. In that order it reads as rigour; reversed it reads as
+avoiding the hard part.
+
+`sim/` is a composition root like `cli.py`: it may import `driving/` and `canbus/`, never
+`survey/`.
