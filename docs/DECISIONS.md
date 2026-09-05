@@ -72,6 +72,7 @@ Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](sup
 | D048 | Jetson arrives 2026-08-18: risky bring-up pulled into a bounded weeks-1–4 parallel track; only `ingest`+`detect` ship to the edge | Accepted |
 | D049 | Project pivots to an autonomous road-inspection robot; perception feeds two independent pipelines; control transport is abstract | Accepted |
 | D050 | Simulator is a fourth `Transport`; robot for the demo, simulation for the trial matrix | Accepted |
+| D051 | CP cut from the sprint; survey ends at vision-estimated PCI; ADAS-inspired behaviours added; calibration split preserved | Accepted |
 
 ---
 
@@ -1334,3 +1335,45 @@ avoiding the hard part.
 
 `sim/` is a composition root like `cli.py`: it may import `driving/` and `canbus/`, never
 `survey/`.
+
+## D051 — CP cut from the sprint; survey ends at vision-estimated PCI; ADAS-inspired behaviours added
+
+**2026-09-05 · Accepted · Refines D049, D050**
+
+The Sep 20 sprint focuses on **autonomous pothole avoidance plus road surveying**. Conformal
+prediction is **cut from the 15-day scope**.
+
+**What this costs, stated plainly.** CP was the research novelty (D004, D005). Without it the
+project is *a robot that avoids potholes and estimates road condition* — good engineering,
+thin as research. The abstain path degrades from a **calibrated coverage guarantee** to a
+**confidence heuristic**: honest, still a genuine safety behaviour, but a materially weaker
+claim that must never be described as conformal coverage.
+
+**What is preserved so the cut is reversible.** The four-way split, the calibration firewall
+and `pci_ref` all stand. `calib` stays untouched and unused. CP can return in the
+**Sep 21 → Oct 5** window without touching the robot, because D049 already forbids CP from the
+steering loop — the drive pipeline never depended on it.
+
+**Detector consequence.** With CP out of sprint scope, a pretrained RDD2022 model becomes
+technically viable for the sprint, since calibration contamination only matters for CP.
+**We keep `multicountry_v8s` anyway**: it is already trained (zero additional cost), its
+taxonomy matches the pipeline, and swapping detectors would spend sprint days for an unmeasured
+gain. Candidate benchmarking moves to the Oct 5 window, where it belongs if CP returns.
+
+**ADAS framing — bounded deliberately.** Parity with production ADAS is **not claimable**:
+ISO 26262 / ASIL certification, multi-sensor fusion, million-kilometre validation, redundancy
+and hard sub-100 ms timing are all absent. What *is* claimable is an **ADAS-inspired decision
+architecture** at prototype scale. Three behaviours are added to make that real rather than
+rhetorical:
+
+1. **Temporal confirmation (N-of-M)** — a detection must persist across frames before it can
+   trigger a manoeuvre. The highest-value reliability addition in the sprint: without it a
+   single-frame false positive makes the robot swerve at shadows during the live demo.
+2. **Confidence gate** — a high threshold to *intervene*, a lower one to *record for the
+   survey*. Two thresholds, one detector.
+3. **Proximity-based urgency** — trigger on how near the hazard is, not merely that it exists,
+   using bounding-box height as a distance proxy. Far → `WARNING`; near → `AVOID`.
+
+All three are pure logic, developed on the MacBook and exercised in the simulator, and are
+**excluded from the contingency ladder** — they cost hours and they are what stop the demo
+misbehaving.

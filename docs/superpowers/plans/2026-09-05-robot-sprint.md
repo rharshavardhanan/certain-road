@@ -41,8 +41,48 @@ survey; it is now a robot. The survey half is unchanged and is reused, not rebui
 ```
 
 **Conformal prediction is never in the steering loop.** Real-time avoidance needs
-immediate perception; CP applies to the slower condition assessment. Stated that way it
-is a defensible design, not a compromise.
+immediate perception; CP applies to the slower condition assessment.
+
+**CP is cut from the 15-day sprint (D051).** The survey pipeline ends at vision-estimated
+PCI. The abstain path becomes a **confidence gate**, not a calibrated interval — honest,
+still a safety story, but a materially weaker claim than conformal coverage. The
+calibration split is **kept intact** so CP can return in the Sep 21 → Oct 5 window without
+touching the robot.
+
+---
+
+## 1b. ADAS-inspired behaviour — what may and may not be claimed
+
+**Never claim parity with production ADAS.** Real systems are ISO 26262 certified with ASIL
+ratings, multi-sensor (camera + radar), validated over millions of kilometres, redundant and
+fail-operational, with hard sub-100 ms timing. A 15-day single-camera robot is none of those,
+and an automotive examiner will know it in one question.
+
+**Do claim ADAS-inspired architecture** — the same decision pattern, at prototype scale:
+
+| ADAS pattern | Where it lives |
+|---|---|
+| Hazard classified by relevance to ego-path | `driving/corridor.py` (Day 5) |
+| Graded response, not binary | state machine (Day 6) |
+| **Temporal confirmation before intervening** | `driving/confirm.py` (Day 6) |
+| **Confidence gate before intervening** | `driving/decision.py` (Day 6) |
+| **Proximity-based urgency, not mere presence** | `driving/corridor.py` (Day 5) |
+| Fail-safe on sensor loss | state machine (Day 8) |
+| Driver override | E-stop (Day 2) |
+
+The three in bold are what separate "ADAS-like" from "a robot that swerves at things":
+
+1. **Temporal confirmation (N-of-M).** A detection must persist across frames — e.g. 3 of the
+   last 5 — before it can trigger a manoeuvre. **Highest-value addition to demo reliability:**
+   without it a single-frame false positive makes the robot twitch at shadows in front of the
+   mentor. A few lines of code.
+2. **Confidence gate.** Two thresholds on one detector: a **high** one to intervene, a
+   **lower** one to record for the survey. Never swerve on a 0.28-confidence box.
+3. **Proximity, not presence.** Trigger on how near the hazard is, not merely that it exists.
+   Bounding-box height in frame is a usable distance proxy with no depth sensor. A pothole far
+   ahead warrants `WARNING`; only a near one warrants `AVOID`.
+
+All three are pure logic, developed on the MacBook, fully exercised in the simulator.
 
 ---
 
@@ -133,8 +173,9 @@ src/certain_road/
 ├── perception/         detector.py                 ← was detect/
 │                       train.py  predict.py  evaluate.py  dataset/
 │
-├── driving/            corridor.py                 is the pothole in my path?
-│                       decision.py                 the state machine
+├── driving/            corridor.py                 in my path? how near?
+│                       confirm.py                  N-of-M temporal confirmation
+│                       decision.py                 state machine + confidence gate
 │                       controller.py               state → Command
 │
 ├── canbus/             protocol.py                 Command ↔ bytes
@@ -143,7 +184,7 @@ src/certain_road/
 ├── survey/             recorder.py                 every detection, geotagged
 │                       segment.py                  detections → segments
 │                       assessment.py               segment → vision-estimated PCI
-│                       conformal.py                PCI → interval → accept/review
+│                       conformal.py                (D051: deferred to Oct 5)
 │                       rsl.py  optimize.py         (deferred to Oct 5)
 │
 ├── dashboard/          report.py                   the one screen
@@ -245,7 +286,7 @@ Each day carries: **Goal · Why · Where · Done when.**
 
 ### Day 5 — driving corridor
 
-- **Goal:** the robot knows whether a detection is *in its path*.
+- **Goal:** the robot knows whether a detection is *in its path* **and how near it is**.
 - **Why:** first genuinely robotic reasoning. Without it the robot avoids potholes it would never have hit.
 - **Where:** MacBook (logic + tests + simulator) → Jetson (overlay).
 - **Also today:** `sim/model.py` and `sim/view.py` — the bicycle model and top-down render. Built here because the corridor test needs something to be tested against, and the simulator is that something.
@@ -257,6 +298,8 @@ Each day carries: **Goal · Why · Where · Done when.**
 - **Why:** decisions must be provably right *before* they drive actuators. Debugging a state bug while the robot moves is dangerous and slow.
 - **Where:** MacBook — **pure logic, fully unit-tested, no hardware.**
 - **Also today:** `sim/scenario.py` — the trial matrix (left / right / centre / multiple / blocked-left / blocked-right / blocked-both), runnable headless.
+- **Also today — the ADAS behaviours (§1b):** `confirm.py` N-of-M temporal confirmation, and the confidence gate in `decision.py`. **Do not skip these.** A single-frame false positive that swerves the robot is the most likely way the live demo embarrasses you.
+- **Extra done-when:** a one-frame spurious detection produces **no** manoeuvre · a detection below the intervention threshold produces no manoeuvre but **is** still recorded for the survey.
 - **Done when:** every transition covered by a test · **ambiguous/blocked-both-sides → `STOP`, never a guessed direction** · stale detections (>N frames old) → `STOP` · **every scenario in the matrix passes in simulation before any actuator moves**.
 
 ### Day 7 — autonomous avoidance ← **MVP**
@@ -296,12 +339,13 @@ Each day carries: **Goal · Why · Where · Done when.**
 - **Done when:** each segment carries a PCI in [0,100] spanning a usable range, not clustered.
 - **⚠ Still blocked:** ASTM D6433 deduct curves have no source. `deduct_curves.yaml` carries a mandatory empty `source:` and the stage **refuses to run** until filled. **Resolve this by Day 9 or PCI slips.**
 
-### Day 12 — conformal + human fallback
+### Day 12 — condition report + confidence-based review flag
 
-- **Goal:** `q̂` from the calibration set, an interval per segment, and `ACCEPT` vs `HUMAN REVIEW`.
-- **Why:** the research contribution and the product's safety story.
+- **Goal:** per-segment condition band, and an `ACCEPT` vs `HUMAN REVIEW` flag driven by **detection confidence and evidence volume** — not by a conformal interval (D051).
+- **Why:** keeps the human-fallback product behaviour without the CP machinery.
 - **Where:** MacBook.
-- **Done when:** interval inside one PCI band → `ACCEPT` · spanning multiple bands → `HUMAN REVIEW` · empirical coverage reported against nominal.
+- **Done when:** a segment with few, low-confidence detections → `HUMAN REVIEW` · a segment with many confident detections → `ACCEPT`.
+- **⚠ Say it accurately:** this is a **heuristic confidence flag**, not a calibrated guarantee. Never describe it as conformal coverage. CP returns Sep 21 → Oct 5.
 
 ### Day 13 — dashboard
 
@@ -355,8 +399,9 @@ Each day carries: **Goal · Why · Where · Done when.**
 | **Robot damages itself** | Days lost | E-stop on Day 2, before any autonomy. Low speed throughout. **Every scenario passes in simulation before an actuator moves.** |
 | **Robot/CAN/Jetson all fail** | No demo | The simulator demonstrates the full decision pipeline end to end. Weaker, but not nothing. |
 
-**Contingency ladder if slipping:** dashboard polish → conformal (Day 12) → PCI (Day 11) →
-segmentation (Day 10). **Never cut** avoidance, the safety STOP, or survey recording.
+**Contingency ladder if slipping:** dashboard polish → review flag (Day 12) → PCI (Day 11) →
+segmentation (Day 10). **The three ADAS behaviours in §1b are not on the ladder** — they cost
+hours and they are what stop the live demo misbehaving. **Never cut** avoidance, the safety STOP, or survey recording.
 
 ---
 
@@ -373,7 +418,9 @@ and the thesis write-up.
 | Never say | Say instead |
 |---|---|
 | "The robot knows the actual PCI" | "The system estimates a **vision-based** condition score" |
-| "CP tells us detection is 90% correct" | "CP provides a **calibrated uncertainty interval** for the condition estimate" |
+| "CP tells us detection is 90% correct" | (CP is out of sprint scope — do not mention it as delivered) |
+| "This is on par with ADAS" | "This follows an **ADAS-inspired decision architecture** at prototype scale" |
+| "The review flag is statistically guaranteed" | "The review flag is a **confidence heuristic**; calibrated intervals are future work" |
 | "YOLO is our innovation" | "YOLO is the perception backbone; the contribution is **perception-to-action and uncertainty-aware decision-making**" |
 | "The model is wrong" (on abstain) | "The automated system **lacks sufficient certainty** to decide safely" |
 
