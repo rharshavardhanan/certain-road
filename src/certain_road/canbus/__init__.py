@@ -1,5 +1,5 @@
-"""Control transport. Will hold protocol.py (Command <-> bytes) and
-transport.py (Serial / CAN / Null / Sim).
+"""Control transport. Holds protocol.py (Command <-> bytes, provisional wire
+format). Will also hold transport.py (Serial / CAN / Null / Sim).
 
 Named `canbus`, not `can`, because `python-can` owns the top-level `can`
 module.

@@ -26,3 +26,10 @@ bottom_half_width: 0.30
 # area lies inside the corridor polygon; below this it is a near-miss the
 # robot can safely ignore.
 min_overlap: 0.30
+
+# Proximity thresholds (proximity = y2 / img_h, clamped to [0, 1]; see
+# driving.corridor.proximity) that turn "in my path" into an urgency level.
+# FAR below near_proximity, NEAR from near_proximity up to imminent_proximity,
+# IMMINENT at or above imminent_proximity.
+near_proximity: 0.55
+imminent_proximity: 0.75

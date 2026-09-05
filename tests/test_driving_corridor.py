@@ -1,4 +1,5 @@
-"""Tests for the driving corridor geometry (Task A).
+"""Tests for the driving corridor: geometry (Task A) and proximity, urgency,
+lateral offset (Task B).
 
 The corridor is deliberately not the survey ROI (see configs/driving/
 corridor.yaml and D049/D050) -- these tests use a small, hand-picked corridor
@@ -14,10 +15,14 @@ from certain_road.artifacts.schema import Detection
 from certain_road.driving.corridor import (
     CORRIDOR_CONFIG_PATH,
     Corridor,
+    Urgency,
     corridor_polygon,
     in_path,
+    lateral_offset,
     load_corridor,
     overlap_fraction,
+    proximity,
+    urgency,
 )
 
 IMG_W, IMG_H = 640, 480
@@ -31,6 +36,8 @@ def _corridor(**overrides) -> Corridor:
         bottom_y=1.0,
         bottom_half_width=0.4,
         min_overlap=0.3,
+        near_proximity=0.6,
+        imminent_proximity=0.8,
     )
     defaults.update(overrides)
     return Corridor(**defaults)
@@ -103,3 +110,57 @@ def test_load_corridor_reads_the_real_shipped_config():
 def test_load_corridor_rejects_missing_file(tmp_path: Path):
     with pytest.raises(FileNotFoundError):
         load_corridor(tmp_path / "does-not-exist.yaml")
+
+
+# --- Task B: proximity, urgency, lateral offset -------------------------
+
+
+def test_box_at_frame_bottom_has_higher_proximity_than_near_horizon():
+    near_bottom = _det(280, 440, 360, 470)
+    near_horizon = _det(280, 180, 360, 200)
+
+    assert proximity(near_bottom) > proximity(near_horizon)
+
+
+def test_proximity_is_size_independent():
+    """The §1b correction: two boxes sharing y2 but with different heights
+    (and therefore different sizes) must score identical proximity."""
+    short_box = _det(280, 380, 360, 400)  # height 20
+    tall_box = _det(280, 100, 360, 400)  # height 300, same y2
+
+    assert proximity(short_box) == pytest.approx(proximity(tall_box))
+
+
+def test_proximity_is_clamped_to_unit_range():
+    beyond_frame = _det(280, 440, 360, 900, img_h=IMG_H)
+
+    assert proximity(beyond_frame) == pytest.approx(1.0)
+
+
+def test_urgency_rises_monotonically_with_proximity():
+    corridor = _corridor()
+    far = _det(280, 130, 360, 150)  # proximity ~0.31
+    near = _det(280, 300, 360, 320)  # proximity ~0.67
+    imminent = _det(280, 400, 360, 420)  # proximity ~0.875
+
+    assert urgency(far, corridor) == Urgency.FAR
+    assert urgency(near, corridor) == Urgency.NEAR
+    assert urgency(imminent, corridor) == Urgency.IMMINENT
+
+
+def test_lateral_offset_signs_and_centring():
+    corridor = _corridor()
+    left = _det(130, 450, 170, 470)  # centred at x=150, left of the centreline
+    right = _det(470, 450, 510, 470)  # centred at x=490, right of the centreline
+    centred = _det(300, 450, 340, 470)  # centred at x=320 == corridor centreline
+
+    assert lateral_offset(left, corridor) < 0.0
+    assert lateral_offset(right, corridor) > 0.0
+    assert lateral_offset(centred, corridor) == pytest.approx(0.0, abs=1e-9)
+
+
+def test_lateral_offset_is_clamped_to_unit_range():
+    corridor = _corridor()
+    far_left = _det(-2000, 450, -1960, 470)
+
+    assert lateral_offset(far_left, corridor) == pytest.approx(-1.0)

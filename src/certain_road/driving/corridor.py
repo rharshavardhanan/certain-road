@@ -1,14 +1,18 @@
-"""Is a detection in the robot's driving path?
+"""Is a detection in the robot's driving path, and how urgently does it matter?
 
 Two design decisions this module encodes (see docs/superpowers/plans/
 2026-09-05-day5-corridor-sim.md and docs/DECISIONS.md D049/D050):
 
-1. The driving corridor is not the survey ROI. They are different trapezoids
+1. Proximity is the box's *bottom edge*, not its height. For an object
+   resting on the ground plane under perspective projection, the bottom
+   edge's image y-coordinate maps monotonically to ground distance regardless
+   of the object's real size. Height confounds distance with size: a large
+   pothole far away and a small one close by can produce the same height.
+   `proximity(det) = y2 / img_h`, clamped to [0, 1]; 1.0 is at the bumper.
+
+2. The driving corridor is not the survey ROI. They are different trapezoids
    serving different purposes (see `configs/driving/corridor.yaml`) and must
    never share a config file.
-
-2. Proximity is the box's bottom edge, not its height -- see the
-   `proximity()` function added in Task B.
 
 Corridor/box overlap is computed by clipping the detection box against the
 corridor polygon with Sutherland-Hodgman and measuring area with the shoelace
@@ -18,6 +22,7 @@ formula -- both textbook, dependency-free techniques. No `shapely`.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import StrEnum
 from pathlib import Path
 
 import numpy as np
@@ -45,6 +50,16 @@ class Corridor:
     bottom_y: float
     bottom_half_width: float
     min_overlap: float
+    near_proximity: float
+    imminent_proximity: float
+
+
+class Urgency(StrEnum):
+    """How urgently a confirmed in-path hazard needs a reaction."""
+
+    FAR = "far"
+    NEAR = "near"
+    IMMINENT = "imminent"
 
 
 def load_corridor(path: Path) -> Corridor:
@@ -64,6 +79,8 @@ def load_corridor(path: Path) -> Corridor:
         bottom_y=raw["bottom_y"],
         bottom_half_width=raw["bottom_half_width"],
         min_overlap=raw["min_overlap"],
+        near_proximity=raw["near_proximity"],
+        imminent_proximity=raw["imminent_proximity"],
     )
 
 
@@ -184,3 +201,49 @@ def overlap_fraction(det: Detection, corridor: Corridor) -> float:
 def in_path(det: Detection, corridor: Corridor, *, min_overlap: float) -> bool:
     """Whether `det` overlaps the corridor by at least `min_overlap`."""
     return overlap_fraction(det, corridor) >= min_overlap
+
+
+def _clamp(value: float, lo: float, hi: float) -> float:
+    return max(lo, min(hi, value))
+
+
+def proximity(det: Detection) -> float:
+    """Ground-plane proximity of `det`, from the box's bottom edge, not its
+    height (see module docstring, decision 1). 0.0 = horizon, 1.0 = bumper.
+    """
+    return _clamp(det.y2 / det.img_h, 0.0, 1.0)
+
+
+def urgency(det: Detection, corridor: Corridor) -> Urgency:
+    """Classify `det`'s proximity against `corridor`'s configured thresholds."""
+    p = proximity(det)
+    if p >= corridor.imminent_proximity:
+        return Urgency.IMMINENT
+    if p >= corridor.near_proximity:
+        return Urgency.NEAR
+    return Urgency.FAR
+
+
+def lateral_offset(det: Detection, corridor: Corridor) -> float:
+    """Signed horizontal offset of `det`'s box centre from the corridor
+    centreline, normalised by the corridor's half-width at the box's depth.
+
+    -1.0 = at or beyond the corridor's left edge, +1.0 = at or beyond the
+    right edge, 0.0 = centred on the corridor's axis of symmetry.
+    """
+    box_cx = (det.x1 + det.x2) / 2.0
+    corridor_cx = corridor.center_x * det.img_w
+
+    depth = _clamp(
+        (det.y2 / det.img_h - corridor.top_y) / (corridor.bottom_y - corridor.top_y),
+        0.0,
+        1.0,
+    )
+    half_width_frac = corridor.top_half_width + depth * (
+        corridor.bottom_half_width - corridor.top_half_width
+    )
+    half_width_px = half_width_frac * det.img_w
+    if half_width_px <= 0:
+        return 0.0
+
+    return _clamp((box_cx - corridor_cx) / half_width_px, -1.0, 1.0)
