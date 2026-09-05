@@ -1,0 +1,35 @@
+# Drive decision policy.
+#
+# The two ADAS behaviours from the sprint plan §1b live here. Neither is
+# optional: without them a single-frame false positive swerves the robot, which
+# is the most likely way the live demo misbehaves.
+
+confirmation:
+  # N-of-M temporal confirmation. A hazard must be seen in at least
+  # `required` of the last `window` frames before it may trigger a manoeuvre.
+  # At ~15 fps, 3-of-5 costs ~0.2 s of look-ahead and removes single-frame
+  # false positives entirely.
+  required: 3
+  window: 5
+
+confidence:
+  # Two thresholds, one detector. A detection may be recorded for the survey
+  # while still being too weak to justify steering the robot.
+  intervene_min_score: 0.50
+  record_min_score: 0.15
+
+staleness:
+  # If no fresh frame arrives within this many frames' worth of time, the
+  # perception input is stale and the only safe action is to stop.
+  max_frame_age: 3
+
+manoeuvre:
+  cruise_speed: 1.0        # normalised 0..1, scaled by robot.max_speed_mps
+  caution_speed: 0.45      # WARNING: slow but keep going
+  avoid_speed: 0.35        # slower still while steering around
+  avoid_steer: 0.7         # normalised -1..1
+
+  # Which way to go when the hazard is dead centre and BOTH sides are clear.
+  # This is a deterministic tie-break, not a guess: when a side is unknown or
+  # blocked the machine stops instead (see decision.py).
+  preferred_side: right
