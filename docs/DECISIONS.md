@@ -73,6 +73,7 @@ Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](sup
 | D049 | Project pivots to an autonomous road-inspection robot; perception feeds two independent pipelines; control transport is abstract | Accepted |
 | D050 | Simulator is a fourth `Transport`; robot for the demo, simulation for the trial matrix | Accepted |
 | D051 | CP cut from the sprint; survey ends at vision-estimated PCI; ADAS-inspired behaviours added; calibration split preserved | Accepted |
+| D052 | Deliverable is a vehicle-agnostic control unit demoed on the Jetson: recorded video → real YOLO → real CAN on vcan0; no robot, camera or transceiver required | Accepted |
 
 ---
 
@@ -1377,3 +1378,49 @@ rhetorical:
 All three are pure logic, developed on the MacBook and exercised in the simulator, and are
 **excluded from the contingency ladder** — they cost hours and they are what stop the demo
 misbehaving.
+
+## D052 — Deliverable is a vehicle-agnostic control unit, demonstrated on the Jetson
+
+**2026-09-06 · Accepted · Refines D049, D050, D051**
+
+The demonstration is no longer a specific robot driving. It is the **Jetson Orin Nano running
+the full chain end to end**: recorded road video → real YOLO → real corridor and state machine
+→ **real CAN frames** — with the decision core designed to drop onto any vehicle.
+
+**Why this is better, not a retreat.** It removes every uncertain hardware dependency from the
+critical path at once:
+
+| Was blocking | Now |
+|---|---|
+| Lab robot model unknown (a "beetle bot", availability uncertain) | **not needed** |
+| Pi Camera Module 3 / IMX708 not officially JetPack-supported (D048) | **not needed** — video playback |
+| CAN transceiver not ordered, procurement on the critical path | **not needed** — see below |
+
+The only hardware that must work is the Jetson itself.
+
+**Real CAN with no transceiver.** Linux ships SocketCAN with a virtual interface. On the
+Jetson, `modprobe vcan` plus two `ip link` commands creates `vcan0`, and `CanTransport` writes
+**genuine CAN frames** to it — observable live with `candump vcan0` during the demo. These are
+real frames on a real socket, not a mock. When a transceiver arrives, `vcan0` → `can0` is a
+**configuration change, not a code change**, which is precisely what D049's transport
+abstraction was built for.
+
+**The claim, bounded.** "Runs on any vehicle" is too strong and invites one question that
+collapses it. What is generic is the **decision core** and the command semantics
+(`action / speed / steer / mode`). What is vehicle-specific is the **CAN message layout** —
+arbitration ID, byte packing, scaling — which differs per vehicle and is described by that
+vehicle's DBC. The defensible claim is therefore:
+
+> a **vehicle-agnostic decision core plus a thin per-vehicle CAN adapter**
+
+not "works on any vehicle unmodified". That is how real automotive middleware is structured,
+so it is a strength rather than a hedge.
+
+**Development constraint.** SocketCAN is Linux-only, so `CanTransport` **cannot be tested on
+the MacBook at all** — only on the Jetson. Everything else (corridor, confirmation, state
+machine, simulator) stays fully testable on the Mac, which is why those were built first.
+
+**The honest cost.** Nothing physically moves. The robotics claim shifts from "an autonomous
+vehicle" to "an edge-deployed, vehicle-agnostic control unit" — accurate, defensible, and
+narrower. If a physical vehicle becomes available later, the transport swap is the only change
+required, which is the point of the abstraction.
