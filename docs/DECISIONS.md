@@ -1390,13 +1390,18 @@ the full chain end to end**: recorded road video → real YOLO → real corridor
 **Why this is better, not a retreat.** It removes every uncertain hardware dependency from the
 critical path at once:
 
-| Was blocking | Now |
-|---|---|
-| Lab robot model unknown (a "beetle bot", availability uncertain) | **not needed** |
-| Pi Camera Module 3 / IMX708 not officially JetPack-supported (D048) | **not needed** — video playback |
-| CAN transceiver not ordered, procurement on the critical path | **not needed** — see below |
+| Was blocking | Status for the Sep 20 demo | If it returns |
+|---|---|---|
+| Lab robot ("beetle bot", availability uncertain) | **deferred** | new `Transport` subclass, or reuse `CanTransport` if it speaks CAN |
+| Pi Camera Module 3 / IMX708 not JetPack-supported (D048) | **deferred** — video playback instead | swap the frame source; everything downstream is unchanged |
+| CAN transceiver not ordered | **deferred** — `vcan0` instead | one config line, `vcan0` → `can0` |
 
-The only hardware that must work is the Jetson itself.
+**Deferred, not eliminated.** Each of these is expected to return, and the architecture is
+shaped so that each returns as a *swap* rather than a rewrite — that is the whole reason the
+frame source and the transport are abstractions. What changes is which implementation is
+configured, never the decision logic between them.
+
+The only hardware that must work **for this demo** is the Jetson itself.
 
 **Real CAN with no transceiver.** Linux ships SocketCAN with a virtual interface. On the
 Jetson, `modprobe vcan` plus two `ip link` commands creates `vcan0`, and `CanTransport` writes
@@ -1420,7 +1425,8 @@ so it is a strength rather than a hedge.
 the MacBook at all** — only on the Jetson. Everything else (corridor, confirmation, state
 machine, simulator) stays fully testable on the Mac, which is why those were built first.
 
-**The honest cost.** Nothing physically moves. The robotics claim shifts from "an autonomous
-vehicle" to "an edge-deployed, vehicle-agnostic control unit" — accurate, defensible, and
-narrower. If a physical vehicle becomes available later, the transport swap is the only change
-required, which is the point of the abstraction.
+**The honest cost.** Nothing physically moves *at this demo*. The robotics claim shifts from
+"an autonomous vehicle" to "an edge-deployed, vehicle-agnostic control unit" — accurate,
+defensible, and narrower. The physical vehicle, the live camera and the transceiver are all
+expected back; each is a configured implementation swap, which is the point of the
+abstraction and should be stated that way rather than as scope that was dropped.
