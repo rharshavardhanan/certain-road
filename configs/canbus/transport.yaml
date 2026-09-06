@@ -1,0 +1,24 @@
+# CAN transport.
+#
+# The interface/channel pair is the ONLY thing that differs between developing on
+# the MacBook and running on the Jetson:
+#
+#   MacBook  interface: virtual    channel: test    (python-can, cross-platform)
+#   Jetson   interface: socketcan  channel: vcan0   (real CAN frames, no hardware)
+#   Vehicle  interface: socketcan  channel: can0    (real bus, needs a transceiver)
+#
+# Going from the demo to a real vehicle is therefore a config change, not a code
+# change — which is what the transport abstraction exists for (D049, D052).
+#
+# On the Jetson, vcan0 is created with:
+#   sudo modprobe vcan
+#   sudo ip link add dev vcan0 type vcan && sudo ip link set up vcan0
+#   candump vcan0        # watch the frames live
+
+interface: virtual
+channel: test
+
+# Arbitration ID for drive commands. PROVISIONAL: the real value belongs to the
+# target vehicle's DBC and is chosen by whoever owns that bus, not by us. 0x101
+# is a placeholder in the standard 11-bit range.
+arbitration_id: 0x101
