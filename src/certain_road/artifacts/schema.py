@@ -99,3 +99,29 @@ class DriveLogRow(ArtifactModel):
     speed: float
     steer: float
     governing_det_id: str | None
+
+
+class SegmentRow(ArtifactModel):
+    """One evaluation segment: a fixed block of consecutive frames.
+
+    **Evaluation segment, not road segment** — the terminology rule exists exactly
+    here (D010). Without GPS or odometry these are blocks of frames, not measured
+    stretches of road, and calling them road segments would claim a spatial extent
+    nothing in this pipeline measures.
+    """
+
+    artifact_name: ClassVar[str] = "segments"
+    schema_version: ClassVar[str] = "1.0.0"
+
+    segment_id: str
+    survey_date: date
+    n_frames: int
+    first_frame_id: str
+    last_frame_id: str
+    first_timestamp_s: float
+    last_timestamp_s: float
+    n_detections: int
+    n_linear_crack: int
+    n_alligator_crack: int
+    n_pothole: int
+    mean_score: float
