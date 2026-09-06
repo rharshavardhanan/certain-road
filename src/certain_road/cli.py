@@ -236,6 +236,7 @@ def detect_predict(
     from certain_road.artifacts.io import write_artifact
     from certain_road.artifacts.schema import DetectionRow
     from certain_road.perception.predict import (
+        load_class_drops,
         load_class_map,
         load_thresholds,
         predict_to_detections,
@@ -252,6 +253,7 @@ def detect_predict(
         weights,
         images,
         class_map=load_class_map(class_map),
+        class_drop=load_class_drops(class_map),
         conf=resolved_conf,
         device=device,
         imgsz=resolved_imgsz,
@@ -298,6 +300,7 @@ def detect_eval(
         render_report,
     )
     from certain_road.perception.predict import (
+        load_class_drops,
         load_class_map,
         load_thresholds,
         predict_to_detections,
@@ -315,6 +318,7 @@ def detect_eval(
         weights,
         images_dir,
         class_map=load_class_map(class_map),
+        class_drop=load_class_drops(class_map),
         conf=thresholds["map_conf_floor"],
         device=device,
         imgsz=thresholds["imgsz"],

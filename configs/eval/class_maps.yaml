@@ -18,3 +18,21 @@ maps:
       labels. Merging is a pure relabel of predictions: boxes are not
       combined or deduplicated.
     mapping: {0: 0, 1: 0, 2: 1, 3: 2}
+
+  rdd2022_5class:
+    description: >
+      RDD2022 taxonomy plus a Repair class, as used by some published models
+      (e.g. rezzzq/yolo12s-road-damage-rdd2022). D00 and D10 merge to
+      linear_crack exactly as in rdd2022_4class.
+
+      `Repair` is DROPPED, and the drop is explicit rather than implicit. A
+      repaired area is not pavement distress: counting it as damage would
+      penalise a road for having been maintained, which inverts the maintenance
+      signal the whole project produces. D037 found the same label in RDD2022's
+      China subsets and dropped it for the same reason.
+
+      Listing it under `drop` keeps the harness fail-loud: an id that is neither
+      mapped nor explicitly dropped still raises, so a future 6-class model
+      cannot silently lose a class.
+    mapping: {0: 0, 1: 0, 2: 1, 3: 2}
+    drop: [4]

@@ -39,18 +39,40 @@ def load_class_map(name: str) -> dict[int, int]:
     return {int(k): int(v) for k, v in maps[name]["mapping"].items()}
 
 
+def load_class_drops(name: str) -> set[int]:
+    """Class ids this map deliberately discards.
+
+    Separate from the mapping so a drop is a stated decision rather than an
+    absence. `remap_class_ids` still raises on an id that is neither mapped nor
+    listed here, so an unfamiliar class can never vanish quietly.
+    """
+    maps = yaml.safe_load(CLASS_MAPS_PATH.read_text())["maps"]
+    if name not in maps:
+        raise ValueError(f"unknown class map {name!r}; choices: {sorted(maps)}")
+    return {int(v) for v in maps[name].get("drop", [])}
+
+
 def load_thresholds() -> dict:
     """Load `configs/eval/thresholds.yaml` -- the single source for conf/iou defaults."""
     return yaml.safe_load(THRESHOLDS_PATH.read_text())
 
 
-def remap_class_ids(df: pd.DataFrame, class_map: dict[int, int]) -> pd.DataFrame:
+def remap_class_ids(
+    df: pd.DataFrame,
+    class_map: dict[int, int],
+    class_drop: set[int] | None = None,
+    *,
+    drop: set[int] | None = None,
+) -> pd.DataFrame:
     """Relabel `class_id` per `class_map`. A pure relabel: boxes are never combined.
 
-    Raises `ValueError` naming the offending id(s) if any row's class is absent
-    from the map -- silently dropping an unmapped class is exactly the failure
-    this harness exists to prevent.
+    Ids in `drop` are removed deliberately. Any other id absent from the map
+    raises `ValueError` naming it -- silently dropping an unmapped class is
+    exactly the failure this harness exists to prevent.
     """
+    drop = drop or set()
+    if drop:
+        df = df[~df["class_id"].isin(drop)]
     unmapped = sorted(set(df["class_id"]) - set(class_map))
     if unmapped:
         raise ValueError(f"class id(s) {unmapped} absent from class map {class_map}")
@@ -118,6 +140,7 @@ def predict_to_detections(
     conf: float,
     device: str,
     imgsz: int,
+    class_drop: set[int] | None = None,
 ) -> pd.DataFrame:
     """Run `weights` over `image_dir`, remap classes, return a `DetectionRow` frame.
 
@@ -127,6 +150,6 @@ def predict_to_detections(
     columnless frame.
     """
     raw = _raw_predictions(weights, image_dir, conf=conf, device=device, imgsz=imgsz)
-    remapped = remap_class_ids(raw, class_map)
+    remapped = remap_class_ids(raw, class_map, drop=class_drop)
     remapped["class_name"] = remapped["class_id"].map(ID_TO_CLASS)
     return remapped[DetectionRow.columns()]

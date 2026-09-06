@@ -74,6 +74,7 @@ Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](sup
 | D050 | Simulator is a fourth `Transport`; robot for the demo, simulation for the trial matrix | Accepted |
 | D051 | CP cut from the sprint; survey ends at vision-estimated PCI; ADAS-inspired behaviours added; calibration split preserved | Accepted |
 | D052 | Deliverable is a vehicle-agnostic control unit demoed on the Jetson: recorded video → real YOLO → real CAN on vcan0; no robot, camera or transceiver required | Accepted |
+| D053 | External RDD2022 weights rejected: 0.9765 mAP50 on our test set indicates train/test overlap, so they cannot be measured | Accepted |
 
 ---
 
@@ -1430,3 +1431,44 @@ machine, simulator) stays fully testable on the Mac, which is why those were bui
 defensible, and narrower. The physical vehicle, the live camera and the transceiver are all
 expected back; each is a configured implementation swap, which is the point of the
 abstraction and should be stated that way rather than as scope that was dropped.
+
+## D053 — External RDD2022 weights rejected: they cannot be measured
+
+**2026-09-06 · Accepted**
+
+`rezzzq/yolo12s-road-damage-rdd2022` (MIT, 9.26 M params) was benchmarked against
+`multicountry_v8s` on the 784-image held-out India test set, through the identical harness.
+
+| model | mAP50 | mAP50-95 |
+|---|---:|---:|
+| ours | 0.3932 | 0.1662 |
+| external v12s | **0.9765** | 0.7221 |
+
+**0.9765 is not a performance result.** It indicates evaluation on training data. A separate
+published benchmark measured the same architecture on RDD2022 India at **0.2808** using a
+held-out split; the CRDDC'2022 winning *ensemble* reached F1 0.769 across all six countries.
+Our `test` split is carved by salted hash from RDD2022's India training data (D009), so any
+model trained on RDD2022 has seen it.
+
+**The weights are rejected — not for being bad, but for being unmeasurable.** Every derived
+number would be inflated by an unknown amount with no way to detect it.
+
+**This corrects an understatement in my earlier reasoning.** Contamination was framed as a
+conformal-calibration problem, which implied it stopped mattering when CP left the sprint
+(D051). It is more basic: it destroys the ability to evaluate the detector at all, regardless
+of whether a conformal layer exists.
+
+**Claim it carefully.** Overlap is inferred, not proven — the author publishes no split. The
+defensible phrasing is *"performance inconsistent with a held-out evaluation, indicating
+probable train/test overlap"*.
+
+**The finding is worth more than the comparison.** This is an empirical instance of exactly
+the failure the project exists to prevent: a system that looks excellent, reports confident
+numbers, and is silently wrong — caught only because a provenance-controlled test set existed
+to check it against. Full write-up:
+[`detector-benchmark.md`](detector-benchmark.md).
+
+**Also established:** the model loads on mainline ultralytics 8.4.115 with no YOLOv12 fork,
+contrary to its model card; and `rdd2022_5class` drops `Repair` explicitly, since a repaired
+area is not distress and counting it as damage would penalise a road for having been
+maintained.
