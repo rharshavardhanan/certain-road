@@ -49,6 +49,21 @@ forbidden_modules =
     certain_road.survey
     certain_road.dashboard
 
+[importlinter:contract:nothing-imports-the-composition-roots]
+name = runtime and sim compose other packages; nothing may depend on them
+type = forbidden
+source_modules =
+    certain_road.artifacts
+    certain_road.core
+    certain_road.perception
+    certain_road.driving
+    certain_road.canbus
+    certain_road.survey
+    certain_road.dashboard
+forbidden_modules =
+    certain_road.runtime
+    certain_road.sim
+
 [importlinter:contract:contract-layer-is-a-leaf]
 name = artifacts and core must not import feature packages
 type = forbidden
@@ -62,3 +77,4 @@ forbidden_modules =
     certain_road.survey
     certain_road.dashboard
     certain_road.sim
+    certain_road.runtime

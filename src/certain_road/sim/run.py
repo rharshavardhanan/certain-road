@@ -16,15 +16,9 @@ import yaml
 from certain_road.core.paths import repo_root
 from certain_road.driving.confirm import Confirmer
 from certain_road.driving.controller import command_for
-from certain_road.driving.corridor import (
-    Corridor,
-    Zone,
-    in_path,
-    lateral_offset,
-    lateral_zone,
-    urgency,
-)
-from certain_road.driving.decision import DriveState, Hazard, Perception, Policy, next_state
+from certain_road.driving.corridor import Corridor
+from certain_road.driving.decision import DriveState, Policy, next_state
+from certain_road.driving.perceive import build_perception
 from certain_road.sim.model import Robot, step
 from certain_road.sim.project import project_pothole
 from certain_road.sim.scenario import Scenario, Trace
@@ -59,39 +53,8 @@ def run_scenario(
             if (d := project_pothole(p.x, p.y, p.radius, state, robot.camera)) is not None
         ]
 
-        # Nearest hazard on the driving line governs; lower in frame is nearer.
-        ahead = [d for d in dets if in_path(d, corridor, min_overlap=corridor.min_overlap)]
-        nearest = max(ahead, key=lambda d: d.y2) if ahead else None
-
-        confirmed = confirmer.update(nearest is not None)
-
-        hazard = None
-        if confirmed and nearest is not None:
-            hazard = Hazard(
-                lateral_offset=lateral_offset(nearest, corridor),
-                urgency=urgency(nearest, corridor),
-                score=nearest.score,
-            )
-
-        # Escape clearance by zone, not by a shifted corridor: zones are adjacent
-        # and disjoint, so a hazard on the driving line can never read as blocking
-        # both escapes (see corridor.lateral_zone).
-        #
-        # The governing hazard is excluded. Once the robot starts swerving, that
-        # hazard drifts out of PATH and into the escape zone on the side being
-        # steered away from — counting it would make the robot block its own
-        # manoeuvre and stop mid-avoidance. The question is whether something
-        # ELSE occupies the escape lane.
-        others = [d for d in dets if d is not nearest]
-        zones = [lateral_zone(d, corridor, escape_lanes=escape_lanes) for d in others]
-
-        perception = Perception(
-            hazard=hazard,
-            left_blocked=Zone.LEFT in zones,
-            right_blocked=Zone.RIGHT in zones,
-            frame_age=0,
-            healthy=True,
-        )
+        perception, nearest = build_perception(dets, corridor, confirmer, escape_lanes=escape_lanes)
+        hazard = perception.hazard
 
         drive_state = next_state(drive_state, perception, policy)
         command = command_for(drive_state, policy)
