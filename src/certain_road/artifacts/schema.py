@@ -78,3 +78,24 @@ class Detection:
     y2: float
     img_w: int
     img_h: int
+
+
+class DriveLogRow(ArtifactModel):
+    """One frame's drive decision and the command it produced.
+
+    Written by the runtime, read by the survey and the dashboard. It exists so the
+    two pipelines stay decoupled: `survey/` may not import `driving/` (D049), so it
+    learns what the vehicle did from an artifact rather than from a live object.
+    """
+
+    artifact_name: ClassVar[str] = "drive_log"
+    schema_version: ClassVar[str] = "1.0.0"
+
+    frame_id: str
+    timestamp_s: float
+    survey_date: date
+    drive_state: str
+    action: str
+    speed: float
+    steer: float
+    governing_det_id: str | None
