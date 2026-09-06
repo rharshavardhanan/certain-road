@@ -1,5 +1,35 @@
 # Training on Colab (T4)
 
+## Read this first: what fits in a free session
+
+A free Colab session lasts **up to ~5 h 20 min, not guaranteed**. That single constraint
+decides which run to do.
+
+| run | setup | training | total | fits |
+|---|---|---|---|---|
+| **India** (4,617 train) | ~15 min | 50 ep x ~1.5 min | **~1.5 h** | yes, with 3 h headroom |
+| Multi-country (35,296) | ~35 min | 50 ep x ~7 min | **~6.4 h** | **no** |
+
+**Do the India run.** Multi-country overruns, and trimming epochs to squeeze it in
+reintroduces the exact truncation this run exists to eliminate.
+
+Headroom is not luxury here: free resources are explicitly "not guaranteed", so leave room
+for a slow download or one retry.
+
+**Do not plan to resume across sessions.** `save_period` checkpoints are insurance against a
+crash, not a strategy for finishing a long run — ultralytics' `resume=True` already failed on
+this project (D043), rebuilding the head at COCO's `nc=80` and refusing to load our 3-class
+weights. Never bet a multi-hour run on discovering whether it behaves differently this time.
+
+Disk is not a constraint either way: India needs ~14 GB of the ~112 GB available,
+multi-country ~27 GB.
+
+**What the India run answers.** v8n-India vs v8s-India on identical data — the clean capacity
+ablation that D042 confounded by moving model size and training data together. That question
+is currently unanswered.
+
+
+
 **Do not upload the dataset.** `train`+`val` is 10 GB — hours of upload on a home
 connection. Colab pulls RDD2022 from Figshare at datacenter speed instead, and because our
 split is a **salted hash of the filename** (D009), regenerating it there produces a
@@ -135,9 +165,11 @@ if it runs all 50, that is also the answer. Either beats guessing.
     --config configs/train/yolov8s_colab.yaml --country India
 ```
 
-Expect roughly **1–2 min/epoch** for India (4,617 images) → ~1.5 h for 50 epochs, and
-**6–9 min/epoch** for multi-country (35,296) → 5–7 h. The multi-country run is close to
-Colab's free session cap, which is exactly why `save_period: 5` matters.
+Expect roughly **1–2 min/epoch** → ~1.5 h for 50 epochs on India.
+
+Multi-country is 6–9 min/epoch, i.e. 5–7 h of training on top of ~35 min of setup. That
+**exceeds the free session cap** — see the note at the top. Run it on a paid session or a
+local GPU, not by trimming epochs.
 
 ### Cell 8 — evaluate on the held-out test set
 
@@ -177,6 +209,11 @@ The `.pt` alone is not enough to reproduce or defend a result. Send:
 
 **`optimizer: auto` discards your `lr0`.** It happened on this project already (D043). Check
 the log line reading `optimizer: ... (lr=...)` and confirm it says what you configured.
+
+**Batch changes between machines.** The Mac config uses 16, this uses 32. The comparison
+against `multicountry_v8s` is therefore "different training setup, same held-out test set" —
+which is a fair comparison of *outcomes*, but not a controlled experiment on epoch count.
+Describe it that way.
 
 **A different split invalidates everything.** Not just the new model's numbers — the
 *comparison* too. Cell 4's assert is the whole safeguard; treat a mismatch as a stop, not a
