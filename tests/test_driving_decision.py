@@ -182,3 +182,35 @@ def test_commands_are_within_wire_range(state):
     cmd = command_for(state, POLICY)
     assert 0.0 <= cmd.speed <= 1.0
     assert -1.0 <= cmd.steer <= 1.0
+
+
+# ------------------------------------------------------------------ hysteresis
+
+
+def test_committed_manoeuvre_is_not_reconsidered_on_noise():
+    """Without this the machine re-derives a side every frame and flip-flops."""
+    # Committed left; the hazard's offset drifts across the centreline as the
+    # robot swerves. The side must not flip.
+    for offset in (+0.4, +0.05, -0.05, -0.4):
+        p = perception(haz=hazard(offset=offset, urgency=Urgency.NEAR))
+        assert next_state(DriveState.AVOID_LEFT, p, POLICY) is DriveState.AVOID_LEFT
+
+
+def test_committed_manoeuvre_reverses_when_that_side_becomes_blocked():
+    """Reacting to a newly-visible blocker is correct, not oscillation."""
+    p = perception(haz=hazard(offset=+0.4, urgency=Urgency.NEAR), left_blocked=True)
+    assert next_state(DriveState.AVOID_LEFT, p, POLICY) is DriveState.AVOID_RIGHT
+
+
+def test_commitment_is_released_when_the_hazard_clears():
+    assert next_state(DriveState.AVOID_LEFT, perception(), POLICY) is DriveState.NORMAL
+
+
+def test_commitment_never_outranks_a_failsafe():
+    p = perception(haz=hazard(urgency=Urgency.NEAR), healthy=False)
+    assert next_state(DriveState.AVOID_LEFT, p, POLICY) is DriveState.STOP
+
+
+def test_both_sides_blocked_still_stops_even_when_committed():
+    p = perception(haz=hazard(urgency=Urgency.IMMINENT), left_blocked=True, right_blocked=True)
+    assert next_state(DriveState.AVOID_LEFT, p, POLICY) is DriveState.STOP

@@ -100,7 +100,21 @@ def next_state(current: DriveState, perception: Perception, policy: Policy) -> D
     if haz.urgency is Urgency.FAR:
         return DriveState.WARNING
 
-    # 4. Near or imminent: choose an escape side, or stop.
+    # 4. Hysteresis: a manoeuvre already under way is not reconsidered while it is
+    #    still viable. Without this the machine re-derives a side every frame and
+    #    flip-flops on noise around the centreline — which on a real vehicle wastes
+    #    the manoeuvre and looks like indecision.
+    #
+    #    The commitment is released only by something that genuinely invalidates
+    #    it: the hazard clearing (handled above, which returns NORMAL), or the
+    #    committed side becoming blocked. Reacting to a newly-visible blocker is
+    #    not oscillation — it is the correct response to new information.
+    if current is DriveState.AVOID_LEFT and not perception.left_blocked:
+        return DriveState.AVOID_LEFT
+    if current is DriveState.AVOID_RIGHT and not perception.right_blocked:
+        return DriveState.AVOID_RIGHT
+
+    # 5. Choose an escape side, or stop.
     #    Steer AWAY from the hazard: one on the left means going right.
     wants_right = haz.lateral_offset < 0
     wants_left = haz.lateral_offset > 0
