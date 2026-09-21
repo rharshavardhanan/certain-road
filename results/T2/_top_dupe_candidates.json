@@ -1,0 +1,242 @@
+[
+ {
+  "corr": 0.9716,
+  "left": "India__India_000349",
+  "right": "India__India_009015",
+  "distance": 5
+ },
+ {
+  "corr": 0.9712,
+  "left": "India__India_007213",
+  "right": "India__India_005810",
+  "distance": 6
+ },
+ {
+  "corr": 0.9688,
+  "left": "India__India_006663",
+  "right": "India__India_006537",
+  "distance": 3
+ },
+ {
+  "corr": 0.9679,
+  "left": "India__India_008809",
+  "right": "India__India_007688",
+  "distance": 5
+ },
+ {
+  "corr": 0.9645,
+  "left": "India__India_009528",
+  "right": "India__India_008544",
+  "distance": 2
+ },
+ {
+  "corr": 0.9634,
+  "left": "India__India_002741",
+  "right": "India__India_000836",
+  "distance": 4
+ },
+ {
+  "corr": 0.963,
+  "left": "India__India_006523",
+  "right": "India__India_003331",
+  "distance": 5
+ },
+ {
+  "corr": 0.9607,
+  "left": "India__India_002957",
+  "right": "India__India_000712",
+  "distance": 6
+ },
+ {
+  "corr": 0.9603,
+  "left": "India__India_007719",
+  "right": "India__India_004916",
+  "distance": 4
+ },
+ {
+  "corr": 0.9594,
+  "left": "India__India_001036",
+  "right": "India__India_000836",
+  "distance": 5
+ },
+ {
+  "corr": 0.9594,
+  "left": "India__India_002130",
+  "right": "India__India_004519",
+  "distance": 5
+ },
+ {
+  "corr": 0.9593,
+  "left": "India__India_000825",
+  "right": "India__India_006927",
+  "distance": 5
+ },
+ {
+  "corr": 0.9591,
+  "left": "India__India_009277",
+  "right": "India__India_006891",
+  "distance": 5
+ },
+ {
+  "corr": 0.9591,
+  "left": "India__India_000502",
+  "right": "India__India_001537",
+  "distance": 3
+ },
+ {
+  "corr": 0.9578,
+  "left": "India__India_006499",
+  "right": "India__India_004878",
+  "distance": 5
+ },
+ {
+  "corr": 0.9577,
+  "left": "India__India_009577",
+  "right": "India__India_004916",
+  "distance": 5
+ },
+ {
+  "corr": 0.9569,
+  "left": "India__India_001179",
+  "right": "India__India_004540",
+  "distance": 4
+ },
+ {
+  "corr": 0.9565,
+  "left": "India__India_003236",
+  "right": "India__India_009297",
+  "distance": 1
+ },
+ {
+  "corr": 0.9555,
+  "left": "India__India_002352",
+  "right": "India__India_005810",
+  "distance": 4
+ },
+ {
+  "corr": 0.9547,
+  "left": "India__India_003098",
+  "right": "India__India_000801",
+  "distance": 6
+ },
+ {
+  "corr": 0.9546,
+  "left": "India__India_007572",
+  "right": "India__India_004441",
+  "distance": 5
+ },
+ {
+  "corr": 0.9545,
+  "left": "India__India_007784",
+  "right": "India__India_001084",
+  "distance": 6
+ },
+ {
+  "corr": 0.9542,
+  "left": "India__India_003033",
+  "right": "India__India_007001",
+  "distance": 2
+ },
+ {
+  "corr": 0.9541,
+  "left": "India__India_009680",
+  "right": "India__India_008785",
+  "distance": 6
+ },
+ {
+  "corr": 0.9537,
+  "left": "India__India_005876",
+  "right": "India__India_000318",
+  "distance": 6
+ },
+ {
+  "corr": 0.9518,
+  "left": "India__India_009736",
+  "right": "India__India_006872",
+  "distance": 5
+ },
+ {
+  "corr": 0.9513,
+  "left": "India__India_004427",
+  "right": "India__India_000272",
+  "distance": 6
+ },
+ {
+  "corr": 0.9508,
+  "left": "India__India_006547",
+  "right": "India__India_000704",
+  "distance": 3
+ },
+ {
+  "corr": 0.9508,
+  "left": "India__India_003454",
+  "right": "India__India_004540",
+  "distance": 5
+ },
+ {
+  "corr": 0.9505,
+  "left": "India__India_000870",
+  "right": "India__India_006872",
+  "distance": 6
+ },
+ {
+  "corr": 0.9503,
+  "left": "India__India_001853",
+  "right": "India__India_007457",
+  "distance": 4
+ },
+ {
+  "corr": 0.9501,
+  "left": "India__India_007158",
+  "right": "India__India_004540",
+  "distance": 1
+ },
+ {
+  "corr": 0.949,
+  "left": "India__India_005294",
+  "right": "India__India_004613",
+  "distance": 6
+ },
+ {
+  "corr": 0.9488,
+  "left": "India__India_006383",
+  "right": "India__India_001187",
+  "distance": 5
+ },
+ {
+  "corr": 0.9486,
+  "left": "India__India_001599",
+  "right": "India__India_000483",
+  "distance": 3
+ },
+ {
+  "corr": 0.9484,
+  "left": "India__India_000934",
+  "right": "India__India_002600",
+  "distance": 5
+ },
+ {
+  "corr": 0.9481,
+  "left": "India__India_009577",
+  "right": "India__India_004223",
+  "distance": 6
+ },
+ {
+  "corr": 0.948,
+  "left": "India__India_002664",
+  "right": "India__India_003143",
+  "distance": 3
+ },
+ {
+  "corr": 0.948,
+  "left": "India__India_001505",
+  "right": "India__India_003681",
+  "distance": 5
+ },
+ {
+  "corr": 0.9479,
+  "left": "India__India_000991",
+  "right": "India__India_000483",
+  "distance": 1
+ }
+]

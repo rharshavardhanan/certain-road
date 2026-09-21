@@ -16,14 +16,14 @@
   },
   "splits": {
     "india_cal": {
-      "images": 1205,
-      "backgrounds": 668,
+      "images": 1156,
+      "backgrounds": 682,
       "instances": {
-        "linear_crack": 264,
-        "alligator_crack": 334,
-        "pothole": 515
+        "linear_crack": 256,
+        "alligator_crack": 271,
+        "pothole": 457
       },
-      "total_instances": 1113
+      "total_instances": 984
     },
     "india_full": {
       "images": 7706,
@@ -36,44 +36,44 @@
       "total_instances": 6831
     },
     "india_heldout": {
-      "images": 2328,
-      "backgrounds": 1305,
+      "images": 2312,
+      "backgrounds": 1347,
       "instances": {
-        "linear_crack": 487,
-        "alligator_crack": 642,
-        "pothole": 962
+        "linear_crack": 506,
+        "alligator_crack": 582,
+        "pothole": 947
       },
-      "total_instances": 2091
+      "total_instances": 2035
     },
     "india_test": {
-      "images": 1123,
-      "backgrounds": 637,
+      "images": 1156,
+      "backgrounds": 665,
       "instances": {
-        "linear_crack": 223,
-        "alligator_crack": 308,
-        "pothole": 447
+        "linear_crack": 250,
+        "alligator_crack": 311,
+        "pothole": 490
       },
-      "total_instances": 978
+      "total_instances": 1051
     },
     "india_train": {
-      "images": 4579,
-      "backgrounds": 2686,
+      "images": 4623,
+      "backgrounds": 2691,
       "instances": {
-        "linear_crack": 970,
-        "alligator_crack": 1173,
-        "pothole": 1920
+        "linear_crack": 969,
+        "alligator_crack": 1258,
+        "pothole": 1938
       },
-      "total_instances": 4063
+      "total_instances": 4165
     },
     "india_val": {
-      "images": 799,
-      "backgrounds": 492,
+      "images": 771,
+      "backgrounds": 445,
       "instances": {
-        "linear_crack": 166,
-        "alligator_crack": 206,
-        "pothole": 305
+        "linear_crack": 148,
+        "alligator_crack": 181,
+        "pothole": 302
       },
-      "total_instances": 677
+      "total_instances": 631
     },
     "nonindia_replay": {
       "images": 5000,

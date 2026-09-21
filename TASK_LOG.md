@@ -56,7 +56,7 @@ supersede it).**
 | T0 | mostly done | `git init` skipped (repo has 64 commits); step 3 open on package naming; step 5 blocked on U1 |
 | T1 | **done** | all counts match reference exactly; Japan discrepancy resolved |
 | T2 | **done** | 12 leakage tests green; D059 replaced the block split |
-| T3 | ready | U1 satisfied; D061 audit runs first |
+| T3 | **ready** | U1 satisfied, D061 done — splits are final |
 | T4 | **done** | PASS, worst loss diff 2.1% |
 | T5 | blocked | U1 — and it is a **full training run**, not a verification (see gate below) |
 | T6 | blocked | U1 (T5) |
@@ -283,3 +283,32 @@ overnight fallback for B — though Kaggle stays the default.
 **U1 is satisfied.** `~/.kaggle/access_token` (CLI 2.2.4 ACCESS_TOKEN auth),
 user `harshavardhananr`, written to `configs/project.yaml`. The token was pasted
 in chat, so it should be rotated once T5 is running.
+
+### 2026-09-22 — D061 done: a real leak found and closed
+
+The India split held **same-location frames** across the train/held-out
+boundary — same pipes, same signboard, same parked car, seconds apart. Not the
+same file; the same place, which contaminates a held-out score just as badly.
+
+An initial check for correlation > 0.98 found nothing and suggested no leak.
+That was the wrong test: it looks for identical frames (~0.999), while
+same-scene pairs top out near 0.97.
+
+Threshold calibrated by inspecting bands: 0.94+ visibly the same location,
+0.915- different scenes sharing a dashcam composition. Chose **0.93**, erring
+toward over-grouping because the error is asymmetric.
+
+**A bug in the audit itself:** it hashed with PIL/LANCZOS while the grouper used
+cv2/INTER_AREA, so the audit flagged pairs the grouper never considered and 19
+same-scene pairs survived the first regrouping. Both now share
+`perception/dataset/dedupe.py`, with the grouping prefilter deliberately looser
+than the audit's (Hamming 12 vs 6).
+
+**Result: 0 same-scene pairs cross the India boundary** (max correlation 0.9297,
+from 0.9716). 253 groups covering 1,602 images held together. The 771-image
+group landed entirely in india_train; nothing large touches val/cal/test. Split
+fractions are now 59.99 / 10.01 / 15.00 / 15.00 — closer to target than before.
+
+Non-India: 3,964 pairs flagged, reported as a count only per D061.
+
+**Splits are final. T3 can bake them in.**

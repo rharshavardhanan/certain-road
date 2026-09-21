@@ -117,3 +117,43 @@ def test_external_sets_never_appear_in_a_training_list():
     for split in ("nonindia_train", "india_train", "nonindia_replay"):
         for name in names(split):
             assert not name.startswith(("BharatPotHole__", "Chennai__")), name
+
+
+# --- D061: same-scene groups must never span an India split -------------------
+
+SCENE_GROUPS = repo_root() / "results" / "T2" / "india_scene_groups.json"
+
+
+@pytest.mark.skipif(not SCENE_GROUPS.exists(), reason="run scripts/scene_groups.py")
+def test_no_scene_group_spans_india_splits():
+    """The D061 firewall.
+
+    Near-duplicate frames of one location - same pipes, same signboard, seconds
+    apart - are as contaminating as an identical file: a model that trained on
+    one has effectively seen the other. Grouping is transitive, so a chain of
+    overlapping frames along one stretch of road stays whole.
+    """
+    import json
+
+    groups = json.loads(SCENE_GROUPS.read_text())["groups"]
+    membership = {split: names(split) for split in INDIA_SUBSETS}
+
+    offenders = []
+    for gid, members in groups.items():
+        landed = {s for s, pool in membership.items() if pool & set(members)}
+        if len(landed) > 1:
+            offenders.append((gid, sorted(landed), len(members)))
+    assert not offenders, f"{len(offenders)} scene groups span splits: {offenders[:3]}"
+
+
+@pytest.mark.skipif(not SCENE_GROUPS.exists(), reason="run scripts/scene_groups.py")
+def test_every_grouped_image_is_still_present_exactly_once():
+    """Regrouping must not lose or duplicate an image."""
+    import json
+
+    groups = json.loads(SCENE_GROUPS.read_text())["groups"]
+    grouped = {m for members in groups.values() for m in members}
+    union = set().union(*(names(s) for s in INDIA_SUBSETS))
+    assert grouped <= union
+    counts = [sum(m in names(s) for s in INDIA_SUBSETS) for m in sorted(grouped)]
+    assert set(counts) == {1}, "a grouped image appears in more than one split"

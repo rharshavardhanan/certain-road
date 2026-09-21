@@ -87,6 +87,46 @@ def split_india(
     return {k: sorted(v) for k, v in out.items()}
 
 
+def split_india_grouped(
+    stems: list[str],
+    *,
+    fracs: dict[str, float],
+    groups: list[list[str]],
+    salt: str = SALT,
+) -> dict[str, list[str]]:
+    """Split India keeping same-scene groups intact (D061).
+
+    A plain per-image hash scatters near-duplicate frames of one location across
+    train and test, which inflates the India result. Here the unit of assignment
+    is a *group* of images showing the same place, not an image.
+
+    Groups are placed largest-first into whichever split is furthest below its
+    target count. Hashing each group independently would be simpler but lets a
+    205-image group land anywhere and wreck the fractions; deficit-filling keeps
+    them close while the ordering stays deterministic — size first, then the
+    salted hash of the group's first member.
+    """
+    order = ["india_train", "india_val", "india_cal", "india_test"]
+    member_of: dict[str, int] = {}
+    units: list[list[str]] = []
+    for group in groups:
+        present = sorted(m for m in group if m in set(stems))
+        if len(present) > 1:
+            for m in present:
+                member_of[m] = len(units)
+            units.append(present)
+    units.extend([[s] for s in sorted(stems) if s not in member_of])
+
+    units.sort(key=lambda u: (-len(u), unit_hash(u[0], salt)))
+
+    targets = {k: fracs[k] * len(stems) for k in order}
+    out: dict[str, list[str]] = {k: [] for k in order}
+    for unit in units:
+        key = max(order, key=lambda k: targets[k] - len(out[k]))
+        out[key].extend(unit)
+    return {k: sorted(v) for k, v in out.items()}
+
+
 def sample_replay(train: list[str], n: int, seed: int) -> list[str]:
     """Fixed sample of non-India train used to rehearse Model B against forgetting."""
     rng = random.Random(seed)

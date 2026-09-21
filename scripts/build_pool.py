@@ -18,6 +18,7 @@ from certain_road.perception.dataset.pool import (  # noqa: E402
     pool_name,
     sample_replay,
     split_india,
+    split_india_grouped,
     split_nonindia,
     write_split_txt,
 )
@@ -48,7 +49,18 @@ def main() -> int:
     splits = split_nonindia(
         {c: stems[c] for c in NONINDIA}, val_frac=SPLIT["nonindia_val_frac"]
     )
-    splits.update(split_india(stems[INDIA], fracs=SPLIT["india_fracs"]))
+    # D061: keep same-scene groups intact if the audit has produced them.
+    groups_file = repo_root() / "results" / "T2" / "india_scene_groups.json"
+    if groups_file.exists():
+        groups = list(json.loads(groups_file.read_text())["groups"].values())
+        print(f"D061: {len(groups)} scene groups held together", flush=True)
+        splits.update(split_india_grouped(
+            [pool_name(INDIA, s) for s in stems[INDIA]],
+            fracs=SPLIT["india_fracs"], groups=groups,
+        ))
+    else:
+        print("D061: no scene-group file; falling back to per-image split", flush=True)
+        splits.update(split_india(stems[INDIA], fracs=SPLIT["india_fracs"]))
     splits["india_full"] = sorted(pool_name(INDIA, s) for s in stems[INDIA])
     splits["india_heldout"] = sorted(splits["india_cal"] + splits["india_test"])
     splits["nonindia_replay"] = sample_replay(

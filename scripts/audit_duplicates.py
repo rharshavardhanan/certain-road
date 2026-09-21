@@ -19,24 +19,18 @@ from pathlib import Path
 
 import numpy as np
 import yaml
-from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from certain_road.core.paths import repo_root  # noqa: E402
+from certain_road.perception.dataset.dedupe import (  # noqa: E402
+    AUDIT_HAMMING,
+    dhash,
+    hamming_pairs,
+)
 
 CFG = yaml.safe_load((repo_root() / "configs" / "project.yaml").read_text())
 YOLO = repo_root() / CFG["paths"]["yolo"]
-MAX_HAMMING = 6
-POPCOUNT = np.array([bin(i).count("1") for i in range(256)], dtype=np.uint8)
-CHUNK = 512
-
-
-def dhash(path: Path) -> np.uint64:
-    with Image.open(path) as im:
-        px = np.asarray(im.convert("L").resize((9, 8), Image.LANCZOS), dtype=np.int16)
-    bits = (px[:, 1:] > px[:, :-1]).ravel()
-    return np.uint64(int("".join("1" if b else "0" for b in bits), 2))
 
 
 def names(split: str) -> list[str]:
@@ -51,15 +45,7 @@ def hashes(stems: list[str], cache: dict) -> np.ndarray:
 
 
 def close_pairs(a: np.ndarray, b: np.ndarray) -> list[tuple[int, int, int]]:
-    """Indices (i, j, distance) with Hamming distance <= MAX_HAMMING."""
-    found = []
-    for start in range(0, len(a), CHUNK):
-        block = a[start:start + CHUNK]
-        xor = np.bitwise_xor(block[:, None], b[None, :])
-        dist = POPCOUNT[xor.view(np.uint8).reshape(*xor.shape, 8)].sum(-1)
-        for i, j in zip(*np.where(dist <= MAX_HAMMING), strict=True):
-            found.append((start + int(i), int(j), int(dist[i, j])))
-    return found
+    return hamming_pairs(a, b, AUDIT_HAMMING)
 
 
 def compare(label: str, left: str, right_splits: list[str], cache: dict) -> dict:
@@ -70,7 +56,7 @@ def compare(label: str, left: str, right_splits: list[str], cache: dict) -> dict
     pairs = close_pairs(la, ra)
     out = [{"left": ls[i], "right": rs[j], "distance": d} for i, j, d in pairs]
     out.sort(key=lambda r: r["distance"])
-    print(f"{label}: {len(out)} pairs within Hamming {MAX_HAMMING}", flush=True)
+    print(f"{label}: {len(out)} pairs within Hamming {AUDIT_HAMMING}", flush=True)
     return {"left_split": left, "right_splits": right_splits,
             "left_n": len(ls), "right_n": len(rs), "pairs": out}
 
@@ -80,14 +66,14 @@ def main() -> int:
     india = compare("india", "india_train", ["india_cal", "india_test"], cache)
     nonindia = compare("nonindia", "nonindia_train", ["nonindia_val"], cache)
 
-    payload = {"max_hamming": MAX_HAMMING, "method": "dHash 64-bit (9x8 grayscale row diffs)",
+    payload = {"max_hamming": AUDIT_HAMMING, "method": "dHash 64-bit (9x8 grayscale row diffs)",
                "india_cross_split": india, "nonindia_cross_split": nonindia}
     out = repo_root() / "results" / "T2"
     out.mkdir(parents=True, exist_ok=True)
     (out / "duplicates.json").write_text(json.dumps(payload, indent=2))
 
     md = ["# D061 — near-duplicate audit", "",
-          f"64-bit dHash, flagged at Hamming distance <= {MAX_HAMMING}.", "",
+          f"64-bit dHash, flagged at Hamming distance <= {AUDIT_HAMMING}.", "",
           "| comparison | left | right | flagged pairs |", "|---|---|---|---|",
           f"| india_train vs cal+test | {india['left_n']} | {india['right_n']} | "
           f"**{len(india['pairs'])}** |",
