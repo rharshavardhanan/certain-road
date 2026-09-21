@@ -78,3 +78,16 @@ forbidden_modules =
     certain_road.dashboard
     certain_road.sim
     certain_road.runtime
+
+[importlinter:contract:assess-is-a-leaf]
+name = assess is pure analysis over predictions and imports no pipeline
+type = forbidden
+source_modules =
+    certain_road.assess
+forbidden_modules =
+    certain_road.driving
+    certain_road.survey
+    certain_road.dashboard
+    certain_road.canbus
+    certain_road.runtime
+    certain_road.sim

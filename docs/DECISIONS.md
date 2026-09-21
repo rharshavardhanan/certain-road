@@ -81,6 +81,8 @@ Current design spec: [`design.md`](design.md)
 | D057 | Package stays `certain_road`; spec modules are audited and extended, never rewritten | Accepted |
 | D058 | Local commit at the end of each task and before every `eval_locked` run; never push | Accepted |
 | D059 | India block split rejected on evidence: adjacent IDs are uncorrelated, so a per-image salted-hash split at the spec's fractions is used | Accepted |
+| D060 | Model A trains on Kaggle only; the Mac is a fallback for Model B alone, and never for A | Accepted |
+| D061 | Near-duplicate audit by dHash before T3 bakes the splits into an upload | Accepted |
 
 ---
 
@@ -1803,3 +1805,64 @@ split changes without one). This replaces D009's India assignment
 - Salted hashing is kept rather than a seeded shuffle for the reason D009 chose
   it: assignment is stable when the file set changes, so adding or removing
   images never silently reshuffles an image from train into test.
+
+## D060 — Model A trains on Kaggle only; the Mac is a fallback for Model B alone
+
+**2026-09-22 · Accepted**
+
+**Model A never trains on MPS.** It is the model every India claim rests on: it
+must be trained on non-India only, from COCO `yolov8s.pt`, with the fixed
+`train_A` hyperparameters, and its result has to be reproducible by someone else.
+A T4 GPU on Kaggle is the reproducible environment; this particular MacBook is
+not, and MPS has op-level gaps that can shift results in ways nobody would catch
+from a loss curve.
+
+**Model B defaults to Kaggle too**, but may fall back to the Mac if *both* hold:
+
+1. **T4 passes** — MPS and CPU training losses agree within 25%, so the backend
+   is not silently computing something different.
+2. **The projected B run fits the schedule**, measured rather than guessed: train
+   time at `fraction=0.02` divided by 0.02, plus one full validation pass.
+
+B is the weaker claim of the two — it initialises from A's weights, trains on
+~9.6k images (india_train + nonindia_replay) for 25 epochs, and is the
+deployment model rather than the generalization measurement. A backend
+discrepancy there is recoverable; in A it would poison everything downstream.
+
+This is the same principle as D055's Model A gate: the constraint is not "use
+the fastest machine available" but "make the number that matters defensible".
+
+## D061 — Near-duplicate audit by dHash before T3
+
+**2026-09-22 · Accepted**
+
+T3 uploads the pool to Kaggle and **bakes the splits in**. Any leak found after
+that costs a re-upload and invalidates every result trained against it, so the
+audit happens first.
+
+D059 established that *adjacent filenames* are uncorrelated in India. That is a
+different question from whether **near-duplicate images exist anywhere in the
+set** — two frames of the same pothole captured seconds apart need not have
+adjacent IDs, and a salted hash scatters them independently across splits. D059
+ruled out one leak mechanism; this rules out the other.
+
+**Method.** 64-bit dHash per image — grayscale, resize to 9×8, compare adjacent
+columns row-wise. PIL already ships; no new dependency. Pairs within **Hamming
+distance ≤ 6** are flagged, then a sample is viewed, because a distance
+threshold alone cannot distinguish a true duplicate from two genuinely similar
+stretches of road.
+
+**Comparisons:**
+- `india_train` against `india_cal ∪ india_test` — this is the one that matters.
+- `nonindia_train` against `nonindia_val`.
+
+**If India cross-split duplicates exist:** group them with union-find, re-split
+India keeping each group intact, at the same salt and fractions; rerun the
+leakage tests; and add a permanent test that no flagged group spans India splits.
+Grouping is necessary because duplicates are transitive — A≈B and B≈C must land
+together even when A and C are themselves far apart.
+
+**Non-India duplicates are reported as a count only.** They inflate validation
+optimism and therefore affect early stopping, but Model A's India result is
+measured on a set non-India duplicates cannot reach. Re-splitting non-India to
+chase them would be churn against the wrong risk.
