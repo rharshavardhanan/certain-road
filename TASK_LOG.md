@@ -63,7 +63,9 @@ supersede it).**
 | T7 | blocked | U1 (T5) |
 | T8 | deferred | U6 unconfirmed; do not run |
 | T9 | blocked | U1 |
-| T10–T12 | not started | buildable against existing predictions once T6 lands |
+| T10 | **module done** | conformal.py + 50 tests; experiments await T6 |
+| T11 | **module done** | drift.py + 11 tests; experiments await T6 |
+| T12 | **module done** | geometry/scoring/allocation + 57 tests; experiment pending |
 | T13 | blocked | U3 |
 | T14 | not started | |
 | T15 | blocked | U5 |
@@ -213,3 +215,28 @@ writes. Now `/data/`.
 
 QA: 50 pool frames viewed across all nine splits; boxes align everywhere,
 including Norway after its resize.
+
+### 2026-09-22 — T10, T11, T12 modules
+
+New leaf package `certain_road.assess` (8th import contract: imports no
+pipeline) and `core/geometry.py`, which both `sim` and `survey` need and the
+independence contracts forbid them sharing directly.
+
+- **T10 conformal.py** — 50 tests. The prefix-equivalence property is checked
+  against brute-force re-matching over 40 random cases at 7 thresholds; the
+  finite-sample `+1` has its own test; 2,000-trial exchangeability at alpha
+  0.05/0.10/0.20 confirms the bound.
+- **T11 drift.py** — 11 tests. Growing bag and randomised tie-breaking each have
+  a dedicated test; the Ville bound is verified over 1,000 streams.
+- **T12 geometry/scoring/allocation** — sub-millimetre IPM round-trip over a
+  30-point grid, and it independently reproduces two T13 design figures
+  (f = 935.5 px, 2.2 m nearest ground).
+
+**D062: PuLP cannot run on this machine.** Its bundled CBC is an x86_64 binary
+(`bad CPU type in executable`), Rosetta is absent, and `brew install cbc` is
+blocked on an unaccepted Xcode licence. Allocation now uses an exact
+priority-indexed DP — same optimum, no binary dependency, and it handles float
+costs and large budgets that a budget-indexed table could not.
+
+Terminology held to CLAUDE.md throughout: `vision_density`, never bare density;
+"vision-estimated PCI", never bare PCI; "evaluation segment".

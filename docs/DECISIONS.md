@@ -83,6 +83,7 @@ Current design spec: [`design.md`](design.md)
 | D059 | India block split rejected on evidence: adjacent IDs are uncorrelated, so a per-image salted-hash split at the spec's fractions is used | Accepted |
 | D060 | Model A trains on Kaggle only; the Mac is a fallback for Model B alone, and never for A | Accepted |
 | D061 | Near-duplicate audit by dHash before T3 bakes the splits into an upload | Accepted |
+| D062 | Allocation solved by exact priority-indexed DP, not PuLP: the bundled CBC binary is x86_64 and cannot run here | Accepted |
 
 ---
 
@@ -1866,3 +1867,46 @@ together even when A and C are themselves far apart.
 optimism and therefore affect early stopping, but Model A's India result is
 measured on a set non-India duplicates cannot reach. Re-splitting non-India to
 chase them would be churn against the wrong risk.
+
+## D062 — Allocation solved by exact DP, not PuLP
+
+**2026-09-22 · Accepted**
+
+T12 specifies a PuLP binary ILP for the repair allocation. **PuLP cannot solve
+anything on this machine.** It ships its own CBC binary, and the macOS build is
+x86_64:
+
+```
+$ .../pulp/solverdir/cbc/osx/i64/cbc -quit
+bad CPU type in executable
+```
+
+This is an arm64 Mac with no Rosetta (`oahd` is not running), and `brew install
+cbc` is blocked behind an unaccepted Xcode licence needing `sudo`. Both fixes are
+system-level changes outside the task.
+
+**Replaced with an exact dynamic program indexed by priority.** `best[p]` holds
+the least cost that achieves quantised priority exactly `p`; after every segment
+is offered, the answer is the largest `p` still within budget.
+
+Indexing by priority rather than by budget is the point. The textbook
+budget-indexed knapsack DP needs a table the size of the budget, which for rupee
+costs in the millions is unusable, and it cannot take float costs at all.
+Priorities are bounded by construction — `(100 − vision-estimated PCI) ×
+traffic_weight` — so the table stays small while costs remain exact floats.
+
+Priorities are quantised at 0.01 to index the table. The solution is exact for
+the quantised problem, and 0.01 on a 0–100 scale is finer than the
+vision-estimated PCI feeding it is meaningful to, so the quantisation is not the
+binding approximation — the PCI proxy is.
+
+**This is not a downgrade.** Both solve the same 0/1 knapsack to optimality;
+the DP simply has no binary dependency, which also means T16's dashboard can
+re-run allocation live and Kaggle needs no solver install. `test_optimal_beats_
+greedy_on_the_knapsack_trap` pins that it genuinely optimises: on a case where
+worst-first takes one expensive segment, the DP takes two cheaper ones for more
+total priority.
+
+`pulp` stays in the dependency set — it is in T0's specified list and works on
+Linux, so it remains available for cross-checking where CBC runs — but
+`survey/allocation.py` does not import it.
