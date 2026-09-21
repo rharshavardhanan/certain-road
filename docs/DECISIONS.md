@@ -14,7 +14,7 @@ superseded it.
 - Status is one of: `Accepted`, `Superseded by Dnnn`, `Refined by Dnnn`, `Rejected`,
   `Open`.
 
-Current design spec: [`superpowers/specs/2026-08-06-certain-road-design.md`](superpowers/specs/2026-08-06-certain-road-design.md)
+Current design spec: [`design.md`](design.md)
 
 ---
 
@@ -710,7 +710,7 @@ unreliable, not one this project was relying on.
 
 **2026-08-07 · Accepted**
 
-Timeboxed spike per D025/D032 (see `docs/water-pothole-viability.md` for full
+Timeboxed spike per D025/D032 (see `docs/datasets/water-pothole-viability.md` for full
 evidence). Downloaded and extracted Mendeley `tp95cdvgm8`'s `Potholes.zip`
 (290,505,592 bytes): 713 images, 713 PASCAL VOC XML annotations, 713 YOLO TXT
 annotations, plus a `ReadMe.txt` and two dashcam videos not anticipated in D032.
@@ -831,7 +831,7 @@ multi-country run can be compared against it later. That directory is not touche
 by this decision or by the extraction/conversion work that accompanies it.
 
 **Scope of this entry:** records the design decision and the now-extracted,
-converted, seven-country label corpus (`docs/dataset-multicountry-summary.md`).
+converted, seven-country label corpus (`docs/datasets/multicountry-summary.md`).
 It does not itself change `configs/dataset/rdd2022_india.yaml`, does not run
 `dataset split` against the combined stem set, and does not launch training —
 those are separate, later steps.
@@ -1153,7 +1153,7 @@ table — the first is the only evidence the central quantity is meaningful, the
 is Result 1.
 
 Full dated schedule with per-week done-when conditions and the hard-date table:
-[`superpowers/plans/2026-08-16-seven-week-schedule.md`](superpowers/plans/2026-08-16-seven-week-schedule.md).
+[`superpowers/plans/2026-08-16-seven-week-schedule.md`](superpowers/plans/archive/2026-08-16-seven-week-schedule.md).
 
 D025 is **not** superseded: its scope cuts (India subset, ONNX-instead-of-Jetson,
 normalized CP to future work) all stand. Only its week count and undated framing are
@@ -1200,7 +1200,7 @@ architecture documented rather than demonstrated. That call is made on Sep 22, n
 October.
 
 Full schedule with per-week done-when conditions and the hard-date table:
-[`superpowers/plans/2026-08-16-seven-week-schedule.md`](superpowers/plans/2026-08-16-seven-week-schedule.md).
+[`superpowers/plans/2026-08-16-seven-week-schedule.md`](superpowers/plans/archive/2026-08-16-seven-week-schedule.md).
 
 ## D048 — Jetson arrives 2026-08-18: risky bring-up pulled into a bounded weeks-1–4 parallel track; only `ingest`+`detect` ship to the edge
 

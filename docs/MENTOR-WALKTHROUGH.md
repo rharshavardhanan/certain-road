@@ -11,9 +11,9 @@ term is defined the first time it appears.
 
 Two companion documents already exist and are **not** replaced by this one:
 
-- [`PROJECT-OVERVIEW.md`](PROJECT-OVERVIEW.md) — the *design* argument. Why each choice
-  was made, what the thesis contribution is, what the target numbers are.
-- [`DECISIONS.md`](DECISIONS.md) — the decision log. 45 numbered entries, append-only.
+- [`design.md`](design.md) — the authoritative design spec. What each stage is, which
+  artifacts flow between them, and what the system is required to do.
+- [`DECISIONS.md`](DECISIONS.md) — the decision log. 54 numbered entries, append-only.
   Anything below that says "(D0nn)" points at an entry there.
 
 This document is the *walkthrough*: what things **are** and how they **work**.
@@ -120,8 +120,8 @@ There are three contributions, and the middle one is the novel one:
 | 2 | **Trustworthy AI** | **A calibrated error bar on the condition estimate** |
 | 3 | Decision support | That error bar measurably changing which roads get funded |
 
-**One framing correction worth stating out loud.** `PROJECT-OVERVIEW.md` says in places
-that "the detector is not the contribution." For the thesis argument that is true. But the
+**One framing correction worth stating out loud.** The thesis framing holds that
+"the detector is not the contribution." For the thesis argument that is true. But the
 project owner's standing instruction is that the mentor requires **a properly fine-tuned
 detector that performs well** — the current mAP50 of ~0.42 is a **baseline to beat, not a
 result to defend**. The deliverable is a working road-inspection product, not only an
@@ -320,7 +320,7 @@ precision/recall/F1 at a specific confidence threshold. `measure_latency` times 
 
 `ingest/`, `assess/`, `calibrate/`, `rsl/`, `optimize/`, `report/` each contain a one-line
 `__init__.py`. Their design is fully specified in
-[`docs/superpowers/specs/2026-08-06-certain-road-design.md`](superpowers/specs/2026-08-06-certain-road-design.md)
+[`docs/design.md`](design.md)
 and the week-2 plan for `assess` is already written. What each will do:
 
 - **`ingest`** — sample one frame per ~L metres of travel rather than every frame. At
@@ -385,14 +385,16 @@ evaluation segments. This is what lets weeks 2–5 be built before the detector 
 
 | File | Contents |
 |---|---|
-| `PROJECT-OVERVIEW.md` | The design argument, contributions, targets, timeline |
-| `DECISIONS.md` | 45 numbered decisions, append-only, superseded entries left intact |
+| `design.md` | The authoritative design spec |
+| `DECISIONS.md` | 54 numbered decisions, append-only, superseded entries left intact |
 | `MENTOR-WALKTHROUGH.md` | This file |
-| `dataset-card-rdd2022-india.md` | What is actually in the India subset |
-| `dataset-multicountry-summary.md` | The merged multi-country corpus |
-| `water-pothole-viability.md` | A rejected dataset, with the evidence for rejecting it |
-| `superpowers/specs/` | The authoritative design spec |
+| `detector-benchmark.md` | The India test-set benchmark, and why external weights were rejected (D053) |
+| `colab-training-guide.md` | Training on a Colab T4 when MPS is too slow |
+| `datasets/rdd2022-india.md` | What is actually in the India subset |
+| `datasets/multicountry-summary.md` | The merged multi-country corpus |
+| `datasets/water-pothole-viability.md` | A rejected dataset, with the evidence for rejecting it |
 | `superpowers/plans/` | Implementation plans, one per work package |
+| `superpowers/specs/` | Design specs for individual work packages |
 
 The decision log is worth showing a mentor directly. It is append-only, and wrong turns
 stay visible with a `Superseded by Dnnn` marker rather than being edited away.
@@ -862,12 +864,12 @@ each other.
 | 3 | `multicountry_v8s_ext2` | continuation of 2 | Multi 35,296 | **12/23** | 5.0 h | 0.4528 | not measured | ⏸ **paused** |
 | 4 | `india_v8s` | YOLOv8s (11.1 M) | India 4,617 | **0/100** | — | — | — | ⏸ **paused before epoch 1** |
 
-> ⚠️ `PROJECT-OVERVIEW.md` still describes run 3 as "running". It is not. It stopped at epoch
-> 12 on 15 Aug at 14:42, and run 4 was launched at 14:57 and stopped before completing an
-> epoch. **Both were deliberately halted** under a standing instruction: *no training until
-> the evaluation machinery exists and the current model has been measured properly.* That
-> sequence is build machinery → measure current model → measure published models → choose →
-> then train. Correct this line in the overview before presenting.
+> ⚠️ Runs 3 and 4 are **paused, not running.** Run 3 stopped at epoch 12 on 15 Aug at 14:42;
+> run 4 was launched at 14:57 and stopped before completing an epoch, producing no weights —
+> its empty run directory was removed in D054. **Both were deliberately halted** under a
+> standing instruction: *no training until the evaluation machinery exists and the current
+> model has been measured properly.* That sequence is build machinery → measure current model
+> → measure published models → choose → then train.
 
 ### 11.1 Per-class results — the interesting finding
 
@@ -1199,7 +1201,7 @@ guessing.
 
 ### ✅ Built, tested, committed
 
-- `uv` project, Python 3.12, a `typer` CLI, **74 tests**, continuous integration
+- `uv` project, Python 3.12, a `typer` CLI, **186 tests**, continuous integration
 - **`import-linter` stage-isolation contracts, proven to fire** by deliberately introducing
   a violation and watching the build fail
 - Versioned Parquet artifact IO that refuses stale-schema reads
@@ -1210,14 +1212,14 @@ guessing.
 - Two complete detector runs, two paused
 - **Detector evaluation harness**: inference path, class remapping, mAP, an operating-point
   sweep, latency measurement — plus the harness-validation investigation in §13.3
-- 45 decisions logged; three additional datasets considered and rejected with documented
+- 54 decisions logged; three additional datasets considered and rejected with documented
   reasons (one of them, the water-pothole set, with its own written viability report)
 
 ### 📋 Designed and specified, not yet written
 
 **The window is 2026-08-18 → 2026-10-05 — 48 days, ≈7 weeks**, run as **four partitions**
 (D047). Full schedule with per-week done-when conditions:
-[`superpowers/plans/2026-08-16-seven-week-schedule.md`](superpowers/plans/2026-08-16-seven-week-schedule.md).
+[`superpowers/plans/2026-08-16-seven-week-schedule.md`](superpowers/plans/archive/2026-08-16-seven-week-schedule.md).
 
 | # | Weeks | Dates | Partition | Yields |
 |---|---|---|---|---|
@@ -1251,6 +1253,30 @@ waiting.
 Blockers 1 and 2 are really the same conversation: *which published relationship do we stand
 on?* Both are **enforced in code** — those stages refuse to run while the `source:` field is
 empty — so neither can be silently fudged.
+
+### 🔒 What keeps the above honest
+
+Ported from `PROJECT-OVERVIEW.md` when that document was merged into this one (D054),
+with a status column added — three of these were written as if already built.
+
+Every entry is a **mechanism**, not an intention. Rules nothing enforces do not survive a
+deadline.
+
+| Principle | How it is enforced | Status |
+|---|---|---|
+| Stages never import each other | `import-linter` contracts in CI; a violation fails the build | ✅ built, proven to fire |
+| Artifacts are versioned | `artifacts/io.py` validates `schema_version` on every read; a stale artifact is unreadable, loudly | ✅ built, tested |
+| `calib` never reaches training | Data yaml writes only `train`/`val`; train refuses a yaml naming `calib`/`test`; disjointness asserted on disk | ✅ built, enforced four ways |
+| Splits are reproducible | `write_manifest` records the salt and the split assignment | ✅ built |
+| The rating set is validation, never a dev set | Stated in `CLAUDE.md`; poor agreement is a **result to report**, not a defect to fix | ✅ convention, enforced in review |
+| Deduct curves are reproducible | Raw digitised points committed as CSV beside the fit | 📋 planned — `configs/assess/curves/` does not exist yet |
+| RSL coefficients are cited | The stage **refuses to run** on an empty `source:` | 📋 planned — the `rsl` stage is still empty (D018 is an open blocker) |
+| Runs are reproducible end to end | A run manifest recording git SHA, config hash, model hash and schema versions | 📋 planned — no such manifest is written today |
+
+**Terminology is load-bearing and enforced in review:** `vision_density` never bare
+`density`; `apparent_severity` never bare `severity`; `pci_ref` never `pci_true`;
+"vision-estimated PCI" never bare "PCI"; "evaluation segment" never "road segment". Each
+one prevents a specific overclaim.
 
 ---
 

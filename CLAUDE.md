@@ -11,8 +11,7 @@ live until the week-1 skeleton lands.
 
 ## Read these first
 
-- [`docs/superpowers/specs/2026-08-06-certain-road-design.md`](docs/superpowers/specs/2026-08-06-certain-road-design.md)
-  — the current design.
+- [`docs/design.md`](docs/design.md) — the current design.
 - [`docs/DECISIONS.md`](docs/DECISIONS.md) — the decision log: every choice, why it
   was made, and what superseded it.
 
