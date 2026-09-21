@@ -75,6 +75,7 @@ Current design spec: [`design.md`](design.md)
 | D051 | CP cut from the sprint; survey ends at vision-estimated PCI; ADAS-inspired behaviours added; calibration split preserved | Accepted |
 | D052 | Deliverable is a vehicle-agnostic control unit demoed on the Jetson: recorded video → real YOLO → real CAN on vcan0; no robot, camera or transceiver required | Accepted |
 | D053 | External RDD2022 weights rejected: 0.9765 mAP50 on our test set indicates train/test overlap, so they cannot be measured | Accepted |
+| D054 | Workspace cleaned and repo reorganised; redundant weights and data deleted, keepers named explicitly | Accepted |
 
 ---
 
@@ -1472,3 +1473,89 @@ to check it against. Full write-up:
 contrary to its model card; and `rdd2022_5class` drops `Repair` explicitly, since a repaired
 area is not distress and counting it as damage would penalise a road for having been
 maintained.
+
+## D054 — Workspace cleaned and repo reorganised; redundant weights and data deleted, keepers named explicitly
+
+**2026-09-22 · Accepted**
+
+The working tree had reached 28 GB and the repository's most-read file, `README.md`, was
+0 bytes. Both are fixed here. **No decision in this entry changes what the system does** —
+it changes what is on disk and what a reader sees first.
+
+### Deleted, each following from an existing decision
+
+| Removed | Size | Follows from |
+|---|---|---|
+| `data/raw/RDD2022_released_through_CRDDC2022.zip` | 12 GB | already extracted; sha256 recorded in `CHECKSUMS.txt`, re-fetchable via `dataset fetch` |
+| `data/raw/water_potholes/`, `data/processed/water_potholes/` | 564 MB | **D039** — NO-GO; the evidence survives in `datasets/water-pothole-viability.md` |
+| `runs/…/multicountry_v8s_ext/` | 130 MB | **D043** — killed after one epoch by the LR bug; `_ext2` superseded it |
+| `runs/…/multicountry_v8s_smoke/`, `runs/…/india_v1_smoke/` | 66 MB | smoke tests, throwaway by construction |
+| `models/candidates/yolo12s_RDD2022_best.pt` | 18 MB | **D053** — rejected as unmeasurable; the *finding* is the artifact worth keeping, not the weights |
+| `runs/detect/val*/` (21 dirs, 14 of them empty) | 25 MB | unnamed ultralytics dumps, mutually indistinguishable |
+| `yolov8n.pt`, `yolov8s.pt` at repo root | 28 MB | ultralytics re-fetches bare-name checkpoints on demand |
+| `runs/…/india_v1/weights/last.pt` | 6 MB | run completed; `best.pt` at epoch 84 is the **D042** baseline |
+| `runs/…/india_v8s/` | 1.4 MB | halted before epoch 1, produced no weights |
+
+`runs/logs/*.log` compressed 18 MB → 1.6 MB. Per-epoch metrics already live in each run's
+`results.csv`; the logs are console output. `train_v8s_continue_attempt1_lr_bug.log.gz` is
+the evidence behind D043 and remains readable via `gzip -dc`.
+
+**28 GB → 15 GB.**
+
+### Preserved deliberately, verified by sha256 before and after
+
+- `multicountry_v8s/weights/best.pt` — the benchmarked model (D042, D043, D053).
+- `multicountry_v8s/weights/last.pt` — **must not be removed**: it is the continuation start
+  point named in `configs/train/yolov8s_continue.yaml`.
+- `multicountry_v8s_ext2/weights/{best,last}.pt` — the paused 12/23-epoch continuation, kept
+  whole by owner decision even though it was never measured.
+- `india_v1/weights/best.pt` — the D042 baseline, preserved so the v8n→v8s comparison stands.
+
+**`data/raw/RDD2022/` is load-bearing, not a duplicate of the zip.** Every image under
+`data/processed/*/images/` is a symlink into it — 46,091 of them, all verified resolving
+after the cleanup. Deleting the extraction would silently destroy every processed split.
+
+### Not done, and why
+
+**Weights stay out of git.** Git LFS was considered for shipping `multicountry_v8s/best.pt`
+so a fresh clone could run inference without training, and declined: 395 MB of checkpoints in
+history is unrecoverable, and `models/`, `runs/` and `data/` remain gitignored.
+
+**`torchvision` and `tqdm` stay in `pyproject.toml`** despite zero direct imports. Ultralytics
+pins both, and the explicit torchvision pin guards the torch pairing. Two lines saved is not
+worth the breakage risk.
+
+**`docs/superpowers/plans/` stays where it is.** The authoring workflow writes every plan to
+exactly that path; relocating it would break the documented pipeline to save nothing at
+repository root.
+
+### Documentation
+
+`PROJECT-OVERVIEW.md` is **merged into `MENTOR-WALKTHROUGH.md` and deleted.** It duplicated
+the walkthrough on 11 of its 13 sections — its §6.1 mAP ladder appears verbatim as the
+walkthrough's §12, and the walkthrough's §15 carries a fuller blockers table. Its two
+genuinely unique sections (§6.2 conformal targets, §7 results to report) are built entirely on
+the conformal layer that **D051 cut**, so they are dropped rather than ported: carrying
+superseded targets forward would be worse than losing them.
+
+Its enforcement-mechanism table was the one thing worth keeping, and moves into §15 **with a
+status column added** — three of its seven rows described mechanisms that do not exist
+(`configs/assess/curves/`, the `rsl` stage's empty-`source:` refusal, and a run manifest
+recording a git SHA). The original table stated all seven as though built.
+
+The design spec is surfaced from `docs/superpowers/specs/2026-08-06-certain-road-design.md` to
+**`docs/design.md`**, and the three dataset cards grouped under `docs/datasets/`. Inbound
+links in `CLAUDE.md` and in this file were repaired. **Path references inside earlier entries
+were updated rather than left broken** — the append-never-rewrite rule protects the *reasoning*
+in an entry, not a stale file path within it; no decision text was altered. Three pre-existing
+dangling links to the archived seven-week schedule were also fixed.
+
+`README.md` written from empty: what the system decides, the current two-pipeline architecture
+(D049/D050/D051) rather than the superseded seven-stage chain, the honest 0.3932 mAP50 with
+D053's rejection of the external 0.9765, and a quickstart whose every command was executed to
+confirm it exits 0.
+
+Finally, `pyproject.toml`'s description was still uv's `"Add your description here"`
+placeholder, and `.gitignore` carried a `!configs/assess/curves/` negation that was doubly
+dead — the directory was never created, and `configs/` is not ignored, so it could never have
+matched anything.
