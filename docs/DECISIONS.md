@@ -80,6 +80,7 @@ Current design spec: [`design.md`](design.md)
 | D056 | `uv` and Python 3.12 retained over the spec's pip/3.11; `requirements.txt` is generated, Kaggle installs only ultralytics | Accepted |
 | D057 | Package stays `certain_road`; spec modules are audited and extended, never rewritten | Accepted |
 | D058 | Local commit at the end of each task and before every `eval_locked` run; never push | Accepted |
+| D059 | India block split rejected on evidence: adjacent IDs are uncorrelated, so a per-image salted-hash split at the spec's fractions is used | Accepted |
 
 ---
 
@@ -1747,3 +1748,58 @@ reproducible.
 This narrows `CLAUDE.md`'s "don't commit unless asked" for this spec's duration:
 the commits *are* asked for, because the audit trail depends on them. Pushing is
 not.
+
+## D059 — India block split rejected on evidence; per-image salted-hash split at the spec's fractions
+
+**2026-09-22 · Accepted**
+
+T2 step 3 specifies a **block split** for India — chunk the filename-sorted list
+into blocks of 50, shuffle the blocks, assign greedily — and asks for the
+justification to be checked first: *"Open 5 pairs of adjacent-ID images and log
+whether they look like consecutive frames from the same drive; this justifies the
+block split."*
+
+**They are not consecutive frames.** All five sampled pairs show unrelated
+scenes, and one pair is `India_009354 → India_009357`, so the IDs are not even
+dense. Five pairs is a thin basis for overturning a spec assumption, so it was
+measured over 400 pairs using 32×32 grayscale correlation:
+
+| | mean corr | median | corr > 0.9 |
+|---|---|---|---|
+| adjacent-ID pairs | **+0.487** | +0.535 | 1 / 400 |
+| random pairs | **+0.483** | +0.520 | 0 / 400 |
+
+A difference of **+0.004** is nil. Adjacent IDs are no more similar than randomly
+chosen ones. IDs span 0–9,891 across 7,706 train images, and only 6,011 of 7,705
+consecutive gaps are 1.
+
+**Decision: per-image split at the spec's `india_fracs` (60/10/15/15)**, using the
+existing salted-hash assignment (D009's `assign_split`) with a RoadSight-specific
+salt. Blocking would buy nothing measurable while making the fraction targets
+lumpier, since a block of 50 is an indivisible unit.
+
+The block split is not *wrong* — it is simply solving a leak this dataset does
+not have. Had the correlation been real, blocking would have been essential, and
+that is why it was measured rather than assumed.
+
+**Conformal consequence** (required by the project's standing constraint that no
+split changes without one). This replaces D009's India assignment
+(train 4,617 / val 757 / calib 1,548 / test 784 = 59.9 / 9.8 / 20.1 / 10.2) with
+60 / 10 / 15 / 15:
+
+- `india_cal` **shrinks** from ~1,548 to ~1,156. CRC's guarantee is
+  `(Σ L_i + 1)/(n + 1) ≤ α` over calibration images holding at least one GT
+  pothole, so a smaller *n* makes the bound slightly more conservative — the
+  `+1` numerator term carries more weight. The guarantee stays valid; it costs a
+  little tightness.
+- `india_test` **grows** from ~784 to ~1,156, which lowers the variance of the
+  measured test risk. That directly offsets the above: the number being reported
+  becomes more stable.
+- **No existing result is invalidated**, because no existing checkpoint survived
+  D055's Model A gate. `multicountry_v8s` trained on India and validated on
+  India, so it could never have supported an India claim under either split.
+  Model A is retrained on non-India only, so India images cannot leak into it
+  regardless of how India is partitioned.
+- Salted hashing is kept rather than a seeded shuffle for the reason D009 chose
+  it: assignment is stable when the file set changes, so adding or removing
+  images never silently reshuffles an image from train into test.

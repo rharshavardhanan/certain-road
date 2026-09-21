@@ -1,7 +1,9 @@
+from pathlib import Path
+
 import pytest
 
 from certain_road.perception.dataset.convert import SOURCE_TO_ID, convert_directory, to_yolo_lines
-from certain_road.perception.dataset.voc import class_census, parse_voc
+from certain_road.perception.dataset.voc import VocAnnotation, VocObject, class_census, parse_voc
 
 XML_TEMPLATE = """<annotation>
   <size><width>{w}</width><height>{h}</height><depth>3</depth></size>
@@ -137,3 +139,62 @@ def test_annotation_missing_size_is_skipped_not_fatal(tmp_path):
     assert boxes == 0
     assert rejected["PARSE_ERROR:ValueError"] == 1
     assert not (label_dir / "nosize.txt").exists()
+
+
+# --- T2 extensions: real-size override and min_box_px (D055/D057) -------------
+
+
+def _ann(width, height, boxes):
+    """VocAnnotation with `boxes` as (name, xmin, ymin, xmax, ymax)."""
+    return VocAnnotation(
+        path=Path("x.xml"),
+        width=width,
+        height=height,
+        objects=[VocObject(name=n, xmin=a, ymin=b, xmax=c, ymax=d) for n, a, b, c, d in boxes],
+    )
+
+
+def test_size_override_renormalises_against_the_real_image():
+    """The same pixel box is a larger fraction of a smaller real image.
+
+    The box is kept well inside 500px so this isolates renormalisation; clipping
+    against the real size is covered by the next test.
+    """
+    ann = _ann(1000, 1000, [("D40", 200, 200, 300, 300)])
+    declared, _ = to_yolo_lines(ann)
+    overridden, _ = to_yolo_lines(ann, size=(500, 500))
+
+    assert declared == ["2 0.250000 0.250000 0.100000 0.100000"]
+    assert overridden == ["2 0.500000 0.500000 0.200000 0.200000"]
+
+
+def test_size_override_clips_to_the_real_image_not_the_declared_one():
+    ann = _ann(1000, 1000, [("D40", 400, 400, 900, 900)])
+    lines, rejected = to_yolo_lines(ann, size=(500, 500))
+    # xmax/ymax clip from 900 to 500, so the box becomes 100x100 centred at 450.
+    assert lines == ["2 0.900000 0.900000 0.200000 0.200000"]
+    assert not rejected
+
+
+def test_min_box_px_drops_thin_boxes_and_counts_them():
+    ann = _ann(100, 100, [("D40", 10, 10, 11, 30), ("D40", 10, 10, 30, 30)])
+    lines, rejected = to_yolo_lines(ann, min_box_px=2)
+    assert len(lines) == 1              # the 1px-wide box is gone
+    assert rejected["below_min_box_px"] == 1
+
+
+def test_min_box_px_default_preserves_historical_behaviour():
+    """Default 0.0 must not reclassify anything that used to pass."""
+    ann = _ann(100, 100, [("D40", 10, 10, 11, 30)])
+    lines, rejected = to_yolo_lines(ann)
+    assert len(lines) == 1
+    assert "below_min_box_px" not in rejected
+
+
+def test_degenerate_is_reported_separately_from_min_box_px():
+    """Japan_001265's real shape: zero width. Not a thin box - a broken one."""
+    ann = _ann(600, 600, [("D20", 198, 474, 198, 475)])
+    lines, rejected = to_yolo_lines(ann, min_box_px=2)
+    assert lines == []
+    assert rejected["degenerate_box"] == 1
+    assert "below_min_box_px" not in rejected

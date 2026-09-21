@@ -1,0 +1,7 @@
+path: /Users/harshav/PROJECTS/certain-road/data/yolo
+train: nonindia_train.txt
+val: nonindia_val.txt
+names:
+  0: linear_crack
+  1: alligator_crack
+  2: pothole

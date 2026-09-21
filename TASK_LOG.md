@@ -55,9 +55,9 @@ supersede it).**
 |---|---|---|
 | T0 | mostly done | `git init` skipped (repo has 64 commits); step 3 open on package naming; step 5 blocked on U1 |
 | T1 | **done** | all counts match reference exactly; Japan discrepancy resolved |
-| T2 | in progress | |
+| T2 | **done** | 12 leakage tests green; D059 replaced the block split |
 | T3 | blocked | U1 |
-| T4 | not started | |
+| T4 | ready | unblocked |
 | T5 | blocked | U1 — and it is a **full training run**, not a verification (see gate below) |
 | T6 | blocked | U1 (T5) |
 | T7 | blocked | U1 (T5) |
@@ -176,3 +176,40 @@ so it is the only country T2 resizes — 8,161 images.
 
 QA renders are gitignored (21 MB, regenerated deterministically by
 `scripts/qa_raw.py`).
+
+### 2026-09-22 — T2 done
+
+`src/certain_road/perception/dataset/pool.py`, `scripts/build_pool.py`,
+`tests/test_splits.py`; report at `results/T2/split_audit.{json,md}`.
+
+**D059 — the block split was rejected on evidence.** T2 asked for adjacent-ID
+frames to be checked first. They are not consecutive: 400-pair correlation gave
++0.487 adjacent vs +0.483 random, a difference of +0.004, with 1/400 adjacent
+near-duplicates against 0/400 random. India is split per image instead, at the
+spec's 60/10/15/15. The conformal consequence is written out in D059.
+
+**No earlier split lists existed** — no `splits/` directory and no list files
+anywhere, so the 24,412 / 6,267 figures had nothing on disk behind them. Built
+fresh per the spec's fallback. The result lands at **24,537 / 6,142**, close to
+those figures but not identical.
+
+**Pool:** 38,385 images materialised in 1.3 min. **Norway was the only country
+resized** (8,161, 4040->1280), exactly as T1 predicted. Only rejections are
+unknown classes plus the single `degenerate_box` — Japan_001265, as T1 found.
+
+**Counts reconcile to T1 exactly**: India 7,706 images / 6,831 instances,
+non-India 30,679 images. Fractions within ~0.6pp of target.
+
+**India is 46.65% pothole by instance vs non-India's 6.97%** — a 6.7x gap and
+the main driver of what T6 will measure as the generalization gap.
+
+**12 leakage tests pass**, asserting against the materialised lists rather than
+the code that wrote them. The firewall test confirms india_cal and india_test
+reach none of Model B's train or val lists.
+
+**Fixed a real gitignore bug found here:** `data/` was unanchored, so it also
+matched `configs/data/` and would have silently excluded every dataset YAML T2
+writes. Now `/data/`.
+
+QA: 50 pool frames viewed across all nine splits; boxes align everywhere,
+including Norway after its resize.

@@ -1,7 +1,9 @@
 # Data, models, run outputs — large, regenerable, never committed
-data/
-models/
-runs/
+# Anchored to the repo root: an unanchored `data/` also matches
+# configs/data/, which holds committed dataset YAMLs (T2).
+/data/
+/models/
+/runs/
 
 # Python
 __pycache__/

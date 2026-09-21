@@ -1,0 +1,128 @@
+{
+  "salt": "roadsight-pool-v1",
+  "seed": 0,
+  "split_config": {
+    "nonindia_val_frac": 0.2,
+    "india_block_size": 50,
+    "india_fracs": {
+      "india_train": 0.6,
+      "india_val": 0.1,
+      "india_cal": 0.15,
+      "india_test": 0.15
+    },
+    "replay_n": 5000,
+    "max_side": 1280,
+    "min_box_px": 2
+  },
+  "splits": {
+    "india_cal": {
+      "images": 1205,
+      "backgrounds": 668,
+      "instances": {
+        "linear_crack": 264,
+        "alligator_crack": 334,
+        "pothole": 515
+      },
+      "total_instances": 1113
+    },
+    "india_full": {
+      "images": 7706,
+      "backgrounds": 4483,
+      "instances": {
+        "linear_crack": 1623,
+        "alligator_crack": 2021,
+        "pothole": 3187
+      },
+      "total_instances": 6831
+    },
+    "india_heldout": {
+      "images": 2328,
+      "backgrounds": 1305,
+      "instances": {
+        "linear_crack": 487,
+        "alligator_crack": 642,
+        "pothole": 962
+      },
+      "total_instances": 2091
+    },
+    "india_test": {
+      "images": 1123,
+      "backgrounds": 637,
+      "instances": {
+        "linear_crack": 223,
+        "alligator_crack": 308,
+        "pothole": 447
+      },
+      "total_instances": 978
+    },
+    "india_train": {
+      "images": 4579,
+      "backgrounds": 2686,
+      "instances": {
+        "linear_crack": 970,
+        "alligator_crack": 1173,
+        "pothole": 1920
+      },
+      "total_instances": 4063
+    },
+    "india_val": {
+      "images": 799,
+      "backgrounds": 492,
+      "instances": {
+        "linear_crack": 166,
+        "alligator_crack": 206,
+        "pothole": 305
+      },
+      "total_instances": 677
+    },
+    "nonindia_replay": {
+      "images": 5000,
+      "backgrounds": 1669,
+      "instances": {
+        "linear_crack": 5810,
+        "alligator_crack": 1441,
+        "pothole": 508
+      },
+      "total_instances": 7759
+    },
+    "nonindia_train": {
+      "images": 24537,
+      "backgrounds": 8070,
+      "instances": {
+        "linear_crack": 29025,
+        "alligator_crack": 6901,
+        "pothole": 2681
+      },
+      "total_instances": 38607
+    },
+    "nonindia_val": {
+      "images": 6142,
+      "backgrounds": 2065,
+      "instances": {
+        "linear_crack": 7198,
+        "alligator_crack": 1694,
+        "pothole": 676
+      },
+      "total_instances": 9568
+    }
+  },
+  "rejected_boxes": {
+    "unknown_class:D44": 5057,
+    "unknown_class:D50": 3581,
+    "unknown_class:Repair": 1046,
+    "unknown_class:D43": 793,
+    "unknown_class:D01": 179,
+    "unknown_class:D11": 45,
+    "unknown_class:Block crack": 3,
+    "unknown_class:D0w0": 1,
+    "degenerate_box": 1
+  },
+  "resized_images": {
+    "Norway": 8161
+  },
+  "pothole_share": {
+    "india": 0.4665,
+    "nonindia": 0.0697
+  },
+  "d10_note": "D00 and D10 are merged into linear_crack; India has only 68 D10 instances (D037/D038/D055)."
+}

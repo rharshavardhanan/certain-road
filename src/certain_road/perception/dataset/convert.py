@@ -20,12 +20,30 @@ SOURCE_TO_ID = {"D00": 0, "D10": 0, "D20": 1, "D40": 2}
 ID_TO_CLASS = {0: "linear_crack", 1: "alligator_crack", 2: "pothole"}
 
 
-def to_yolo_lines(ann: VocAnnotation) -> tuple[list[str], Counter]:
-    """Return YOLO label lines plus a counter of everything rejected and why."""
+def to_yolo_lines(
+    ann: VocAnnotation,
+    *,
+    size: tuple[int, int] | None = None,
+    min_box_px: float = 0.0,
+) -> tuple[list[str], Counter]:
+    """Return YOLO label lines plus a counter of everything rejected and why.
+
+    `size` overrides the `<size>` the XML declares. RDD2022 occasionally states a
+    size that disagrees with the JPEG, and a box is only meaningfully "out of
+    bounds" relative to pixels that exist — so callers that have read the real
+    dimensions pass them here and clipping and normalisation both use them.
+
+    `min_box_px` drops boxes with either side below that many pixels (T2). It is
+    measured before normalisation, against whichever size is in force. The
+    default of 0.0 keeps the historical behaviour exactly: zero-area boxes are
+    still rejected as `degenerate_box`, which is a separate check.
+    """
     rejected: Counter = Counter()
     lines: list[str] = []
 
-    if ann.width <= 0 or ann.height <= 0:
+    width, height = size if size is not None else (ann.width, ann.height)
+
+    if width <= 0 or height <= 0:
         rejected["bad_image_size"] += len(ann.objects)
         return lines, rejected
 
@@ -39,19 +57,23 @@ def to_yolo_lines(ann: VocAnnotation) -> tuple[list[str], Counter]:
         xmin, xmax = sorted((obj.xmin, obj.xmax))
         ymin, ymax = sorted((obj.ymin, obj.ymax))
 
-        xmin = max(0.0, min(xmin, ann.width))
-        xmax = max(0.0, min(xmax, ann.width))
-        ymin = max(0.0, min(ymin, ann.height))
-        ymax = max(0.0, min(ymax, ann.height))
+        xmin = max(0.0, min(xmin, width))
+        xmax = max(0.0, min(xmax, width))
+        ymin = max(0.0, min(ymin, height))
+        ymax = max(0.0, min(ymax, height))
 
         if xmax - xmin <= 0 or ymax - ymin <= 0:
             rejected["degenerate_box"] += 1
             continue
 
-        cx = (xmin + xmax) / 2 / ann.width
-        cy = (ymin + ymax) / 2 / ann.height
-        w = (xmax - xmin) / ann.width
-        h = (ymax - ymin) / ann.height
+        if xmax - xmin < min_box_px or ymax - ymin < min_box_px:
+            rejected["below_min_box_px"] += 1
+            continue
+
+        cx = (xmin + xmax) / 2 / width
+        cy = (ymin + ymax) / 2 / height
+        w = (xmax - xmin) / width
+        h = (ymax - ymin) / height
 
         lines.append(f"{SOURCE_TO_ID[obj.name]} {cx:.6f} {cy:.6f} {w:.6f} {h:.6f}")
 
