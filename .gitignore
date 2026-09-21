@@ -3,15 +3,13 @@ data/
 models/
 runs/
 
-# Provenance IS committed, despite living beside config
-!configs/assess/curves/
-
 # Python
 __pycache__/
 *.py[cod]
 .venv/
 .ruff_cache/
 .pytest_cache/
+.import_linter_cache/
 *.egg-info/
 
 # macOS

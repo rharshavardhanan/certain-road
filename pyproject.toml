@@ -1,7 +1,7 @@
 [project]
 name = "certain-road"
 version = "0.1.0"
-description = "Add your description here"
+description = "Pavement management decision support: which road segments to repair first under a fixed budget."
 readme = "README.md"
 authors = [
     { name = "rharshavardhanan", email = "rharshavardhanan@gmail.com" }
