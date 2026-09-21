@@ -157,3 +157,44 @@ def test_every_grouped_image_is_still_present_exactly_once():
     assert grouped <= union
     counts = [sum(m in names(s) for s in INDIA_SUBSETS) for m in sorted(grouped)]
     assert set(counts) == {1}, "a grouped image appears in more than one split"
+
+
+# --- D063: exhaustive verification, no hash prefilter -------------------------
+
+VECTORS = YOLO / "_vectors"
+UPLOAD = repo_root() / "data" / "kaggle_upload"
+
+
+@pytest.mark.skipif(not (VECTORS / "india_train.npy").exists(),
+                    reason="run scripts/exhaustive_leak_check.py")
+def test_no_india_pair_reaches_the_same_scene_threshold():
+    """Every india_train x held-out pair, not just the ones a hash flagged.
+
+    The dHash audit could only confirm that none of the pairs *it* flagged were
+    same-scene, which is circular: frames of one place metres apart can exceed
+    Hamming 12 and never be compared. The exhaustive check found 1,373 such pairs
+    the prefilter had missed. This asserts the fixed bound holds.
+    """
+    import numpy as np
+
+    from certain_road.perception.dataset.dedupe import SAME_SCENE_CORR
+
+    a = np.load(VECTORS / "india_train.npy")
+    b = np.load(VECTORS / "india_heldout_all.npy")
+    assert float((a @ b.T).max()) < SAME_SCENE_CORR
+
+
+@pytest.mark.skipif(not UPLOAD.exists(), reason="run scripts/stage_upload.py")
+def test_upload_contains_no_held_out_india():
+    """Held-out India must never leave this machine (D063).
+
+    Locked evaluation runs locally on CPU, so if the bytes are not uploaded then
+    no Kaggle kernel can read them through any misconfiguration.
+    """
+    staged = {p.stem for p in (UPLOAD / "images").glob("*.jpg")}
+    withheld = names("india_cal") | names("india_test")
+    assert not (staged & withheld)
+    assert not (UPLOAD / "india_cal.txt").exists()
+    assert not (UPLOAD / "india_test.txt").exists()
+    for name in staged:
+        assert (UPLOAD / "labels" / f"{name}.txt").exists(), name

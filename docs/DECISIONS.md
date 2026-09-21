@@ -84,6 +84,8 @@ Current design spec: [`design.md`](design.md)
 | D060 | Model A trains on Kaggle only; the Mac is a fallback for Model B alone, and never for A | Accepted |
 | D061 | Near-duplicate audit by dHash before T3 bakes the splits into an upload | Accepted |
 | D062 | Allocation solved by exact priority-indexed DP, not PuLP: the bundled CBC binary is x86_64 and cannot run here | Accepted |
+| D063 | Leak verification is exhaustive, not hash-prefiltered; held-out India is never uploaded | Accepted |
+| D064 | T10 resampling permutes scene groups, not images | Accepted |
 
 ---
 
@@ -1910,3 +1912,74 @@ total priority.
 `pulp` stays in the dependency set — it is in T0's specified list and works on
 Linux, so it remains available for cross-checking where CBC runs — but
 `survey/allocation.py` does not import it.
+
+## D063 — Leak verification is exhaustive; held-out India never leaves this machine
+
+**2026-09-22 · Accepted · supersedes D061's verification method**
+
+D061 verified the India split by re-running the dHash audit and finding no
+same-scene pairs among the pairs it flagged. **That reasoning is circular.** The
+audit can only ever confirm that the pairs *it selected* are clean; two frames of
+one location a few metres apart can differ by more than Hamming 12, in which case
+neither the grouper nor the audit ever compares them, and the leak survives
+precisely because the prefilter missed it.
+
+No prefilter is necessary. Every image is already a unit-norm 128x128 vector, so
+all-pairs correlation is one matrix multiply — 4,623 x 2,312 over 16,384
+dimensions is ~1.7e11 multiply-adds, seconds in BLAS.
+
+**The exhaustive check found the leak D061 declared closed:**
+
+| | dHash-filtered claim | exhaustive reality |
+|---|---|---|
+| india_train x held-out | 0 same-scene pairs | **1,373 pairs >= 0.93**, max 0.9843 |
+| India x nonindia_train | never checked | **119 pairs >= 0.93**, max 0.9562 |
+
+Scene groups are therefore built from **every** India-India pair rather than from
+hash candidates, so the split is clean by construction instead of by iteration.
+After rebuilding: **0 pairs >= 0.93 in both directions** over 14.3M and 188.9M
+comparisons.
+
+**The cross-country leak is fixed on the non-India side.** 29 non-India training
+images duplicate an India image. Model A trains on non-India and is measured on
+India, so such a pair leaks straight into the headline claim. Dropping the
+*non-India* copy keeps the India evaluation sets whole and costs 0.1% of training
+data; dropping the India copy would have shrunk the very set being defended.
+
+**Held-out India is not uploaded.** `india_cal` and `india_test` — 2,312 images —
+stay on this machine. Locked evaluation runs locally on CPU, so they have no
+reason to travel, and if the bytes are absent then no Kaggle kernel can read them
+through a misconfiguration or a copy-pasted data yaml. The calibration firewall
+stops being a convention the code must honour and becomes a fact about where the
+bytes are.
+
+**Group assignment is now pothole-balanced.** Filling purely by count let
+`india_val` drift to 51.6% pothole against 46% elsewhere, because whole scene
+groups carry correlated class mixes and a small split absorbs one badly. Since
+the India pothole share is the headline domain-shift number, a val split five
+points richer in potholes would report a different problem than the one being
+solved. Balanced placement brings the spread to **0.06 points** (46.61-46.67%).
+
+**The largest group is not one scene, and that is fine.** Its 1,312 members have
+mean within-group correlation 0.766, a minimum of 0.013, and only 1% of internal
+pairs reach 0.93 — a transitive chain through low-information "hub" frames, not a
+place. Twelve random members are visibly unrelated scenes. Over-grouping is the
+conservative error: it can only reduce leakage, it costs a little split
+flexibility, and with balance now enforced it costs nothing measurable. The group
+sits entirely in `india_train`.
+
+## D064 — T10 resampling permutes scene groups, not images
+
+**2026-09-22 · Accepted**
+
+T10's conformal experiments re-partition `india_cal ∪ india_test` 200 times to
+check that mean test risk stays at or below alpha. **The exchangeable unit is now
+a scene group, not an image** (D061/D063).
+
+Shuffling individual images would split a group across the calibration and test
+halves, making the two halves more alike than two genuinely independent samples
+would be. The measured test risk would come out slightly low and the guarantee
+would look slightly better than it is — a quiet overstatement of exactly the
+property conformal prediction exists to establish honestly.
+
+Resampling therefore permutes groups, with singleton images as groups of one.

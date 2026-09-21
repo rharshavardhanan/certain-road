@@ -1,0 +1,168 @@
+{
+  "same_scene_corr": 0.93,
+  "india_internal": {
+    "pairs": 14254248,
+    "max_corr": 0.93,
+    "count_over_threshold": 0,
+    "top20": [
+      {
+        "left": "India__India_001673",
+        "right": "India__India_008307",
+        "corr": 0.93
+      },
+      {
+        "left": "India__India_002815",
+        "right": "India__India_000304",
+        "corr": 0.93
+      },
+      {
+        "left": "India__India_004750",
+        "right": "India__India_004579",
+        "corr": 0.9299
+      },
+      {
+        "left": "India__India_005172",
+        "right": "India__India_000925",
+        "corr": 0.9299
+      },
+      {
+        "left": "India__India_005825",
+        "right": "India__India_005513",
+        "corr": 0.9298
+      },
+      {
+        "left": "India__India_000028",
+        "right": "India__India_000794",
+        "corr": 0.9297
+      },
+      {
+        "left": "India__India_001673",
+        "right": "India__India_002737",
+        "corr": 0.9297
+      },
+      {
+        "left": "India__India_003018",
+        "right": "India__India_004469",
+        "corr": 0.9297
+      },
+      {
+        "left": "India__India_007226",
+        "right": "India__India_004134",
+        "corr": 0.9296
+      },
+      {
+        "left": "India__India_009771",
+        "right": "India__India_004433",
+        "corr": 0.9296
+      },
+      {
+        "left": "India__India_008504",
+        "right": "India__India_000712",
+        "corr": 0.9295
+      },
+      {
+        "left": "India__India_008928",
+        "right": "India__India_005233",
+        "corr": 0.9295
+      },
+      {
+        "left": "India__India_007065",
+        "right": "India__India_004388",
+        "corr": 0.9295
+      },
+      {
+        "left": "India__India_009147",
+        "right": "India__India_000794",
+        "corr": 0.9294
+      },
+      {
+        "left": "India__India_004697",
+        "right": "India__India_006073",
+        "corr": 0.9294
+      },
+      {
+        "left": "India__India_003045",
+        "right": "India__India_008752",
+        "corr": 0.9293
+      },
+      {
+        "left": "India__India_004718",
+        "right": "India__India_008345",
+        "corr": 0.9293
+      },
+      {
+        "left": "India__India_000408",
+        "right": "India__India_005756",
+        "corr": 0.9293
+      },
+      {
+        "left": "India__India_002044",
+        "right": "India__India_004847",
+        "corr": 0.9292
+      },
+      {
+        "left": "India__India_001668",
+        "right": "India__India_005398",
+        "corr": 0.9292
+      }
+    ]
+  },
+  "india_vs_nonindia": {
+    "pairs": 188858648,
+    "max_corr": 0.9296,
+    "count_over_threshold": 0,
+    "top10": [
+      {
+        "left": "India__India_007596",
+        "right": "Japan__Japan_010196",
+        "corr": 0.9296
+      },
+      {
+        "left": "India__India_007596",
+        "right": "Japan__Japan_007081",
+        "corr": 0.9291
+      },
+      {
+        "left": "India__India_002130",
+        "right": "Japan__Japan_000037",
+        "corr": 0.9286
+      },
+      {
+        "left": "India__India_007596",
+        "right": "Japan__Japan_000037",
+        "corr": 0.9284
+      },
+      {
+        "left": "India__India_002942",
+        "right": "Japan__Japan_001145",
+        "corr": 0.9282
+      },
+      {
+        "left": "India__India_007596",
+        "right": "Japan__Japan_000231",
+        "corr": 0.9282
+      },
+      {
+        "left": "India__India_007384",
+        "right": "Japan__Japan_009054",
+        "corr": 0.928
+      },
+      {
+        "left": "India__India_007596",
+        "right": "Japan__Japan_001899",
+        "corr": 0.9279
+      },
+      {
+        "left": "India__India_007596",
+        "right": "Japan__Japan_006191",
+        "corr": 0.9277
+      },
+      {
+        "left": "India__India_005963",
+        "right": "Japan__Japan_007668",
+        "corr": 0.9277
+      }
+    ]
+  },
+  "verdict": "CLEAN"
+}

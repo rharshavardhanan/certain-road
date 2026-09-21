@@ -17,13 +17,13 @@
   "splits": {
     "india_cal": {
       "images": 1156,
-      "backgrounds": 682,
+      "backgrounds": 739,
       "instances": {
-        "linear_crack": 256,
-        "alligator_crack": 271,
-        "pothole": 457
+        "linear_crack": 226,
+        "alligator_crack": 239,
+        "pothole": 407
       },
-      "total_instances": 984
+      "total_instances": 872
     },
     "india_full": {
       "images": 7706,
@@ -37,63 +37,63 @@
     },
     "india_heldout": {
       "images": 2312,
-      "backgrounds": 1347,
+      "backgrounds": 1462,
       "instances": {
-        "linear_crack": 506,
-        "alligator_crack": 582,
-        "pothole": 947
+        "linear_crack": 440,
+        "alligator_crack": 498,
+        "pothole": 820
       },
-      "total_instances": 2035
+      "total_instances": 1758
     },
     "india_test": {
       "images": 1156,
-      "backgrounds": 665,
+      "backgrounds": 723,
       "instances": {
-        "linear_crack": 250,
-        "alligator_crack": 311,
-        "pothole": 490
+        "linear_crack": 214,
+        "alligator_crack": 259,
+        "pothole": 413
       },
-      "total_instances": 1051
+      "total_instances": 886
     },
     "india_train": {
-      "images": 4623,
-      "backgrounds": 2691,
+      "images": 4622,
+      "backgrounds": 2553,
       "instances": {
-        "linear_crack": 969,
-        "alligator_crack": 1258,
-        "pothole": 1938
+        "linear_crack": 977,
+        "alligator_crack": 1338,
+        "pothole": 2025
       },
-      "total_instances": 4165
+      "total_instances": 4340
     },
     "india_val": {
-      "images": 771,
-      "backgrounds": 445,
+      "images": 772,
+      "backgrounds": 468,
       "instances": {
-        "linear_crack": 148,
-        "alligator_crack": 181,
-        "pothole": 302
+        "linear_crack": 206,
+        "alligator_crack": 185,
+        "pothole": 342
       },
-      "total_instances": 631
+      "total_instances": 733
     },
     "nonindia_replay": {
       "images": 5000,
-      "backgrounds": 1669,
+      "backgrounds": 1620,
       "instances": {
-        "linear_crack": 5810,
-        "alligator_crack": 1441,
-        "pothole": 508
+        "linear_crack": 5860,
+        "alligator_crack": 1391,
+        "pothole": 475
       },
-      "total_instances": 7759
+      "total_instances": 7726
     },
     "nonindia_train": {
-      "images": 24537,
-      "backgrounds": 8070,
+      "images": 24508,
+      "backgrounds": 8063,
       "instances": {
-        "linear_crack": 29025,
-        "alligator_crack": 6901,
-        "pothole": 2681
+        "linear_crack": 28994,
+        "alligator_crack": 6892,
+        "pothole": 2679
       },
-      "total_instances": 38607
+      "total_instances": 38565
     },
     "nonindia_val": {
       "images": 6142,

@@ -49,14 +49,31 @@ def main() -> int:
     splits = split_nonindia(
         {c: stems[c] for c in NONINDIA}, val_frac=SPLIT["nonindia_val_frac"]
     )
+
+    # D062: drop non-India training images that duplicate an India image. Model A
+    # trains on non-India and is measured on India, so such a pair leaks straight
+    # into the headline claim.
+    excl_file = repo_root() / "results" / "T2" / "nonindia_excluded.json"
+    if excl_file.exists():
+        excluded = set(json.loads(excl_file.read_text())["stems"])
+        before = len(splits["nonindia_train"])
+        splits["nonindia_train"] = [n for n in splits["nonindia_train"] if n not in excluded]
+        print(f"D062: dropped {before - len(splits['nonindia_train'])} non-India "
+              f"training images that duplicate India", flush=True)
     # D061: keep same-scene groups intact if the audit has produced them.
     groups_file = repo_root() / "results" / "T2" / "india_scene_groups.json"
     if groups_file.exists():
         groups = list(json.loads(groups_file.read_text())["groups"].values())
         print(f"D061: {len(groups)} scene groups held together", flush=True)
+        pot_id = [k for k, v in ID_TO_CLASS.items() if v == "pothole"][0]
+        counts: dict[str, tuple[int, int]] = {}
+        for s in stems[INDIA]:
+            name = pool_name(INDIA, s)
+            ids = (labels_dir / f"{name}.txt").read_text().split()[0::5]
+            counts[name] = (sum(1 for i in ids if int(i) == pot_id), len(ids))
         splits.update(split_india_grouped(
             [pool_name(INDIA, s) for s in stems[INDIA]],
-            fracs=SPLIT["india_fracs"], groups=groups,
+            fracs=SPLIT["india_fracs"], groups=groups, class_counts=counts,
         ))
     else:
         print("D061: no scene-group file; falling back to per-image split", flush=True)

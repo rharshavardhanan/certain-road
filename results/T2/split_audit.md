@@ -4,14 +4,14 @@ Salt `roadsight-pool-v1`, seed 0. India is split per image, not in blocks of 50 
 
 | split | images | backgrounds | linear_crack | alligator_crack | pothole | total |
 |---|---|---|---|---|---|---|
-| india_cal | 1156 | 682 | 256 | 271 | 457 | 984 |
+| india_cal | 1156 | 739 | 226 | 239 | 407 | 872 |
 | india_full | 7706 | 4483 | 1623 | 2021 | 3187 | 6831 |
-| india_heldout | 2312 | 1347 | 506 | 582 | 947 | 2035 |
-| india_test | 1156 | 665 | 250 | 311 | 490 | 1051 |
-| india_train | 4623 | 2691 | 969 | 1258 | 1938 | 4165 |
-| india_val | 771 | 445 | 148 | 181 | 302 | 631 |
-| nonindia_replay | 5000 | 1669 | 5810 | 1441 | 508 | 7759 |
-| nonindia_train | 24537 | 8070 | 29025 | 6901 | 2681 | 38607 |
+| india_heldout | 2312 | 1462 | 440 | 498 | 820 | 1758 |
+| india_test | 1156 | 723 | 214 | 259 | 413 | 886 |
+| india_train | 4622 | 2553 | 977 | 1338 | 2025 | 4340 |
+| india_val | 772 | 468 | 206 | 185 | 342 | 733 |
+| nonindia_replay | 5000 | 1620 | 5860 | 1391 | 475 | 7726 |
+| nonindia_train | 24508 | 8063 | 28994 | 6892 | 2679 | 38565 |
 | nonindia_val | 6142 | 2065 | 7198 | 1694 | 676 | 9568 |
 
 ## Pothole share

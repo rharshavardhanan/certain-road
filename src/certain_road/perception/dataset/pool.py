@@ -93,6 +93,8 @@ def split_india_grouped(
     fracs: dict[str, float],
     groups: list[list[str]],
     salt: str = SALT,
+    class_counts: dict[str, tuple[int, int]] | None = None,
+    balance_weight: float = 4.0,
 ) -> dict[str, list[str]]:
     """Split India keeping same-scene groups intact (D061).
 
@@ -102,9 +104,17 @@ def split_india_grouped(
 
     Groups are placed largest-first into whichever split is furthest below its
     target count. Hashing each group independently would be simpler but lets a
-    205-image group land anywhere and wreck the fractions; deficit-filling keeps
+    1,312-image group land anywhere and wreck the fractions; deficit-filling keeps
     them close while the ordering stays deterministic — size first, then the
     salted hash of the group's first member.
+
+    `class_counts` maps each image to `(pothole_instances, total_instances)`. When
+    given, placement also tracks pothole share: filling purely by count let
+    `india_val` drift to 51.6% pothole against 46% elsewhere, because whole scene
+    groups carry correlated class mixes and a small split absorbs one badly. The
+    guard matters — the India pothole share is the headline domain-shift number,
+    and a val split that is 5 points richer in potholes reports a different
+    problem than the one being solved.
     """
     order = ["india_train", "india_val", "india_cal", "india_test"]
     member_of: dict[str, int] = {}
@@ -121,9 +131,33 @@ def split_india_grouped(
 
     targets = {k: fracs[k] * len(stems) for k in order}
     out: dict[str, list[str]] = {k: [] for k in order}
+
+    if class_counts is None:
+        for unit in units:
+            key = max(order, key=lambda k: targets[k] - len(out[k]))
+            out[key].extend(unit)
+        return {k: sorted(v) for k, v in out.items()}
+
+    pot = {k: 0 for k in order}
+    tot = {k: 0 for k in order}
+    all_pot = sum(class_counts.get(s, (0, 0))[0] for s in stems)
+    all_tot = sum(class_counts.get(s, (0, 0))[1] for s in stems)
+    goal = all_pot / all_tot if all_tot else 0.0
+
     for unit in units:
-        key = max(order, key=lambda k: targets[k] - len(out[k]))
-        out[key].extend(unit)
+        u_pot = sum(class_counts.get(m, (0, 0))[0] for m in unit)
+        u_tot = sum(class_counts.get(m, (0, 0))[1] for m in unit)
+        best, best_score = order[0], -1e18
+        for k in order:
+            need = (targets[k] - len(out[k])) / max(targets[k], 1.0)
+            projected_tot = tot[k] + u_tot
+            share = (pot[k] + u_pot) / projected_tot if projected_tot else goal
+            score = need - balance_weight * abs(share - goal)
+            if score > best_score:
+                best, best_score = k, score
+        out[best].extend(unit)
+        pot[best] += u_pot
+        tot[best] += u_tot
     return {k: sorted(v) for k, v in out.items()}
 
 
