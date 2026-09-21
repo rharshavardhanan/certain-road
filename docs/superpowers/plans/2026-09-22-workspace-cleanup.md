@@ -46,14 +46,14 @@ Design spec: [`../specs/2026-09-22-workspace-cleanup-design.md`](../specs/2026-0
 - Consumes: the five sha256 values in `baseline-weights.txt`.
 - Produces: nothing later tasks depend on. No commit — every path is gitignored.
 
-- [ ] **Step 1: Assert the keepers exist before deleting anything**
+- [x] **Step 1: Assert the keepers exist before deleting anything**
 
 ```bash
 shasum -a 256 -c /path/to/scratchpad/baseline-weights.txt
 ```
 Expected: five `OK` lines. If any line fails, stop — do not proceed to Step 2.
 
-- [ ] **Step 2: Delete the redundant run directories and the rejected external weights**
+- [x] **Step 2: Delete the redundant run directories and the rejected external weights**
 
 ```bash
 rm -rf runs/detect/models/yolo/multicountry_v8s_ext \
@@ -64,7 +64,7 @@ rm -rf runs/detect/models/yolo/multicountry_v8s_ext \
 rm -f  runs/detect/models/yolo/india_v1/weights/last.pt
 ```
 
-- [ ] **Step 3: Delete the validation dumps, root checkpoints and caches**
+- [x] **Step 3: Delete the validation dumps, root checkpoints and caches**
 
 ```bash
 rm -rf runs/detect/val runs/detect/val-* runs/detect/train
@@ -72,19 +72,19 @@ rm -f  yolov8n.pt yolov8s.pt
 rm -rf .import_linter_cache .pytest_cache .ruff_cache
 ```
 
-- [ ] **Step 4: Delete the NO-GO dataset (D039)**
+- [x] **Step 4: Delete the NO-GO dataset (D039)**
 
 ```bash
 rm -rf data/raw/water_potholes data/processed/water_potholes
 ```
 
-- [ ] **Step 5: Delete the 12 GB source archive (already extracted)**
+- [x] **Step 5: Delete the 12 GB source archive (already extracted)**
 
 ```bash
 rm -f data/raw/RDD2022_released_through_CRDDC2022.zip
 ```
 
-- [ ] **Step 6: Re-verify the keepers and the symlinks**
+- [x] **Step 6: Re-verify the keepers and the symlinks**
 
 ```bash
 shasum -a 256 -c /path/to/scratchpad/baseline-weights.txt
@@ -107,13 +107,13 @@ find data/processed -type l ! -exec test -e {} \; -print | wc -l
 **Interfaces:**
 - Consumes: nothing. Produces: nothing. No commit — `runs/` is gitignored.
 
-- [ ] **Step 1: Compress every log in place**
+- [x] **Step 1: Compress every log in place**
 
 ```bash
 gzip -9 runs/logs/*.log
 ```
 
-- [ ] **Step 2: Confirm the content survived**
+- [x] **Step 2: Confirm the content survived**
 
 ```bash
 zcat runs/logs/train_v8s_continue_attempt1_lr_bug.log.gz | wc -l
@@ -140,15 +140,15 @@ du -sh runs/logs
 **Interfaces:**
 - Consumes: nothing. Produces: `docs/design.md` and `docs/datasets/*`, which Task 4's README links to.
 
-- [ ] **Step 1: Diff the two documents section by section**
+- [x] **Step 1: Diff the two documents section by section**
 
 Read both headings lists. For every `PROJECT-OVERVIEW.md` section, decide: already covered in the walkthrough (drop) or unique (port). Sections 9 (Blockers) and 11 (Engineering principles) have no walkthrough equivalent — expect those to port.
 
-- [ ] **Step 2: Port the unique sections into `MENTOR-WALKTHROUGH.md`**
+- [x] **Step 2: Port the unique sections into `MENTOR-WALKTHROUGH.md`**
 
 Insert ported content before `## 17. Questions you are likely to be asked`, renumbering the tail.
 
-- [ ] **Step 3: Move the files with `git mv` so history follows**
+- [x] **Step 3: Move the files with `git mv` so history follows**
 
 ```bash
 git rm docs/PROJECT-OVERVIEW.md
@@ -159,7 +159,7 @@ git mv docs/dataset-multicountry-summary.md docs/datasets/multicountry-summary.m
 git mv docs/water-pothole-viability.md      docs/datasets/water-pothole-viability.md
 ```
 
-- [ ] **Step 4: Repair every inbound link**
+- [x] **Step 4: Repair every inbound link**
 
 ```bash
 grep -rn "PROJECT-OVERVIEW\|superpowers/specs/2026-08-06\|dataset-card-rdd2022-india\|dataset-multicountry-summary\|water-pothole-viability" \
@@ -167,7 +167,7 @@ grep -rn "PROJECT-OVERVIEW\|superpowers/specs/2026-08-06\|dataset-card-rdd2022-i
 ```
 Expected after fixing: no hits outside `docs/superpowers/plans/archive/` (archived plans are a historical record and keep their original links).
 
-- [ ] **Step 5: Verify no link is dangling**
+- [x] **Step 5: Verify no link is dangling**
 
 ```bash
 grep -rhoE '\]\(([^)]+\.md)[^)]*\)' --include='*.md' docs CLAUDE.md README.md \
@@ -175,7 +175,7 @@ grep -rhoE '\]\(([^)]+\.md)[^)]*\)' --include='*.md' docs CLAUDE.md README.md \
 ```
 Check each relative target resolves.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add -A docs CLAUDE.md
@@ -199,7 +199,7 @@ git commit -m "docs: merge overview into walkthrough, surface design doc, group 
 - Consumes: `docs/design.md`, `docs/MENTOR-WALKTHROUGH.md`, `docs/DECISIONS.md`, `docs/detector-benchmark.md` (Task 3 must land first).
 - Produces: nothing.
 
-- [ ] **Step 1: Write the README**
+- [x] **Step 1: Write the README**
 
 Required content, in order: one-line statement of what the system decides; the
 D001 framing (a prioritisation system, not a pothole detector); the pipeline as
@@ -211,7 +211,7 @@ demo cheat sheet; a pointer table to the four main documents; status.
 Terminology rules from `CLAUDE.md` are binding: `vision_density`,
 `apparent_severity`, `pci_ref`, "vision-estimated PCI", "evaluation segment".
 
-- [ ] **Step 2: Verify every command in the README actually runs**
+- [x] **Step 2: Verify every command in the README actually runs**
 
 ```bash
 uv run certain-road --help
@@ -219,7 +219,7 @@ uv run certain-road perception --help
 ```
 Expected: both exit 0 and list the subcommands the README claims exist.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add README.md && git commit -m "docs: write README"
@@ -242,31 +242,31 @@ git add README.md && git commit -m "docs: write README"
 **Interfaces:**
 - Consumes: nothing. Produces: nothing.
 
-- [ ] **Step 1: Replace the description placeholder**
+- [x] **Step 1: Replace the description placeholder**
 
 ```toml
 description = "Pavement management decision support: which road segments to repair first under a fixed budget."
 ```
 
-- [ ] **Step 2: Drop the dead negation, add the missing cache**
+- [x] **Step 2: Drop the dead negation, add the missing cache**
 
 Remove the `# Provenance IS committed…` comment and its `!configs/assess/curves/` line. Add `.import_linter_cache/` beside `.ruff_cache/`.
 
-- [ ] **Step 3: Confirm nothing that was tracked became ignored**
+- [x] **Step 3: Confirm nothing that was tracked became ignored**
 
 ```bash
 git ls-files | while read -r f; do git check-ignore -q "$f" && echo "NOW IGNORED: $f"; done
 ```
 Expected: no output.
 
-- [ ] **Step 4: Confirm the package still builds its metadata**
+- [x] **Step 4: Confirm the package still builds its metadata**
 
 ```bash
 uv run python -c "import importlib.metadata as m; print(m.metadata('certain-road')['Summary'])"
 ```
 Expected: the new description string.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add pyproject.toml .gitignore
@@ -290,7 +290,7 @@ git commit -m "chore: real package description; drop dead gitignore rule for con
 - Consumes: the outcomes of Tasks 1–5.
 - Produces: nothing.
 
-- [ ] **Step 1: Add the index row**
+- [x] **Step 1: Add the index row**
 
 Append to the index table, after the D053 row:
 
@@ -298,11 +298,11 @@ Append to the index table, after the D053 row:
 | D054 | Workspace cleaned and repo reorganised; rejected/superseded weights deleted, keepers named explicitly | Accepted |
 ```
 
-- [ ] **Step 2: Write the D054 entry**
+- [x] **Step 2: Write the D054 entry**
 
 Must state: what was deleted and the decision each deletion follows from (D039 water potholes, D043 the LR-bug `_ext` run, D053 the external weights); the five checkpoints preserved and why each; that `data/raw/RDD2022/` is load-bearing because `data/processed/` symlinks into it; that `models/`/`runs/`/`data/` remain gitignored and Git LFS was declined; that `docs/PROJECT-OVERVIEW.md` was merged into the walkthrough and the design spec surfaced to `docs/design.md`.
 
-- [ ] **Step 3: Run the full verification suite**
+- [x] **Step 3: Run the full verification suite**
 
 ```bash
 uv run pytest
@@ -311,7 +311,7 @@ uv run ruff check .
 ```
 Expected: `186 passed`; `Contracts: N kept, 0 broken`; `All checks passed!`.
 
-- [ ] **Step 4: Confirm the keepers one last time and check the diff is text-only**
+- [x] **Step 4: Confirm the keepers one last time and check the diff is text-only**
 
 ```bash
 shasum -a 256 -c /path/to/scratchpad/baseline-weights.txt
@@ -319,7 +319,7 @@ git diff --stat HEAD~3
 ```
 Expected: five `OK`; no binary files in the diff.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add docs/DECISIONS.md
