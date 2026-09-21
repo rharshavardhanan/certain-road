@@ -29,8 +29,10 @@ incomplete change.
 
 ## Conventions
 
-- Python via `uv` only. Own `pyproject.toml` and committed `uv.lock` — never the
-  shared `~/PROJECTS/venv`.
+- **Python 3.12** via `uv` only. Own `pyproject.toml` and committed `uv.lock` —
+  never the shared `~/PROJECTS/venv`. `requirements.txt` is *generated* from the
+  lock (`uv export --format requirements-txt --no-hashes`) and never hand-edited;
+  Kaggle kernels install only `ultralytics==<pin>` plus `pycocotools` (D056).
 - Torch/YOLO run on the MPS (Metal) backend, not CUDA.
 - **Stages never import each other.** They communicate only through typed artifacts
   on disk. `import-linter` enforces this in CI; a cross-stage import fails the build.

@@ -1,0 +1,56 @@
+# RoadSight project configuration.
+#
+# Amended from the T0 specification by D055 (taxonomy) and D056 (packaging).
+# The spec's `classes: {0: D00, 1: D10, 2: D20, 3: D40}` and its hard-coded
+# pothole index 3 do not apply here: this repo's taxonomy has been frozen at the
+# D038 three-class merge since 2026-08-07. Read `pothole_class` — never a
+# literal 3, which is not a valid index in this taxonomy.
+
+seed: 0
+
+# D038/D055: D00 and D10 share one ASTM D6433 deduct curve, so they are one class.
+classes: {0: linear_crack, 1: alligator_crack, 2: pothole}
+pothole_class: 2
+
+countries:
+  india: India
+  nonindia: [Japan, Czech, Norway, United_States, China_MotorBike, China_Drone]
+
+paths: {raw: data/raw/RDD2022, yolo: data/yolo, splits: splits, results: results, runs: runs}
+
+split:
+  nonindia_val_frac: 0.20
+  india_block_size: 50
+  india_fracs: {india_train: 0.60, india_val: 0.10, india_cal: 0.15, india_test: 0.15}
+  replay_n: 5000
+  max_side: 1280
+  min_box_px: 2
+
+train_A: {model: yolov8s.pt, imgsz: 640, epochs: 40, patience: 10, batch: 32, optimizer: AdamW,
+          lr0: 0.001, lrf: 0.01, mosaic: 1.0, close_mosaic: 10, fliplr: 0.5, translate: 0.1,
+          scale: 0.5, seed: 0, deterministic: true, save_period: 5, workers: 4}
+
+train_B: {imgsz: 640, epochs: 25, patience: 8, batch: 32, optimizer: AdamW, lr0: 0.0005, lrf: 0.01,
+          close_mosaic: 5, seed: 0, deterministic: true, save_period: 5, workers: 4}
+
+# D056: kernels install only `ultralytics==<pin>` + pycocotools, never requirements.txt.
+kaggle: {username: CHANGE_ME, dataset_slug: roadsight-rdd-yolo, accelerator: NvidiaTeslaT4}
+
+conformal: {alphas: [0.05, 0.10, 0.20], iou: 0.5, n_resamples: 200, tau_step: 0.001}
+
+drift: {eps: 0.5, alarm_threshold: 100, topk: 3, n_streams: 200, null_prefix: 500}
+
+# D055: the spec's D00 and D10 both carried weight 8 precisely because they share
+# a deduct curve; merged, that is one weight of 8.
+scoring:
+  segment_m: 50
+  lane_width_m: 3.5
+  deduct_weights: {linear_crack: 8, alligator_crack: 20, pothole: 30}
+
+sim: {speed_kmh: 20, slow_kmh: 10, cam_height_m: 1.3, cam_pitch_deg: 10, cam_fov_rad: 1.2,
+      cam_w: 1280, cam_h: 720, lane_center_y: -1.75, lane_width_m: 3.5, margin_m: 0.2,
+      lookahead_m: 8.0, perceive_every_steps: 3, conf: 0.35, latency_s: 0.15, a_lat: 2.0,
+      a_brake: 4.0, swerve_m: 0.8, road_length_m: 500, n_potholes: 28, seeds: [0, 1, 2]}
+
+edge: {sample_every_m: 5, dedup_m: 2.5, imu_hz: 100, can_hz: 10, obd_bitrate: 500000,
+       detect_range_m: 12.0}

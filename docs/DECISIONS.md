@@ -76,6 +76,10 @@ Current design spec: [`design.md`](design.md)
 | D052 | Deliverable is a vehicle-agnostic control unit demoed on the Jetson: recorded video → real YOLO → real CAN on vcan0; no robot, camera or transceiver required | Accepted |
 | D053 | External RDD2022 weights rejected: 0.9765 mAP50 on our test set indicates train/test overlap, so they cannot be measured | Accepted |
 | D054 | Workspace cleaned and repo reorganised; redundant weights and data deleted, keepers named explicitly | Accepted |
+| D055 | RoadSight spec amended to the frozen three-class merge; `pothole_class` replaces every hard-coded class 3 | Accepted |
+| D056 | `uv` and Python 3.12 retained over the spec's pip/3.11; `requirements.txt` is generated, Kaggle installs only ultralytics | Accepted |
+| D057 | Package stays `certain_road`; spec modules are audited and extended, never rewritten | Accepted |
+| D058 | Local commit at the end of each task and before every `eval_locked` run; never push | Accepted |
 
 ---
 
@@ -671,7 +675,7 @@ run on it.
 
 ## D038 — `D00`/`D10` merged to one class id; three-class set; refines D016
 
-**2026-08-07 · Accepted · refines D016**
+**2026-08-07 · Accepted · refines D016 · amended by D055**
 
 D037's census showed RDD2022 India's official `D10` (transverse crack) has only
 **68 boxes total — 43 in `train`, 13 in `calib`.** Too few to learn: a YOLOv8n head
@@ -1559,3 +1563,187 @@ Finally, `pyproject.toml`'s description was still uv's `"Add your description he
 placeholder, and `.gitignore` carried a `!configs/assess/curves/` negation that was doubly
 dead — the directory was never created, and `configs/` is not ignored, so it could never have
 matched anything.
+
+## D055 — RoadSight spec amended to the frozen three-class merge
+
+**2026-09-22 · Accepted · amends D038**
+
+The RoadSight task specification (T0–T17) sets `classes: {0: D00, 1: D10, 2: D20,
+3: D40}` and hard-codes class index `3` as the pothole class in four places. This
+repo's taxonomy has been frozen since D038 at the three-class merge. **D038 stands;
+the spec is amended to it, not the other way round.**
+
+The spec's own reasoning already points this way: T6 asks for a "3-class mAP
+(D00, D20, D40)" and marks any class under 100 GT instances `unreliable`. It
+splits `D10` out and then reports around it. D038 merged it for a stronger reason
+— **ASTM D6433 treats longitudinal and transverse cracking as one distress type
+sharing one deduct curve**, so the merge is more faithful to the standard this
+project targets, not a data-balance convenience.
+
+**`pothole_class` replaces every hard-coded `3`.** `configs/project.yaml` carries
+`classes: {0: linear_crack, 1: alligator_crack, 2: pothole}` and
+`pothole_class: 2`. The four sites that must read it rather than a literal:
+`eval_locked`'s pothole-only external evaluation (T9), the BharatPotHole class
+remap (T9), the simulation's detection class filter (T13), and conformal
+matching (T10). A literal `3` in any of these silently scores potholes against
+nothing, since index 3 does not exist in this taxonomy.
+
+**Reference facts for T1, restated merged.** Per country, `linear_crack /
+alligator_crack / pothole`:
+
+| Country | linear | alligator | pothole |
+|---|---|---|---|
+| Japan | 8,028 | 6,199 | 2,243 |
+| India | 1,623 | 2,021 | 3,187 |
+| Czech | 1,387 | 161 | 197 |
+| Norway | 10,300 | 468 | 461 |
+| United_States | 10,045 | 834 | 135 |
+| China_MotorBike | 3,774 | 641 | 235 |
+| China_Drone | 2,689 | 293 | 86 |
+
+Six of the seven match this repo's converted labels exactly. **Japan's
+`alligator_crack` converts to 6,198, not 6,199** — one instance, 0.016%, inside
+T1's 1% tolerance. The likely cause is a degenerate or out-of-bounds box dropped
+during VOC→YOLO conversion; T1's raw audit is the task that identifies it, and
+the discrepancy is recorded here rather than resolved by picking a number.
+
+T1's **raw** four-class check is unchanged. It audits the source XML before any
+merge, so it must keep counting `D00`, `D10`, `D20` and `D40` separately — that
+is what makes the merge auditable rather than assumed.
+
+**Primary metric is 3-class mAP over the merged classes**, and this is *not* the
+spec's 3-class mAP. The spec excludes `D10` from a four-class set; this averages
+`linear_crack` (D00+D10), `alligator_crack` and `pothole`. The two numbers are
+not interchangeable and the report must define which it is at the point of use.
+
+The spec's "D10 unreliable, under 100 GT instances" note is replaced by: **"D00
+and D10 are merged into `linear_crack`; India has only 68 D10 instances"** —
+which is the fact that motivated the merge (D037's census), not a caveat on a
+class this taxonomy contains.
+
+`scoring.deduct_weights` becomes `{linear_crack: 8, alligator_crack: 20,
+pothole: 30}`. The spec's `D00: 8, D10: 8` collapse to a single weight of 8,
+which is consistent: the two classes shared a weight precisely because they
+share an ASTM deduct curve.
+
+**Existing weights are not reusable on trust.** Before any checkpoint is adopted
+as Model A, its `args.yaml` and training data lists must show it was trained from
+COCO `yolov8s.pt` on the **non-India split only**, with the fixed hyperparameters.
+If they do not, that is reported and Model A is treated as untrained. This
+matters because D053 already caught external weights whose apparent 0.9765 mAP50
+came from train/test overlap — an unverified checkpoint is worth less than no
+checkpoint, because it produces numbers that look valid.
+
+## D056 — `uv` and Python 3.12 retained; `requirements.txt` generated, not authored
+
+**2026-09-22 · Accepted**
+
+Spec T0.2 calls for a Python 3.11 `.venv` populated with `pip` and an authored
+`requirements.txt`. This project's `CLAUDE.md` mandates `uv` with a committed
+`uv.lock`, and the working environment is Python 3.12.13 with `pyproject.toml`
+pinning `>=3.12,<3.13`. **`uv` wins; `CLAUDE.md`'s environment line is updated to
+state the version explicitly rather than leaving it implied.**
+
+Switching to pip on 3.11 would re-resolve every dependency, reinstall torch, and
+invalidate the environment that produced every result to date — a large,
+uncompensated risk to satisfy a tooling preference the project had already
+settled.
+
+`requirements.txt` is **generated, never hand-edited**:
+
+```
+uv export --format requirements-txt --no-hashes > requirements.txt
+```
+
+regenerated whenever `uv.lock` changes. It exists so external runners can pin
+exact versions; `uv.lock` remains the source of truth.
+
+**Kaggle kernels install only `ultralytics==<pin>` plus `pycocotools`.** Never
+the full requirements file. Kaggle images already carry torch built against
+their own CUDA, and installing a full requirements set on top of that replaces a
+working GPU stack with a generic one — the identical failure mode that made
+`pip install -e .` unsafe on Colab, where `torch>=2.13.0` would have displaced
+the pre-installed `2.11.0+cu128` build.
+
+**T13 opens with a version gate.** Before any simulation work, a trivial Webots
+Python controller must be shown to run under the 3.12 venv. Webots ships its own
+Python discovery and may not accept 3.12; finding that out after the world
+generator and controller are written would waste the whole task.
+
+## D057 — Package stays `certain_road`; spec modules are audited and extended, never rewritten
+
+**2026-09-22 · Accepted**
+
+The RoadSight spec names its package `roadsight` and gives module paths like
+`src/roadsight/voc.py`. This repo's package is `certain_road`, with 10
+subpackages, 21 test files and 7 `import-linter` contracts built on that name.
+
+**The spec is amended to the repo.** Every `roadsight` path or import reads
+`certain_road`; T0's done-when becomes `import certain_road`. A rename would
+touch every module and contract for no functional gain, and a parallel
+`roadsight` package would be worse: it would duplicate `parse_voc` and
+`SOURCE_TO_ID`, which are already written, already implement D038's merge, and
+are already under test.
+
+**Reuse-and-audit precedes writing.** Before any spec module is created, the
+repo is checked for an existing implementation. Where one exists it is audited
+against the spec and fixed or extended — never rewritten — because a rewrite
+discards the decisions already encoded in it. The audit targets are the four
+places where the spec states an exact formula:
+
+- **CRC threshold:** the largest τ on the grid satisfying `(Σ_i L_i(τ) + 1) / (n + 1) ≤ α`.
+- **Greedy-prefix equivalence:** predictions at or above τ form a prefix of the
+  confidence-sorted list and yield the same matches, so
+  `L_i(τ) = #{GT with matched_conf < τ} / #GT`. Unit-tested against brute-force
+  re-matching at several τ.
+- **Drift p-values:** an online *growing* bag — compute p against the current
+  bag, *then* insert the score.
+- **IPM:** `den = sin θ + y·cos θ`, `t = cam_h/den`, `X = t(cos θ − y·sin θ)`, `Y = −t·x`.
+
+**Spec module → existing code.**
+
+| spec module | exists in repo | action |
+|---|---|---|
+| `voc.py` | `perception/dataset/voc.py` — `parse_voc(xml_path) -> VocAnnotation` | **extend**: real-image-size fallback, clipping, `min_box_px` |
+| `metrics.py` | `perception/evaluate.py` (369 lines) | **extend**: add a pycocotools path *alongside* |
+| `geometry.py` | `sim/project.py` — world→image only | **extend**: add the inverse (image→ground), `haversine_m`, `interp_track` |
+| `scoring.py` | `survey/segment.py` — segmentation only | **extend**: density, deduct proxy, PCI bands |
+| `conformal.py` | — | **write new** |
+| `drift.py` | — | **write new** |
+| `allocation.py` | — | **write new** |
+
+`conformal`, `drift` and `allocation` genuinely do not exist. A keyword sweep
+appeared to find all three, but every hit was a comment: `allocation` matched
+aria2c's `--file-allocation=none` flag, and `conformal` matched docstrings
+warning against contaminating the calibration split. **The sweep was rerun with
+context before this table was written** — matching a word is not finding an
+implementation.
+
+**`evaluate.py`'s choice of metric backend is deliberate and is preserved.** It
+uses `ultralytics.utils.metrics.ap_per_class`, not pycocotools, because the
+numbers must stay comparable to ultralytics-based RDD2022 benchmarks; its own
+comment records that an independently correct pycocotools implementation can
+differ by more than ±0.01 through IoU-matching and interpolation conventions
+alone. This is not an oversight to correct. T6 step 4 asks for exactly this
+cross-check — pycocotools against ultralytics, stop if they diverge by more
+than 0.03 — so both implementations must coexist for that task to be meaningful.
+
+## D058 — Local commit at the end of each task and before every `eval_locked` run; never push
+
+**2026-09-22 · Accepted**
+
+`eval_locked.py` stamps the git commit into every file it writes to
+`results/LOCKED/`. With uncommitted work in the tree that stamp points at a
+commit which does not contain the code that produced the number, which silently
+breaks the audit trail on the India result — the one claim that most needs to be
+reproducible.
+
+**Policy:**
+- Commit locally at the end of each task, once its tests pass, as `T<id>: summary`.
+- **Always commit before any `eval_locked` run**, so the recorded hash matches
+  the code that ran.
+- **Never push.** Publication stays an explicit, separate decision.
+
+This narrows `CLAUDE.md`'s "don't commit unless asked" for this spec's duration:
+the commits *are* asked for, because the audit trail depends on them. Pushing is
+not.
