@@ -1,0 +1,59 @@
+{
+  "pass": true,
+  "tolerance": 0.25,
+  "worst_rel_diff": 0.02117,
+  "checks": {
+    "train/box_loss": {
+      "mps": 3.28277,
+      "cpu": 3.21326,
+      "rel_diff": 0.02117,
+      "ok": true
+    },
+    "train/cls_loss": {
+      "mps": 6.82689,
+      "cpu": 6.75885,
+      "rel_diff": 0.00997,
+      "ok": true
+    },
+    "train/dfl_loss": {
+      "mps": 2.66284,
+      "cpu": 2.65386,
+      "rel_diff": 0.00337,
+      "ok": true
+    }
+  },
+  "measured": {
+    "mps_train_it_per_s_batch16": 1.1,
+    "cpu_train_s_per_it_batch16": 5.2,
+    "mps_speedup_over_cpu": 5.7,
+    "val_s_per_image_clean": 0.028,
+    "val_799_images_s": 22.4,
+    "fraction_0.02_wall_s": {
+      "mps": 116.8,
+      "cpu": 1114.3
+    }
+  },
+  "projection_model_a_40ep": {
+    "train_min_per_epoch": 23.2,
+    "val_min_per_epoch": 2.9,
+    "min_per_epoch": 26.1,
+    "total_hours": 17.4
+  },
+  "projection_model_b_25ep": {
+    "train_min_per_epoch": 9.1,
+    "val_min_per_epoch": 0.4,
+    "min_per_epoch": 9.4,
+    "total_hours": 3.9
+  },
+  "naive_formula_note": {
+    "method": "train wall at fraction 0.02 / 0.02 + full val",
+    "epoch_min": 100.2,
+    "model_a_hours": 66.8,
+    "why_rejected": "The 116.8 s at fraction 0.02 is ~89 s of one-time startup (weight load, AMP check, dataset scan) and only ~28 s of training. Dividing by 0.02 multiplies that startup by 50, inventing ~74 min of phantom time per epoch. The rate-based projection uses the measured 1.1 it/s instead."
+  },
+  "verdict": {
+    "mac_viable_for_model_a": false,
+    "mac_viable_for_model_b": true,
+    "note": "D060 forbids Model A on MPS regardless; at 17.4 h it is also impractical. Model B at 3.9 h is a usable overnight fallback."
+  }
+}

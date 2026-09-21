@@ -42,7 +42,7 @@ supersede it).**
 
 | id | need | blocks | state |
 |---|---|---|---|
-| U1 | Kaggle: phone-verified account, `~/.kaggle/kaggle.json` (chmod 600), username in `configs/project.yaml` | T3, T5, T6, T7, T9 | **missing** — no `~/.kaggle/kaggle.json`; `kaggle.username` is `CHANGE_ME` |
+| U1 | Kaggle auth | T3, T5, T6, T7, T9 | **satisfied** — `~/.kaggle/access_token` (ACCESS_TOKEN auth), user `harshavardhananr` |
 | U2 | RDD2022 archive or permission to download | T1 | **satisfied** — all 7 countries present under `data/raw/RDD2022/` |
 | U3 | Webots R2025a installed | T13 | **missing** — no `/Applications/Webots.app` |
 | U4 | Jetson SSH alias `jetson` (optional) | T14 | unknown |
@@ -56,8 +56,8 @@ supersede it).**
 | T0 | mostly done | `git init` skipped (repo has 64 commits); step 3 open on package naming; step 5 blocked on U1 |
 | T1 | **done** | all counts match reference exactly; Japan discrepancy resolved |
 | T2 | **done** | 12 leakage tests green; D059 replaced the block split |
-| T3 | blocked | U1 |
-| T4 | ready | unblocked |
+| T3 | ready | U1 satisfied; D061 audit runs first |
+| T4 | **done** | PASS, worst loss diff 2.1% |
 | T5 | blocked | U1 — and it is a **full training run**, not a verification (see gate below) |
 | T6 | blocked | U1 (T5) |
 | T7 | blocked | U1 (T5) |
@@ -240,3 +240,46 @@ costs and large budgets that a budget-indexed table could not.
 
 Terminology held to CLAUDE.md throughout: `vision_density`, never bare density;
 "vision-estimated PCI", never bare PCI; "evaluation segment".
+
+### 2026-09-22 — T4 PASS, and Kaggle auth is live
+
+**T4 passes.** MPS and CPU training losses agree to within **2.1%** (tolerance
+25%), all non-zero:
+
+| loss | MPS | CPU | rel diff |
+|---|---|---|---|
+| box | 3.28277 | 3.21326 | 0.021 |
+| cls | 6.82689 | 6.75885 | 0.010 |
+| dfl | 2.66284 | 2.65386 | 0.003 |
+
+Ultralytics warned that `scatter_reduce_mps` and `index_put_with_accumulate_mps`
+have no deterministic implementation despite `deterministic=True`, so MPS runs
+are not bit-reproducible even at a fixed seed. Numerically sound, not
+reproducible — which is a second reason D060 keeps Model A on Kaggle.
+
+**Measured:** MPS 1.1 it/s at batch 16; CPU 5.2 s/it (MPS ~5.7x faster); clean
+validation 0.028 s/image.
+
+| | train/epoch | val/epoch | per epoch | total |
+|---|---|---|---|---|
+| Model A, 40 ep | 23.2 min | 2.9 min | 26.1 min | **17.4 h** |
+| Model B, 25 ep | 9.1 min | 0.4 min | 9.4 min | **3.9 h** |
+
+**The naive formula was rejected and why.** Dividing the `fraction=0.02` wall
+time by 0.02 gives 100 min/epoch and 67 h for Model A. That is wrong: of the
+116.8 s measured, only ~28 s was training — the rest is one-time startup (weight
+load, AMP check, dataset scan), and dividing multiplies it by 50, inventing ~74
+minutes of phantom time per epoch. The table above uses the measured 1.1 it/s.
+
+**A first val timing had to be discarded.** It ran at 5.7 s/it because this
+session was running the 2,000-trial conformal and 1,000-stream drift tests
+concurrently. Re-measured with nothing else running: 0.028 s/image, ~200x
+faster. The contaminated figure was never used.
+
+**Verdict against D060:** Model A on the Mac is 17.4 h and forbidden regardless.
+Model B at 3.9 h satisfies both of D060's conditions, so the Mac is a usable
+overnight fallback for B — though Kaggle stays the default.
+
+**U1 is satisfied.** `~/.kaggle/access_token` (CLI 2.2.4 ACCESS_TOKEN auth),
+user `harshavardhananr`, written to `configs/project.yaml`. The token was pasted
+in chat, so it should be rotated once T5 is running.

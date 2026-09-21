@@ -34,7 +34,7 @@ train_B: {imgsz: 640, epochs: 25, patience: 8, batch: 32, optimizer: AdamW, lr0:
           close_mosaic: 5, seed: 0, deterministic: true, save_period: 5, workers: 4}
 
 # D056: kernels install only `ultralytics==<pin>` + pycocotools, never requirements.txt.
-kaggle: {username: CHANGE_ME, dataset_slug: roadsight-rdd-yolo, accelerator: NvidiaTeslaT4}
+kaggle: {username: harshavardhananr, dataset_slug: roadsight-rdd-yolo, accelerator: NvidiaTeslaT4}
 
 conformal: {alphas: [0.05, 0.10, 0.20], iou: 0.5, n_resamples: 200, tau_step: 0.001}
 
