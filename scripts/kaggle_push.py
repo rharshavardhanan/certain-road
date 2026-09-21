@@ -20,6 +20,7 @@ from certain_road.core.paths import repo_root  # noqa: E402
 CFG = yaml.safe_load((repo_root() / "configs" / "project.yaml").read_text())
 KAGGLE_USER = CFG["kaggle"]["username"]
 DATASET = f"{KAGGLE_USER}/{CFG['kaggle']['dataset_slug']}"
+WEIGHTS_DATASET = f"{KAGGLE_USER}/roadsight-weights"
 BUILD = repo_root() / "kaggle" / "build"
 ULTRALYTICS_PIN = "8.4.115"
 
@@ -35,13 +36,20 @@ def build(job: dict, slug: str, kernel_sources: list[str]) -> Path:
     if target.exists():
         shutil.rmtree(target)
     target.mkdir(parents=True)
-    shutil.copy(repo_root() / "kaggle" / "train" / "train.py", target / "train.py")
-    (target / "job.json").write_text(json.dumps(job, indent=2))
+    # Kaggle uploads only `code_file`; a sibling job.json never arrives, which
+    # killed the first smoke run. Embed the job in the script itself.
+    source = (repo_root() / "kaggle" / "train" / "train.py").read_text()
+    marker = "EMBEDDED_JOB: dict | None = None"
+    if marker not in source:
+        raise SystemExit("train.py lost its EMBEDDED_JOB marker")
+    source = source.replace(marker, f"EMBEDDED_JOB: dict | None = {job!r}")
+    (target / "train.py").write_text(source)
+    (target / "job.json").write_text(json.dumps(job, indent=2))  # local reference only
     (target / "kernel-metadata.json").write_text(json.dumps({
         "id": f"{KAGGLE_USER}/{slug}", "title": slug,
         "code_file": "train.py", "language": "python", "kernel_type": "script",
         "is_private": True, "enable_gpu": True, "enable_internet": True,
-        "dataset_sources": [DATASET], "kernel_sources": kernel_sources,
+        "dataset_sources": [DATASET, WEIGHTS_DATASET], "kernel_sources": kernel_sources,
         "competition_sources": [],
     }, indent=2))
     return target

@@ -26,3 +26,7 @@ results/**/qa/
 
 # T3 staging area: hard-links into data/yolo, rebuilt by scripts/stage_upload.py
 /data/kaggle_upload/
+
+# Kaggle staging: hard-links / copies, rebuilt by scripts
+/data/kaggle_weights/
+/kaggle/build/
