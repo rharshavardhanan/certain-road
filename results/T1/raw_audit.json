@@ -1,0 +1,373 @@
+{
+  "countries": [
+    {
+      "country": "India",
+      "images": 7706,
+      "xmls": 7706,
+      "images_without_xml": [],
+      "images_without_xml_count": 0,
+      "xmls_without_image": [],
+      "xmls_without_image_count": 0,
+      "raw_classes": {
+        "D40": 3187,
+        "D20": 2021,
+        "D00": 1555,
+        "D44": 1062,
+        "D01": 179,
+        "D10": 68,
+        "D43": 57,
+        "D11": 45,
+        "D50": 28,
+        "D0w0": 1
+      },
+      "boxes_total": 8203,
+      "degenerate_boxes": 0,
+      "out_of_bounds_boxes": 0,
+      "size_mismatches": 0,
+      "size_mismatch_examples": [],
+      "parse_errors": 0
+    },
+    {
+      "country": "Japan",
+      "images": 10506,
+      "xmls": 10506,
+      "images_without_xml": [],
+      "images_without_xml_count": 0,
+      "xmls_without_image": [],
+      "xmls_without_image_count": 0,
+      "raw_classes": {
+        "D20": 6199,
+        "D00": 4049,
+        "D44": 3995,
+        "D10": 3979,
+        "D50": 3553,
+        "D40": 2243,
+        "D43": 736
+      },
+      "boxes_total": 24754,
+      "degenerate_boxes": 1,
+      "out_of_bounds_boxes": 0,
+      "size_mismatches": 0,
+      "size_mismatch_examples": [],
+      "parse_errors": 0
+    },
+    {
+      "country": "Norway",
+      "images": 8161,
+      "xmls": 8161,
+      "images_without_xml": [],
+      "images_without_xml_count": 0,
+      "xmls_without_image": [],
+      "xmls_without_image_count": 0,
+      "raw_classes": {
+        "D00": 8570,
+        "D10": 1730,
+        "D20": 468,
+        "D40": 461
+      },
+      "boxes_total": 11229,
+      "degenerate_boxes": 0,
+      "out_of_bounds_boxes": 0,
+      "size_mismatches": 0,
+      "size_mismatch_examples": [],
+      "parse_errors": 0
+    },
+    {
+      "country": "United_States",
+      "images": 4805,
+      "xmls": 4805,
+      "images_without_xml": [],
+      "images_without_xml_count": 0,
+      "xmls_without_image": [],
+      "xmls_without_image_count": 0,
+      "raw_classes": {
+        "D00": 6750,
+        "D10": 3295,
+        "D20": 834,
+        "D40": 135
+      },
+      "boxes_total": 11014,
+      "degenerate_boxes": 0,
+      "out_of_bounds_boxes": 0,
+      "size_mismatches": 0,
+      "size_mismatch_examples": [],
+      "parse_errors": 0
+    },
+    {
+      "country": "Czech",
+      "images": 2829,
+      "xmls": 2829,
+      "images_without_xml": [],
+      "images_without_xml_count": 0,
+      "xmls_without_image": [],
+      "xmls_without_image_count": 0,
+      "raw_classes": {
+        "D00": 988,
+        "D10": 399,
+        "D40": 197,
+        "D20": 161
+      },
+      "boxes_total": 1745,
+      "degenerate_boxes": 0,
+      "out_of_bounds_boxes": 0,
+      "size_mismatches": 0,
+      "size_mismatch_examples": [],
+      "parse_errors": 0
+    },
+    {
+      "country": "China_MotorBike",
+      "images": 1977,
+      "xmls": 1977,
+      "images_without_xml": [],
+      "images_without_xml_count": 0,
+      "xmls_without_image": [],
+      "xmls_without_image_count": 0,
+      "raw_classes": {
+        "D00": 2678,
+        "D10": 1096,
+        "D20": 641,
+        "Repair": 277,
+        "D40": 235
+      },
+      "boxes_total": 4927,
+      "degenerate_boxes": 0,
+      "out_of_bounds_boxes": 0,
+      "size_mismatches": 0,
+      "size_mismatch_examples": [],
+      "parse_errors": 0
+    },
+    {
+      "country": "China_Drone",
+      "images": 2401,
+      "xmls": 2401,
+      "images_without_xml": [],
+      "images_without_xml_count": 0,
+      "xmls_without_image": [],
+      "xmls_without_image_count": 0,
+      "raw_classes": {
+        "D00": 1426,
+        "D10": 1263,
+        "Repair": 769,
+        "D20": 293,
+        "D40": 86,
+        "Block crack": 3
+      },
+      "boxes_total": 3840,
+      "degenerate_boxes": 0,
+      "out_of_bounds_boxes": 0,
+      "size_mismatches": 0,
+      "size_mismatch_examples": [],
+      "parse_errors": 0
+    }
+  ],
+  "diff": [
+    {
+      "country": "India",
+      "images_got": 7706,
+      "images_want": 7706,
+      "images_ok": true,
+      "D00": 1555,
+      "D10": 68,
+      "linear_got": 1623,
+      "linear_want": 1623,
+      "alligator_got": 2021,
+      "alligator_want": 2021,
+      "pothole_got": 3187,
+      "pothole_want": 3187,
+      "deltas": [
+        0,
+        0,
+        0
+      ],
+      "worst_rel": 0.0,
+      "labels_ok": true
+    },
+    {
+      "country": "Japan",
+      "images_got": 10506,
+      "images_want": 10506,
+      "images_ok": true,
+      "D00": 4049,
+      "D10": 3979,
+      "linear_got": 8028,
+      "linear_want": 8028,
+      "alligator_got": 6199,
+      "alligator_want": 6199,
+      "pothole_got": 2243,
+      "pothole_want": 2243,
+      "deltas": [
+        0,
+        0,
+        0
+      ],
+      "worst_rel": 0.0,
+      "labels_ok": true
+    },
+    {
+      "country": "Norway",
+      "images_got": 8161,
+      "images_want": 8161,
+      "images_ok": true,
+      "D00": 8570,
+      "D10": 1730,
+      "linear_got": 10300,
+      "linear_want": 10300,
+      "alligator_got": 468,
+      "alligator_want": 468,
+      "pothole_got": 461,
+      "pothole_want": 461,
+      "deltas": [
+        0,
+        0,
+        0
+      ],
+      "worst_rel": 0.0,
+      "labels_ok": true
+    },
+    {
+      "country": "United_States",
+      "images_got": 4805,
+      "images_want": 4805,
+      "images_ok": true,
+      "D00": 6750,
+      "D10": 3295,
+      "linear_got": 10045,
+      "linear_want": 10045,
+      "alligator_got": 834,
+      "alligator_want": 834,
+      "pothole_got": 135,
+      "pothole_want": 135,
+      "deltas": [
+        0,
+        0,
+        0
+      ],
+      "worst_rel": 0.0,
+      "labels_ok": true
+    },
+    {
+      "country": "Czech",
+      "images_got": 2829,
+      "images_want": 2829,
+      "images_ok": true,
+      "D00": 988,
+      "D10": 399,
+      "linear_got": 1387,
+      "linear_want": 1387,
+      "alligator_got": 161,
+      "alligator_want": 161,
+      "pothole_got": 197,
+      "pothole_want": 197,
+      "deltas": [
+        0,
+        0,
+        0
+      ],
+      "worst_rel": 0.0,
+      "labels_ok": true
+    },
+    {
+      "country": "China_MotorBike",
+      "images_got": 1977,
+      "images_want": 1977,
+      "images_ok": true,
+      "D00": 2678,
+      "D10": 1096,
+      "linear_got": 3774,
+      "linear_want": 3774,
+      "alligator_got": 641,
+      "alligator_want": 641,
+      "pothole_got": 235,
+      "pothole_want": 235,
+      "deltas": [
+        0,
+        0,
+        0
+      ],
+      "worst_rel": 0.0,
+      "labels_ok": true
+    },
+    {
+      "country": "China_Drone",
+      "images_got": 2401,
+      "images_want": 2401,
+      "images_ok": true,
+      "D00": 1426,
+      "D10": 1263,
+      "linear_got": 2689,
+      "linear_want": 2689,
+      "alligator_got": 293,
+      "alligator_want": 293,
+      "pothole_got": 86,
+      "pothole_want": 86,
+      "deltas": [
+        0,
+        0,
+        0
+      ],
+      "worst_rel": 0.0,
+      "labels_ok": true
+    }
+  ],
+  "class_names_seen": [
+    "Block crack",
+    "D00",
+    "D01",
+    "D0w0",
+    "D10",
+    "D11",
+    "D20",
+    "D40",
+    "D43",
+    "D44",
+    "D50",
+    "Repair"
+  ],
+  "reference_images": {
+    "India": 7706,
+    "Japan": 10506,
+    "Norway": 8161,
+    "United_States": 4805,
+    "Czech": 2829,
+    "China_MotorBike": 1977,
+    "China_Drone": 2401
+  },
+  "reference_merged": {
+    "Japan": [
+      8028,
+      6199,
+      2243
+    ],
+    "India": [
+      1623,
+      2021,
+      3187
+    ],
+    "Czech": [
+      1387,
+      161,
+      197
+    ],
+    "Norway": [
+      10300,
+      468,
+      461
+    ],
+    "United_States": [
+      10045,
+      834,
+      135
+    ],
+    "China_MotorBike": [
+      3774,
+      641,
+      235
+    ],
+    "China_Drone": [
+      2689,
+      293,
+      86
+    ]
+  },
+  "label_tolerance": 0.01
+}

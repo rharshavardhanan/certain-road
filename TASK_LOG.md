@@ -54,8 +54,8 @@ supersede it).**
 | task | state | notes |
 |---|---|---|
 | T0 | mostly done | `git init` skipped (repo has 64 commits); step 3 open on package naming; step 5 blocked on U1 |
-| T1 | ready | unblocked — all 7 countries present locally |
-| T2 | not started | |
+| T1 | **done** | all counts match reference exactly; Japan discrepancy resolved |
+| T2 | in progress | |
 | T3 | blocked | U1 |
 | T4 | not started | |
 | T5 | blocked | U1 — and it is a **full training run**, not a verification (see gate below) |
@@ -139,3 +139,40 @@ lives only on Google Drive — it is not local and does not qualify.
 
 **Model A is untrained. T5 is a full training run**, blocked on U1.
 
+
+### 2026-09-22 — T1 done
+
+`scripts/audit_raw.py` and `scripts/qa_raw.py`; report at
+`results/T1/raw_audit.{json,md}`.
+
+**All seven countries match the reference facts exactly — worst relative
+deviation 0.00000.** Images 1:1 with XML everywhere; zero orphans in either
+direction, zero parse errors, zero out-of-bounds boxes, zero `<size>`/JPEG
+mismatches across all 38,385 annotations.
+
+**The Japan discrepancy from D055 is resolved.** `Japan_001265` carries a `D20`
+box with `xmin == xmax == 198.0` — zero width, the only degenerate box in the
+dataset. Raw 6,199 and converted 6,198 are both correct and differ by exactly
+this box, which the converter drops correctly. No action needed.
+
+**Twelve raw class names present**, of which four are kept: `Block crack`,
+`D00`, `D01`, `D0w0`, `D10`, `D11`, `D20`, `D40`, `D43`, `D44`, `D50`, `Repair`.
+(`D0w0` is a typo of `D00`.) The raw four-class audit is what makes D038's merge
+auditable rather than assumed.
+
+**Visual QA: all 56 frames viewed. Box geometry correct in every country** — no
+transposed axes or normalisation mix-up, which the count tables alone could not
+have caught. Three findings carry past T1:
+- **United_States is Google Street View** — every frame is watermarked "© Google".
+  A provenance and licensing fact, not only a domain one.
+- **China_Drone is top-down aerial** — valid for crack appearance, but T13's IPM
+  geometry has no meaning for it.
+- **Czech has a fixed windscreen mesh artifact** occluding the top ~20% of every
+  frame, so a model sees it as background rather than noise.
+
+**Dimensions, for T2:** Japan has **4 distinct sizes** (319 images are not
+600x600) and Norway **3**, all ultra-wide. Only Norway exceeds `max_side: 1280`,
+so it is the only country T2 resizes — 8,161 images.
+
+QA renders are gitignored (21 MB, regenerated deterministically by
+`scripts/qa_raw.py`).

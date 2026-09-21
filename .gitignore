@@ -17,3 +17,7 @@ __pycache__/
 
 # Pretrained checkpoints downloaded by ultralytics
 *.pt
+
+# T1 visual-QA renders: 21MB of JPEGs, regenerated deterministically by
+# scripts/qa_raw.py (SEED = 0). The findings live in results/T1/raw_audit.md.
+results/**/qa/
