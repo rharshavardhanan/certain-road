@@ -56,9 +56,9 @@ supersede it).**
 | T0 | mostly done | `git init` skipped (repo has 64 commits); step 3 open on package naming; step 5 blocked on U1 |
 | T1 | **done** | all counts match reference exactly; Japan discrepancy resolved |
 | T2 | **done** | 12 leakage tests green; D059 replaced the block split |
-| T3 | **ready** | U1 satisfied, D061 done — splits are final |
+| T3 | **done** | private dataset live: 36,044 images, held-out withheld |
 | T4 | **done** | PASS, worst loss diff 2.1% |
-| T5 | blocked | U1 — and it is a **full training run**, not a verification (see gate below) |
+| T5 | T5a running | smoke v4; T5b is a **full training run**, not a verification |
 | T6 | blocked | U1 (T5) |
 | T7 | blocked | U1 (T5) |
 | T8 | deferred | U6 unconfirmed; do not run |
@@ -312,3 +312,31 @@ fractions are now 59.99 / 10.01 / 15.00 / 15.00 — closer to target than before
 Non-India: 3,964 pairs flagged, reported as a count only per D061.
 
 **Splits are final. T3 can bake them in.**
+
+### 2026-09-22 — T3 done; T5a took four attempts, all environmental
+
+Dataset live at `harshavardhananr/roadsight-rdd-yolo`: **36,044 images**, with
+`india_cal` and `india_test` (2,312) never uploaded (D063).
+
+Three smoke failures, three distinct causes, none in the training config. Each
+cost 5-8 minutes rather than a four-hour run, which is the entire point of a
+smoke run:
+
+1. **`job.json` never arrived.** Kaggle uploads only the file named by
+   `code_file`; siblings are silently dropped. The job is now rewritten into the
+   script as an `EMBEDDED_JOB` literal at push time.
+2. **No kernel internet** (`Temporary failure in name resolution`), so pip could
+   not reach PyPI and ultralytics could not fetch COCO weights.
+3. **Kaggle's image does not ship ultralytics.** The fallback for (2) assumed it
+   did — an assumption, not a verified fact, and it was wrong.
+
+Root cause of 2 and 3: **the account was not phone-verified**, which is what
+gates kernel internet. Now verified.
+
+Both fixes are kept even though internet is restored, because they make the run
+reproducible rather than dependent on network state: `yolov8s.pt` and the
+ultralytics wheels ship as a private dataset and install with `--no-index
+--no-deps`. `--no-deps` is essential — letting pip resolve ultralytics' tree
+would pull its own torch over Kaggle's CUDA-matched build, the same failure that
+would have destroyed the Colab run. The version actually imported is recorded in
+`status.json`.

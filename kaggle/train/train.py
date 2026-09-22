@@ -22,11 +22,11 @@ resolved optimizer line is echoed so the log proves which was used.
 
 **Nothing is downloaded at runtime.** Kernel internet requires a phone-verified
 Kaggle account; without it pip cannot reach PyPI *and* ultralytics cannot fetch
-COCO weights, which is how the second smoke run died. So the pinned ultralytics
-is used only if already present, and init weights are resolved from an attached
-dataset rather than a URL. The version that actually ran is recorded in
-`status.json`, because a silently different ultralytics is a silently different
-experiment.
+COCO weights. Kaggle's image does **not** ship ultralytics either — assuming it
+did cost a third smoke run. So both the wheels and the COCO weights travel as an
+attached dataset and are installed with `--no-index`. The version that actually
+ran is recorded in `status.json`, because a silently different ultralytics is a
+silently different experiment.
 
 **The job is embedded, not shipped alongside.** Kaggle uploads only the file named
 by `code_file` — a sibling `job.json` simply does not arrive, which is how the
@@ -69,38 +69,51 @@ def log_environment() -> dict:
 
 
 def ensure_ultralytics(pin: str) -> str:
-    """Install the pin if the network allows; otherwise use what the image ships.
+    """Install the pinned ultralytics, preferring attached wheels over the network.
 
-    Failing hard here would be wrong: Kaggle's image already carries a working
-    ultralytics built against its own CUDA, and the run is more valuable than the
-    exact patch version. What is not acceptable is *not knowing*, so the version
-    actually imported is returned and recorded.
+    Order matters. Offline wheels come first because they are the only path that
+    works without a phone-verified account, and `--no-deps` is essential: letting
+    pip resolve ultralytics' dependency tree would pull its own torch and replace
+    the CUDA-matched build Kaggle ships, which is the exact failure that would
+    have destroyed the Colab run.
     """
     try:
         import ultralytics
         if ultralytics.__version__ == pin:
             print(f"ultralytics {pin} already present", flush=True)
             return pin
+        preinstalled: str | None = ultralytics.__version__
     except ImportError:
-        ultralytics = None
+        preinstalled = None
 
-    result = subprocess.run(
-        [sys.executable, "-m", "pip", "install", "-q", f"ultralytics=={pin}", "pycocotools"],
-        capture_output=True, text=True)
-    if result.returncode != 0:
-        print(f"pip install failed (no kernel internet?): {result.stderr.strip()[-300:]}",
-              flush=True)
-        if ultralytics is None:
-            raise SystemExit("ultralytics is neither installed nor installable")
-        print(f"CONTINUING with preinstalled ultralytics {ultralytics.__version__} "
-              f"(wanted {pin})", flush=True)
-        return ultralytics.__version__
+    wheels = sorted(glob.glob("/kaggle/input/**/*.whl", recursive=True))
+    if wheels:
+        print(f"installing {len(wheels)} attached wheel(s) offline", flush=True)
+        offline = subprocess.run(
+            [sys.executable, "-m", "pip", "install", "-q", "--no-index", "--no-deps", *wheels],
+            capture_output=True, text=True)
+        if offline.returncode != 0:
+            print(f"offline install failed: {offline.stderr.strip()[-400:]}", flush=True)
+    else:
+        print("no wheels attached; trying the network", flush=True)
+        online = subprocess.run(
+            [sys.executable, "-m", "pip", "install", "-q", f"ultralytics=={pin}"],
+            capture_output=True, text=True)
+        if online.returncode != 0:
+            print(f"pip install failed (no kernel internet?): "
+                  f"{online.stderr.strip()[-300:]}", flush=True)
 
-    import importlib
+    try:
+        import importlib
 
-    import ultralytics as u
-    importlib.reload(u)
-    return u.__version__
+        import ultralytics as u
+        importlib.reload(u)
+        return u.__version__
+    except ImportError as exc:
+        raise SystemExit(
+            f"ultralytics unavailable: no network, no wheels that installed, and "
+            f"the image ships none (preinstalled={preinstalled})"
+        ) from exc
 
 
 def resolve_init_weights(name: str) -> str:
