@@ -90,6 +90,8 @@ Current design spec: [`design.md`](design.md)
 | D066 | Cross-country checks test for copies at 0.98, not the within-India same-scene 0.93; amends D063 | Accepted |
 | D067 | The India generalization gap is the finding; Model A is never retuned because that number looks low | Accepted |
 | D068 | Model A accepted; evaluation settings frozen and stamped so every reported number is like-for-like | Accepted |
+| D069 | The India gap is confidence collapse and annotation extent, not blindness; corrects the T6 narrative | Accepted |
+| D070 | T10 alphas come from the measured miss-rate floor, not a fixed list; Model A cannot certify India | Accepted |
 
 ---
 
@@ -2209,3 +2211,95 @@ caught a ground-truth conversion error. Per-class AP50: `linear_crack` 0.5790,
 `alligator_crack` 0.6663, `pothole` 0.4909.
 
 **0.5787 is the baseline the generalization gap is measured against.**
+
+## D069 — The India gap is confidence collapse and extent, not blindness
+
+**2026-09-22 · Accepted · corrects D068's narrative**
+
+T6 reported that Model A "doesn't see" Indian damage. **That was wrong.** It
+rested on IoU-0.5 matching at conf 0.25, which cannot distinguish a model that
+finds nothing from one that finds the defect, rates it below threshold, and draws
+it to a different extent.
+
+At conf 0.001, Model A localises **34.7% of India potholes at IoU 0.5 and 54.1%
+at IoU 0.1**. More than half produce a prediction in roughly the right place.
+
+| failure | share of India potholes |
+|---|---|
+| matched at IoU >= 0.5 | 34.7% |
+| right place, wrong extent (IoU 0.1-0.5) | 19.5% |
+| centre inside GT but IoU < 0.1 | 5.3% |
+| nothing predicted nearby | ~40.6% |
+
+**Confidence collapse is the largest single loss:** recall falls 0.347 -> 0.083
+between conf 0.001 and 0.25, so **76% of correctly localised potholes are rated
+below the reporting threshold**.
+
+**Extent disagreement is real and measurable.** India GT boxes are 2.3x larger in
+relative area than non-India (0.0087 vs 0.0038) and more elongated (aspect 1.72
+vs 1.46). `India_000580` shows it: a prediction at **0.46 confidence** on the
+pothole, inside a GT box three times its size — IoU 0.29, scored as a miss. India
+labels damaged *stretches*; the model marks discrete defects.
+
+**This made a testable prediction, and T7 confirmed it.** A blindness-dominated
+gap would implicate the architecture or data volume. A confidence-and-convention
+gap predicts fine-tuning recovers most of it. Model B on `india_test`:
+
+| | A | B | delta |
+|---|---|---|---|
+| mAP50 | 0.1079 | **0.3885** | +0.2806 |
+| pothole AP50 | 0.1009 | **0.3582** | +0.2573 |
+| recall @0.25 | 0.0858 | **0.3431** | +0.2573 |
+| pothole recall @0.001, IoU 0.5 | 0.334 | **0.901** | +0.567 |
+
+Model B finds 90% of India potholes at IoU 0.5 where A found 33%. Misclassification
+stayed under 3.3% for both — the axis that moved was detection and confidence,
+exactly as predicted.
+
+IoU 0.5 remains primary for every reported metric; 0.1 and 0.3 are a declared
+sensitivity analysis used to locate the failure.
+
+## D070 — T10 alphas come from the measured floor; Model A cannot certify India
+
+**2026-09-22 · Accepted**
+
+CRC returns the largest tau whose bound holds. If even `tau = 0.001` — keeping
+every prediction the detector emits — misses more than alpha of the potholes,
+**no tau satisfies the bound and the procedure correctly returns nothing**. That
+floor is a property of the detector on that domain, not of the conformal
+machinery.
+
+Measured (image-level loss, IoU 0.5, over images containing a pothole):
+
+| model · set | n | miss-rate floor | min certifiable alpha |
+|---|---|---|---|
+| A · nonindia_val | 432 | 0.1485 | 0.1505 |
+| **A · india_cal** | 217 | **0.6390** | **0.6407** |
+| **A · india_test** | 219 | **0.6227** | **0.6244** |
+| B · india_cal | 217 | 0.0827 | 0.0869 |
+| B · india_test | 219 | 0.0867 | 0.0908 |
+
+**The configured alphas (0.05, 0.10, 0.20) are all infeasible for Model A on
+India**, and would previously have been reported as "CRC failed". They are
+replaced by a **risk-vs-alpha curve across the full range with the infeasible
+region shaded**, which states the finding directly: *no procedure can certify a
+pothole miss rate below ~0.62 using Model A on Indian roads, because the detector
+does not find them at any threshold.*
+
+**Roles are now explicit:**
+- **Model A demonstrates the violation and the infeasibility.** Calibrated on
+  non-India and deployed on India, the guarantee breaks:
+
+  | alpha | tau from non-India | risk on non-India | risk on india_test |
+  |---|---|---|---|
+  | 0.30 | 0.02 | 0.2816 ✓ | **0.7928** |
+  | 0.50 | 0.18 | 0.4963 ✓ | **0.8777** |
+
+  The bound holds in-domain and is exceeded by **2.6x** out-of-domain — the
+  exchangeability assumption failing exactly where the theory says it must.
+
+- **Model B carries the certified India result.** Its floor of 0.087 makes alphas
+  from ~0.09 upward feasible, an order of magnitude better than A.
+
+Primary loss stays IoU 0.5. IoU 0.3 may appear only as a declared secondary
+sensitivity analysis, never as the headline.
