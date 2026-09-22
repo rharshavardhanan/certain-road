@@ -146,3 +146,58 @@ which is the actual decision.
 **Done when** `kaggle kernels status .../roadsight-train-p` reports running or
 complete, and the kernel log shows the pre-flight's count lines above the first
 epoch.
+
+---
+
+## Task 5 — the B-vs-P comparison is ready before P lands
+
+**Goal** A script that scores Model B and Model P on `india_val` against
+pothole-only ground truth, through one scorer and the frozen eval block, and
+reports pothole AP50, AP50-95, and recall + false alarms per image at
+`report_conf` and at a matched recall.
+
+**Why** Built while P trains, so the selection number is one command away rather
+than an hour of scripting under pressure to finish. More importantly, a
+comparison harness written *after* seeing a result is a harness that can be
+shaped by it.
+
+**Files** `scripts/t9_b_vs_p.py`, `tests/test_operating_points.py`
+
+**Steps**
+1. Confirm the two pools agree: same 772 stems, same 342 pothole boxes,
+   byte-identical images.
+2. Each model runs NMS under the class count it was trained with; B is filtered
+   to its pothole channel afterwards, so its crack detections are discarded
+   rather than charged as false alarms.
+3. One pycocotools GT object, pothole-only, shared by both.
+4. Greedy per-image matching at IoU 0.5 in descending confidence, then a
+   confidence sweep giving recall and false alarms per image.
+5. Report recall 0.8 if reachable, and the highest recall **both** models reach
+   either way — a matched-recall comparison at a recall only one can hit is not
+   a comparison.
+6. Unit-test the matching and sweep on synthetic boxes.
+
+**Done when** `pytest tests/test_operating_points.py -q` passes and the script
+runs end to end against B's weights and P's.
+
+---
+
+## Task 6 — the decision
+
+**Goal** B vs P reported on india_val, every model tried named, and — if P loses
+— P2 proposed rather than launched.
+
+**Why** Selection is the point of all of the above. D072 fixed the rule:
+india_val only, and the contingency is asked for, not assumed.
+
+**Files** `results/T9/B_vs_P_india_val.json`, `docs/DECISIONS.md`
+
+**Steps**
+1. Pull P's weights when the kernel completes.
+2. Run `scripts/t9_b_vs_p.py`.
+3. Report B, P and every earlier model tried.
+4. If P loses: state the P2 proposal (india_train oversampled 3x, otherwise
+   identical) and **stop for approval**. Do not launch it.
+
+**Done when** the comparison JSON exists and the recommendation is stated with
+its numbers.
