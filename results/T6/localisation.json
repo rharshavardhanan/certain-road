@@ -1,0 +1,207 @@
+{
+  "ious": [
+    0.1,
+    0.3,
+    0.5
+  ],
+  "confs": [
+    0.25,
+    0.001
+  ],
+  "nonindia_val": {
+    "recall": {
+      "conf_0.25": {
+        "linear_crack": {
+          "iou_0.1": 0.6403,
+          "iou_0.3": 0.5956,
+          "iou_0.5": 0.5457,
+          "centre": 0.6139,
+          "total": 7198
+        },
+        "alligator_crack": {
+          "iou_0.1": 0.7072,
+          "iou_0.3": 0.6694,
+          "iou_0.5": 0.6128,
+          "centre": 0.6753,
+          "total": 1694
+        },
+        "pothole": {
+          "iou_0.1": 0.5237,
+          "iou_0.3": 0.497,
+          "iou_0.5": 0.463,
+          "centre": 0.5118,
+          "total": 676
+        }
+      },
+      "conf_0.001": {
+        "linear_crack": {
+          "iou_0.1": 0.9815,
+          "iou_0.3": 0.9557,
+          "iou_0.5": 0.9118,
+          "centre": 0.9771,
+          "total": 7198
+        },
+        "alligator_crack": {
+          "iou_0.1": 0.9906,
+          "iou_0.3": 0.9847,
+          "iou_0.5": 0.9693,
+          "centre": 0.9882,
+          "total": 1694
+        },
+        "pothole": {
+          "iou_0.1": 0.9393,
+          "iou_0.3": 0.9083,
+          "iou_0.5": 0.8447,
+          "centre": 0.9275,
+          "total": 676
+        }
+      }
+    },
+    "gt_box_stats": {
+      "linear_crack": {
+        "n": 7198,
+        "rel_area_median": 0.01088,
+        "rel_area_iqr": [
+          0.0042,
+          0.02669
+        ],
+        "aspect_median": 0.88,
+        "aspect_iqr": [
+          0.435,
+          3.85
+        ],
+        "images_with_3plus": 934,
+        "share_images_3plus": 0.1521
+      },
+      "alligator_crack": {
+        "n": 1694,
+        "rel_area_median": 0.07924,
+        "rel_area_iqr": [
+          0.03272,
+          0.17836
+        ],
+        "aspect_median": 1.289,
+        "aspect_iqr": [
+          0.916,
+          1.877
+        ],
+        "images_with_3plus": 47,
+        "share_images_3plus": 0.0077
+      },
+      "pothole": {
+        "n": 676,
+        "rel_area_median": 0.00382,
+        "rel_area_iqr": [
+          0.00205,
+          0.00845
+        ],
+        "aspect_median": 1.457,
+        "aspect_iqr": [
+          1.068,
+          1.926
+        ],
+        "images_with_3plus": 58,
+        "share_images_3plus": 0.0094
+      },
+      "_boxes_per_image_mean": 1.558
+    }
+  },
+  "india_full": {
+    "recall": {
+      "conf_0.25": {
+        "linear_crack": {
+          "iou_0.1": 0.0672,
+          "iou_0.3": 0.0585,
+          "iou_0.5": 0.0462,
+          "centre": 0.0616,
+          "total": 1623
+        },
+        "alligator_crack": {
+          "iou_0.1": 0.1435,
+          "iou_0.3": 0.1217,
+          "iou_0.5": 0.1034,
+          "centre": 0.1371,
+          "total": 2021
+        },
+        "pothole": {
+          "iou_0.1": 0.1061,
+          "iou_0.3": 0.0951,
+          "iou_0.5": 0.0832,
+          "centre": 0.1101,
+          "total": 3187
+        }
+      },
+      "conf_0.001": {
+        "linear_crack": {
+          "iou_0.1": 0.7702,
+          "iou_0.3": 0.6648,
+          "iou_0.5": 0.5576,
+          "centre": 0.748,
+          "total": 1623
+        },
+        "alligator_crack": {
+          "iou_0.1": 0.6249,
+          "iou_0.3": 0.5265,
+          "iou_0.5": 0.4097,
+          "centre": 0.6338,
+          "total": 2021
+        },
+        "pothole": {
+          "iou_0.1": 0.5413,
+          "iou_0.3": 0.4449,
+          "iou_0.5": 0.3467,
+          "centre": 0.5937,
+          "total": 3187
+        }
+      }
+    },
+    "gt_box_stats": {
+      "linear_crack": {
+        "n": 1623,
+        "rel_area_median": 0.01736,
+        "rel_area_iqr": [
+          0.00889,
+          0.03535
+        ],
+        "aspect_median": 0.725,
+        "aspect_iqr": [
+          0.456,
+          1.101
+        ],
+        "images_with_3plus": 89,
+        "share_images_3plus": 0.0115
+      },
+      "alligator_crack": {
+        "n": 2021,
+        "rel_area_median": 0.09563,
+        "rel_area_iqr": [
+          0.04764,
+          0.16812
+        ],
+        "aspect_median": 1.801,
+        "aspect_iqr": [
+          1.299,
+          2.671
+        ],
+        "images_with_3plus": 22,
+        "share_images_3plus": 0.0029
+      },
+      "pothole": {
+        "n": 3187,
+        "rel_area_median": 0.00869,
+        "rel_area_iqr": [
+          0.00367,
+          0.02222
+        ],
+        "aspect_median": 1.724,
+        "aspect_iqr": [
+          1.297,
+          2.349
+        ],
+        "images_with_3plus": 406,
+        "share_images_3plus": 0.0527
+      },
+      "_boxes_per_image_mean": 0.886
+    }
+  }
+}

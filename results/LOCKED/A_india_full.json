@@ -1,0 +1,58 @@
+{
+  "model": "A",
+  "set": "india_full",
+  "weights": "runs/kaggle/roadsight-train-a/export/model_a/best.pt",
+  "weights_sha256": "4c169bc3f965582ceb6c38ca4811d65b133f0de09da8dd57fef3789961f7b904",
+  "images": 7706,
+  "eval_settings": {
+    "conf": 0.001,
+    "iou": 0.7,
+    "max_det": 300,
+    "imgsz": 640,
+    "rect": false,
+    "half": false,
+    "device": "cpu",
+    "report_conf": 0.25
+  },
+  "ultralytics_metrics": {
+    "map50": 0.09720424801952676,
+    "map50_95": 0.03918006187511603,
+    "precision": 0.2747161336044325,
+    "recall": 0.12907369017857098
+  },
+  "pycocotools_metrics": {
+    "per_class": {
+      "linear_crack": {
+        "ap50": 0.04136505084512528,
+        "ap50_95": 0.01781244718059488,
+        "instances": 1623,
+        "unreliable": false
+      },
+      "alligator_crack": {
+        "ap50": 0.14153884175960377,
+        "ap50_95": 0.06180179902131922,
+        "instances": 2021,
+        "unreliable": false
+      },
+      "pothole": {
+        "ap50": 0.11908598736677073,
+        "ap50_95": 0.0479484836925928,
+        "instances": 3187,
+        "unreliable": false
+      }
+    },
+    "map50": 0.10066329332383327,
+    "map50_95": 0.04252090996483563
+  },
+  "cross_check": {
+    "map50_abs_delta": 0.0035,
+    "tolerance": 0.03,
+    "ok": true
+  },
+  "stamp": {
+    "utc": "2026-09-22T08:30:36.472343+00:00",
+    "git_commit": "85fc55e282c808d6bb48d7e8c63a5555925beb7d",
+    "python": "3.12.13",
+    "platform": "macOS-27.0-arm64-arm-64bit"
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "report_conf": 0.25,
+  "iou_match": 0.5,
+  "nonindia_val": {
+    "set": "nonindia_val",
+    "images": 6142,
+    "confusion_at_report_conf": {
+      "linear_crack": {
+        "linear_crack": 3918,
+        "background": 3249,
+        "alligator_crack": 28,
+        "pothole": 3
+      },
+      "alligator_crack": {
+        "background": 602,
+        "alligator_crack": 1029,
+        "linear_crack": 61,
+        "pothole": 2
+      },
+      "pothole": {
+        "pothole": 312,
+        "background": 355,
+        "linear_crack": 3,
+        "alligator_crack": 6
+      }
+    },
+    "pr_at_report_conf": {
+      "precision": 0.6274,
+      "recall": 0.5515,
+      "f1": 0.587,
+      "tp": 5277,
+      "fp": 3134,
+      "fn": 4291
+    }
+  },
+  "india_full": {
+    "set": "india_full",
+    "images": 7706,
+    "confusion_at_report_conf": {
+      "linear_crack": {
+        "background": 1543,
+        "pothole": 3,
+        "alligator_crack": 3,
+        "linear_crack": 74
+      },
+      "alligator_crack": {
+        "alligator_crack": 208,
+        "background": 1806,
+        "linear_crack": 5,
+        "pothole": 2
+      },
+      "pothole": {
+        "background": 2905,
+        "pothole": 262,
+        "linear_crack": 10,
+        "alligator_crack": 10
+      }
+    },
+    "pr_at_report_conf": {
+      "precision": 0.4732,
+      "recall": 0.0802,
+      "f1": 0.1372,
+      "tp": 548,
+      "fp": 610,
+      "fn": 6283
+    }
+  },
+  "india_slices": {
+    "india_train": {
+      "images": 4622,
+      "map50": 0.1006,
+      "map50_95": 0.0418,
+      "per_class_ap50": {
+        "linear_crack": 0.048,
+        "alligator_crack": 0.1278,
+        "pothole": 0.1261
+      }
+    },
+    "india_val": {
+      "images": 772,
+      "map50": 0.0939,
+      "map50_95": 0.0405,
+      "per_class_ap50": {
+        "linear_crack": 0.0257,
+        "alligator_crack": 0.155,
+        "pothole": 0.1011
+      }
+    },
+    "india_cal": {
+      "images": 1156,
+      "map50": 0.1141,
+      "map50_95": 0.0493,
+      "per_class_ap50": {
+        "linear_crack": 0.0488,
+        "alligator_crack": 0.1622,
+        "pothole": 0.1314
+      }
+    },
+    "india_test": {
+      "images": 1156,
+      "map50": 0.1079,
+      "map50_95": 0.0472,
+      "per_class_ap50": {
+        "linear_crack": 0.0321,
+        "alligator_crack": 0.1907,
+        "pothole": 0.1009
+      }
+    }
+  }
+}
