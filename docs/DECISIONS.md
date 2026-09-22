@@ -88,6 +88,7 @@ Current design spec: [`design.md`](design.md)
 | D064 | T10 resampling permutes scene groups, not images | Accepted |
 | D065 | India x nonindia_val checked (68 false positives, 0 copies); kernel-side India guard added; NaN val loss shown to be inert | Accepted |
 | D066 | Cross-country checks test for copies at 0.98, not the within-India same-scene 0.93; amends D063 | Accepted |
+| D067 | The India generalization gap is the finding; Model A is never retuned because that number looks low | Accepted |
 
 ---
 
@@ -2099,3 +2100,40 @@ stands; only its justification is corrected.
 specific data. Carrying it to a different question is how a measurement starts
 reporting something other than what it names — here, "duplicates" that were
 really "two pictures of a road".
+
+## D067 — The India gap is the result; Model A is never retuned against it
+
+**2026-09-22 · Accepted**
+
+Model A's India number will be **clearly lower** than its non-India validation
+number. That is the expected outcome and the point of the experiment, not a
+defect to close.
+
+Two reasons it must be low:
+
+- **The class mix inverts.** Potholes are ~7% of the instances Model A trains on
+  and ~47% of India's (T2). The detector is optimised for a distribution India
+  does not have.
+- **RDD2022's own authors report cross-country degradation.** A model trained on
+  one country loses accuracy applied to another; this reproduces a known result
+  on a split built to measure it honestly.
+
+**The gap is what makes the rest of the project mean anything.** Without it,
+T10's conformal violation under shift has nothing to violate, T11's drift alarm
+has no shift to detect, and T7's Model B has nothing to recover.
+
+**The prohibition.** Model A is **never** retrained, retuned, or reselected
+because its India number looks low. Not a different checkpoint, not a different
+confidence threshold chosen after seeing the result, not "one more run with
+better augmentation". Any of those turns a measurement into a search, and a
+number arrived at by searching against the test set is not a held-out number —
+which is the entire property `india_cal`/`india_test` were built, firewalled and
+withheld from Kaggle to protect. `eval_locked`'s one-shot lock enforces this
+mechanically; this entry states why so the lock is never worked around.
+
+**The one result that would indicate a bug rather than a finding:** India
+**pothole** AP near zero while non-India validation is healthy. Low is expected;
+near-zero on the class India has most of would point at a class-mapping error,
+not domain shift. `test_metrics_coco.py` makes that unlikely — it proves a
+mis-shifted class id scores under 0.4 where the correct shift scores 1.0 — but
+if it appears, the response is to debug the mapping, never to retrain.
