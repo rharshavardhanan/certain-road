@@ -31,9 +31,14 @@ class FakeEcu(threading.Thread):
         # NOT `_stop`: threading.Thread._stop is an internal method and
         # shadowing it breaks join().
         self._stopping = threading.Event()
+        # The reader must not query before this bus is listening. Without the
+        # handshake the test passes alone and fails under suite load, which is a
+        # race in the test rather than in the code under test.
+        self.ready = threading.Event()
 
     def run(self) -> None:
         with can.interface.Bus(channel=self.channel, interface="virtual") as bus:
+            self.ready.set()
             while not self._stopping.is_set():
                 msg = bus.recv(timeout=0.05)
                 if msg is None or msg.arbitration_id != FUNCTIONAL_REQUEST_ID:
@@ -94,6 +99,7 @@ def test_reads_speed_and_rpm_from_a_live_virtual_bus():
     channel = "obd-test-live"
     ecu = FakeEcu(channel, speed=64, rpm_quarters=3200)
     ecu.start()
+    assert ecu.ready.wait(timeout=5.0), "fake ECU never opened its bus"
     try:
         with can.interface.Bus(channel=channel, interface="virtual") as bus:
             reading = ObdReader(bus, timeout_s=1.0).read()
