@@ -1,0 +1,61 @@
+{
+  "slug": "roadsight-train-b",
+  "checks": {
+    "scan_counts": {
+      "train_splits": [
+        "india_train",
+        "nonindia_replay"
+      ],
+      "val_split": "india_val",
+      "train_path": "/kaggle/input/datasets/harshavardhananr/roadsight-rdd-yolo/labels",
+      "val_path": "/kaggle/input/datasets/harshavardhananr/roadsight-rdd-yolo/labels",
+      "train_scanned": 9622,
+      "val_scanned": 772,
+      "train_expected": 9622,
+      "val_expected": 772,
+      "ok": true
+    },
+    "india_policy": {
+      "ok": true,
+      "note": "india_train permitted (Model B)",
+      "held_out_never_validated": true
+    },
+    "train_losses_finite": {
+      "ok": true,
+      "nan_epochs": {}
+    },
+    "val_map50": {
+      "best": 0.4381,
+      "floor": 0.2,
+      "epochs": 25,
+      "ok": true
+    },
+    "val_loss_nan": {
+      "columns": [],
+      "verdict": "none"
+    },
+    "status": {
+      "run": "model_b",
+      "epochs_done": 25,
+      "epochs_requested": 25,
+      "early_stopped": false,
+      "finished": true,
+      "environment": {
+        "torch": "2.10.0+cu128",
+        "cuda": "12.8",
+        "gpus": 2,
+        "names": [
+          "Tesla T4",
+          "Tesla T4"
+        ]
+      },
+      "ultralytics_used": "8.4.115",
+      "ultralytics_requested": "8.4.115"
+    },
+    "best_pt": {
+      "path": "/Users/harshav/PROJECTS/certain-road/runs/kaggle/roadsight-train-b/export/model_b/best.pt",
+      "sha256": "f6177e36b75506de788536932b6e20a50216ebafe575fa8a761ce01cb29e6147",
+      "bytes": 22517098
+    }
+  }
+}

@@ -49,21 +49,41 @@ def kernel_text(log_path: Path) -> str:
     return ANSI.sub("", "".join(e["data"] for e in events)).replace("\r", "\n")
 
 
-def expected_counts() -> dict[str, int]:
-    out = {}
-    for split in ("nonindia_train", "nonindia_val"):
+def expected_counts(train_splits: list[str], val_split: str,
+                    forbid_india: bool) -> dict[str, int]:
+    """Total scanned images the kernel should report, from the lists it was given.
+
+    Model A trains on non-India only; Model B trains on india_train plus a
+    non-India replay sample. Hardcoding A's lists made B fail this check while
+    the run itself was correct, so the expectation now comes from the job.
+
+    The India assertion applies only where India is forbidden — Model B trains on
+    india_train by design, and the held-out sets are not on Kaggle at all.
+    """
+    total = 0
+    for split in train_splits:
         lines = [x for x in (YOLO_DIR / f"{split}.txt").read_text().splitlines() if x.strip()]
-        out[split] = len(lines)
-        india = [x for x in lines if Path(x).name.startswith("India__")]
-        if india:
-            raise SystemExit(f"{split}.txt contains {len(india)} India entries")
-    return out
+        total += len(lines)
+        if forbid_india:
+            india = [x for x in lines if Path(x).name.startswith("India__")]
+            if india:
+                raise SystemExit(f"{split}.txt contains {len(india)} India entries")
+    val_lines = [x for x in (YOLO_DIR / f"{val_split}.txt").read_text().splitlines() if x.strip()]
+    # Held-out India must never be a validation set for either model.
+    for banned in ("india_cal", "india_test", "india_heldout"):
+        if val_split == banned:
+            raise SystemExit(f"{val_split} is held out and must not be validated on")
+    return {"train": total, "val": len(val_lines)}
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--slug", default="roadsight-train-a")
     ap.add_argument("--run", default="model_a")
+    ap.add_argument("--train-splits", nargs="+", default=["nonindia_train"])
+    ap.add_argument("--val-split", default="nonindia_val")
+    ap.add_argument("--allow-india-train", action="store_true",
+                    help="Model B trains on india_train by design")
     args = ap.parse_args()
 
     dest = repo_root() / "runs" / "kaggle" / args.slug
@@ -82,17 +102,23 @@ def main() -> int:
     seen: dict[str, tuple[str, int]] = {}
     for phase, path, count in scans:
         seen[phase] = (path, int(count.replace(",", "")))
-    want = expected_counts()
+    want = expected_counts(args.train_splits, args.val_split, not args.allow_india_train)
     report["checks"]["scan_counts"] = {
+        "train_splits": args.train_splits, "val_split": args.val_split,
         "train_path": seen.get("train", ("?", 0))[0],
         "val_path": seen.get("val", ("?", 0))[0],
         "train_scanned": seen.get("train", ("?", 0))[1],
         "val_scanned": seen.get("val", ("?", 0))[1],
-        "train_expected": want["nonindia_train"], "val_expected": want["nonindia_val"],
-        "ok": (seen.get("train", ("", -1))[1] == want["nonindia_train"]
-               and seen.get("val", ("", -1))[1] == want["nonindia_val"]),
+        "train_expected": want["train"], "val_expected": want["val"],
+        "ok": (seen.get("train", ("", -1))[1] == want["train"]
+               and seen.get("val", ("", -1))[1] == want["val"]),
     }
-    report["checks"]["no_india_in_lists"] = {"ok": True, "note": "asserted in expected_counts"}
+    report["checks"]["india_policy"] = {
+        "ok": True,
+        "note": ("india_train permitted (Model B)" if args.allow_india_train
+                 else "no India permitted (Model A); asserted per training list"),
+        "held_out_never_validated": True,
+    }
 
     # 2/3. per-epoch losses and metrics
     csv = next((p for p in dest.rglob("results.csv")), None)
