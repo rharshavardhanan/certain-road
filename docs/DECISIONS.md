@@ -94,6 +94,7 @@ Current design spec: [`design.md`](design.md)
 | D070 | T10 alphas come from the measured miss-rate floor, not a fixed list; Model A cannot certify India | Accepted |
 | D072 | Overall 3-class mAP is not the target; pothole AP and per-pothole video detection are | Accepted |
 | D073 | BharatPotHole is 162 drives, not 7,074 images; neither its val nor its test split is held out, so neither is used for evaluation | Accepted |
+| D074 | Model P selected over Model B on india_val; the AP50 gap does not separate from zero but the false-alarm gap at usable recall does | Accepted |
 
 ---
 
@@ -2444,3 +2445,96 @@ This is the same failure D059 tested for in India and did not find there.
 Adjacent RDD2022 India filenames proved uncorrelated (+0.004 over random);
 BharatPotHole's are 99.4% same-video. Two datasets, opposite answers, and the
 only reason we know either is that both were measured.
+
+## D074 — Model P is selected over Model B for pothole detection
+
+**2026-09-22 · Accepted · settles D072 · selection set: `india_val` only**
+
+Model P is Model B fine-tuned on a pothole-only pool: `india_train` (4,622
+images, 2,025 pothole boxes) plus BharatPotHole train (5,067 frames from 153
+drives, 8,795 boxes). 40 epochs requested, **36 run, early-stopped** on patience
+10. Both models scored on `india_val` — 772 images, 342 pothole boxes — against
+pothole-only ground truth, through one pycocotools path under the frozen eval
+block. B runs NMS as the 3-class model it is and is then filtered to its pothole
+channel; its crack detections are discarded rather than charged as false alarms,
+which is the generous reading for B.
+
+| | B | P | delta |
+|---|---|---|---|
+| pothole AP50 | 0.4010 | **0.4279** | +0.0269 |
+| pothole AP50-95 | 0.1514 | **0.1574** | +0.0060 |
+| recall @ conf 0.25 | 0.3567 | **0.4561** | +0.0994 |
+| false alarms/image @ conf 0.25 | **0.1671** | 0.1878 | +0.0207 |
+
+### The headline number does not survive resampling; the operating points do
+
+342 pothole boxes is not many, so every difference was put through a **paired
+bootstrap over images**, 2,000 draws — both models scored on the same resampled
+`india_val` each draw, so the shared difficulty of a hard image cancels.
+
+| quantity (P − B) | mean | 95% CI | separates from 0 |
+|---|---|---|---|
+| pothole AP50 | +0.0309 | [−0.0125, +0.0757] | **no** |
+| false alarms/image @ recall 0.3 | −0.055 | [−0.101, −0.014] | **yes, P** |
+| false alarms/image @ recall 0.4 | −0.104 | [−0.175, −0.035] | **yes, P** |
+| false alarms/image @ recall 0.5 | −0.162 | [−0.271, −0.058] | **yes, P** |
+| false alarms/image @ recall 0.6 | −0.217 | [−0.479, +0.043] | no |
+| false alarms/image @ recall 0.8 | +0.754 | [−0.564, +2.244] | no |
+
+**The +0.027 AP50 win is not a measured difference.** P is ahead in 91.4% of
+draws, which is suggestive and nothing more; reporting it as a result would be
+reporting noise with a decimal point on it. What does survive is narrower and
+more useful: at every recall from 0.3 to 0.5, P pays **strictly fewer false
+alarms for the same number of potholes found**, and the interval clears zero.
+At recall 0.5, P emits 0.262 false alarms per image against B's 0.396 — **34%
+fewer** — and is ahead in 99.9% of draws.
+
+### The recall-0.8 comparison is the one point where B wins, and it is not real
+
+| matched recall | B | P |
+|---|---|---|
+| 0.3 | 0.114 | **0.053** |
+| 0.4 | 0.231 | **0.130** |
+| 0.5 | 0.396 | **0.262** |
+| 0.6 | 0.789 | **0.554** |
+| 0.7 | 1.528 | **1.326** |
+| **0.8** | **2.956** | 3.982 |
+| 0.9 | 11.978 | **12.119** |
+| 0.944 | 35.308 | **24.048** |
+
+D072 asked for recall 0.8 specifically, and B is better there: 2.96 false alarms
+per image against P's 3.98. Two things stop that from deciding anything. Its
+bootstrap interval is [−0.564, +2.244], so **B's advantage at 0.8 does not
+separate from zero either** — it is a single crossing in an otherwise consistent
+pattern. And at 3–4 false alarms per image **nobody operates there**: a survey
+vehicle would be flagging three phantom potholes per frame. The range a crew
+could actually use is recall 0.3–0.6, at well under one false alarm per image,
+and P is better across all of it.
+
+This is why the grid is recorded and not just the requested point. A single
+matched recall can flatter either model when the curves cross, and here they do.
+
+**Selected: Model P.** The contingency in D072 — P2, `india_train` oversampled
+3×, otherwise identical — is **not triggered**, because P did not lose.
+
+### Models tried, all of them
+
+| model | provenance | outcome |
+|---|---|---|
+| `multicountry_v8s` + 2 other pre-existing checkpoints | inherited | **disqualified** at the weights gate: trained on 4,617 India images and validated on 757 more |
+| **A** | non-India only, from scratch | accepted (D068). nonindia_val mAP50 0.5787; india_full 0.0972 LOCKED; india_test pothole AP50 0.1009 |
+| **B** | A + india_train + non-India replay | india_test mAP50 0.3885, pothole AP50 0.3582 (D069). india_val pothole AP50 0.4010 |
+| **P** | B + BharatPotHole, pothole-only, 36 epochs | india_val pothole AP50 **0.4279**. **Selected** |
+
+Four smoke runs failed on Kaggle infrastructure and produced no model; they are
+recorded in D060 and in the `train.py` docstring, not here.
+
+### What this does not say
+
+- **Nothing about BharatPotHole's annotation convention.** P is better on
+  `india_val`, which is evidence that the extra data helped on Indian roads. It
+  is not evidence that BharatPotHole's boxes are drawn like RDD2022's, and the
+  reverse would not have been evidence that they are not.
+- **Nothing about held-out performance.** `india_val` is the selection set.
+  P's held-out number comes from one `eval_locked` run and does not exist yet.
+- **Nothing that licenses re-tuning A** (D067 stands).

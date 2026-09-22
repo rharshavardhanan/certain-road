@@ -1,0 +1,5 @@
+path: /Users/harshav/PROJECTS/certain-road/data/yolo_pothole
+train: p_val.txt
+val: p_val.txt
+names:
+  0: pothole

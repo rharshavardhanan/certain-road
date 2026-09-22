@@ -1,0 +1,198 @@
+{
+  "split": "india_val",
+  "images": 772,
+  "pothole_instances": 342,
+  "eval_settings": {
+    "conf": 0.001,
+    "iou": 0.7,
+    "max_det": 300,
+    "imgsz": 640,
+    "rect": false,
+    "half": false,
+    "device": "cpu",
+    "report_conf": 0.25
+  },
+  "iou_match": 0.5,
+  "gt": "pothole-only, data/yolo_pothole/labels",
+  "models": {
+    "B": {
+      "weights": "runs/kaggle/roadsight-train-b/export/model_b/best.pt",
+      "pothole_ap50": 0.401,
+      "pothole_ap50_95": 0.1514,
+      "ap50_self_check": {
+        "own": 0.401,
+        "pycocotools": 0.401,
+        "abs_delta": 0.0,
+        "ok": true
+      },
+      "total_detections": 27901,
+      "at_conf_0.25": {
+        "conf": 0.25,
+        "recall": 0.3567,
+        "false_alarms_per_image": 0.1671,
+        "detections": 251
+      },
+      "at_recall_0.8": {
+        "target_recall": 0.8,
+        "reachable": true,
+        "conf": 0.0284,
+        "recall": 0.8012,
+        "false_alarms_per_image": 2.956
+      },
+      "at_highest_common_recall": {
+        "target_recall": 0.9444444444444444,
+        "reachable": true,
+        "conf": 0.001,
+        "recall": 0.9444,
+        "false_alarms_per_image": 35.3083
+      }
+    },
+    "P": {
+      "weights": "runs/kaggle/roadsight-train-p/export/model_p/best.pt",
+      "pothole_ap50": 0.4279,
+      "pothole_ap50_95": 0.1574,
+      "ap50_self_check": {
+        "own": 0.4279,
+        "pycocotools": 0.4279,
+        "abs_delta": 0.0,
+        "ok": true
+      },
+      "total_detections": 26674,
+      "at_conf_0.25": {
+        "conf": 0.25,
+        "recall": 0.4561,
+        "false_alarms_per_image": 0.1878,
+        "detections": 301
+      },
+      "at_recall_0.8": {
+        "target_recall": 0.8,
+        "reachable": true,
+        "conf": 0.0161,
+        "recall": 0.8012,
+        "false_alarms_per_image": 3.9819
+      },
+      "at_highest_common_recall": {
+        "target_recall": 0.9444444444444444,
+        "reachable": true,
+        "conf": 0.0017,
+        "recall": 0.9444,
+        "false_alarms_per_image": 24.0479
+      }
+    }
+  },
+  "highest_recall_both_reach": 0.9444,
+  "false_alarms_per_image_at_matched_recall": {
+    "0.3": {
+      "B": 0.114,
+      "P": 0.0531
+    },
+    "0.4": {
+      "B": 0.2306,
+      "P": 0.1295
+    },
+    "0.5": {
+      "B": 0.3964,
+      "P": 0.2617
+    },
+    "0.6": {
+      "B": 0.7889,
+      "P": 0.5544
+    },
+    "0.7": {
+      "B": 1.5285,
+      "P": 1.3264
+    },
+    "0.8": {
+      "B": 2.956,
+      "P": 3.9819
+    },
+    "0.9": {
+      "B": 11.978,
+      "P": 12.1192
+    }
+  },
+  "bootstrap_P_minus_B": {
+    "pothole_ap50": {
+      "draws": 2000,
+      "mean_delta": 0.0309,
+      "ci95": [
+        -0.0125,
+        0.0757
+      ],
+      "share_favouring_P": 0.914,
+      "separates_from_zero": false
+    },
+    "false_alarms_at_matched_recall": {
+      "0.3": {
+        "draws": 2000,
+        "mean_delta": -0.0551,
+        "ci95": [
+          -0.1011,
+          -0.0142
+        ],
+        "share_favouring_P": 0.993,
+        "separates_from_zero": true
+      },
+      "0.4": {
+        "draws": 2000,
+        "mean_delta": -0.1041,
+        "ci95": [
+          -0.1749,
+          -0.035
+        ],
+        "share_favouring_P": 0.9965,
+        "separates_from_zero": true
+      },
+      "0.5": {
+        "draws": 2000,
+        "mean_delta": -0.1619,
+        "ci95": [
+          -0.2707,
+          -0.0583
+        ],
+        "share_favouring_P": 0.999,
+        "separates_from_zero": true
+      },
+      "0.6": {
+        "draws": 2000,
+        "mean_delta": -0.2175,
+        "ci95": [
+          -0.4793,
+          0.0427
+        ],
+        "share_favouring_P": 0.9485,
+        "separates_from_zero": false
+      },
+      "0.7": {
+        "draws": 2000,
+        "mean_delta": -0.0655,
+        "ci95": [
+          -0.6684,
+          0.6451
+        ],
+        "share_favouring_P": 0.6195,
+        "separates_from_zero": false
+      },
+      "0.8": {
+        "draws": 2000,
+        "mean_delta": 0.7542,
+        "ci95": [
+          -0.5635,
+          2.2436
+        ],
+        "share_favouring_P": 0.149,
+        "separates_from_zero": false
+      },
+      "0.9": {
+        "draws": 1858,
+        "mean_delta": -0.397,
+        "ci95": [
+          -9.8141,
+          7.2276
+        ],
+        "share_favouring_P": 0.5091,
+        "separates_from_zero": false
+      }
+    }
+  }
+}
