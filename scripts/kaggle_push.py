@@ -26,6 +26,18 @@ BUILD = repo_root() / "kaggle" / "build"
 ULTRALYTICS_PIN = "8.4.115"
 
 
+def dataset_ready(slug: str) -> bool:
+    """Kaggle serves 403 on status while a dataset is still being created.
+
+    Pushing before it is ready starts a kernel that cannot find its data - Model
+    P died exactly that way. `datasets files` is not a substitute: it paginates,
+    so an anchor file on a later page reads as absent.
+    """
+    out = subprocess.run(["kaggle", "datasets", "status", slug],
+                         capture_output=True, text=True)
+    return "ready" in (out.stdout + out.stderr).lower()
+
+
 def kernel_status(slug: str) -> str:
     out = subprocess.run(["kaggle", "kernels", "status", slug],
                          capture_output=True, text=True)
@@ -111,6 +123,12 @@ def main() -> int:
     kind = sys.argv[1] if len(sys.argv) > 1 else "smoke"
     sources = sys.argv[2:]
     slug, job = job_for(kind)
+
+    needed = [POTHOLE_DATASET, WEIGHTS_DATASET] if slug.endswith("-p") \
+        else [DATASET, WEIGHTS_DATASET]
+    for ds in needed:
+        if not dataset_ready(ds):
+            raise SystemExit(f"refusing to push: dataset {ds} is not ready yet")
 
     status = kernel_status(f"{KAGGLE_USER}/{slug}")
     if any(word in status.lower() for word in ("running", "queued")):
