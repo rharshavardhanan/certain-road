@@ -172,13 +172,23 @@ def main() -> int:
     if resume_from:
         print(f"RESUMING from {resume_from}", flush=True)
         model = YOLO(resume_from)
-        results_dir = Path(model.train(resume=True).save_dir)
+        outcome = model.train(resume=True)
     else:
         model = YOLO(resolve_init_weights(job["init_weights"]))
-        results_dir = Path(model.train(
+        outcome = model.train(
             data=str(data_yaml), device=device,
             project=str(WORKING / "runs"), name=job["run"], exist_ok=True, **cfg
-        ).save_dir)
+        )
+
+    # `train()` returns a dict under DDP in this ultralytics version, not an
+    # object with `.save_dir` — reading it off the return value cost a smoke run
+    # *after* training had already succeeded. The trainer always knows.
+    results_dir = Path(
+        getattr(outcome, "save_dir", None)
+        or (outcome.get("save_dir") if isinstance(outcome, dict) else None)
+        or model.trainer.save_dir
+    )
+    print(f"results_dir: {results_dir}", flush=True)
 
     export = WORKING / "export" / job["run"]
     export.mkdir(parents=True, exist_ok=True)
