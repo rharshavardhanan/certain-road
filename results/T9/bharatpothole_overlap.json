@@ -1,0 +1,26 @@
+{
+  "threshold": 0.98,
+  "splits": {
+    "train": {
+      "images": 5067,
+      "pairs": 11714904,
+      "max_corr": 0.9246,
+      "duplicates": [],
+      "duplicate_count": 0
+    },
+    "valid": {
+      "images": 1345,
+      "pairs": 3109640,
+      "max_corr": 0.9207,
+      "duplicates": [],
+      "duplicate_count": 0
+    },
+    "test": {
+      "images": 662,
+      "pairs": 1530544,
+      "max_corr": 0.9187,
+      "duplicates": [],
+      "duplicate_count": 0
+    }
+  }
+}

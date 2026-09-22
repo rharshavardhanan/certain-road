@@ -92,6 +92,7 @@ Current design spec: [`design.md`](design.md)
 | D068 | Model A accepted; evaluation settings frozen and stamped so every reported number is like-for-like | Accepted |
 | D069 | The India gap is confidence collapse and annotation extent, not blindness; corrects the T6 narrative | Accepted |
 | D070 | T10 alphas come from the measured miss-rate floor, not a fixed list; Model A cannot certify India | Accepted |
+| D072 | Overall 3-class mAP is not the target; pothole AP and per-pothole video detection are | Accepted |
 
 ---
 
@@ -2303,3 +2304,75 @@ does not find them at any threshold.*
 
 Primary loss stays IoU 0.5. IoU 0.3 may appear only as a declared secondary
 sensitivity analysis, never as the headline.
+
+## D072 — Pothole AP is the target, not overall 3-class mAP
+
+**2026-09-22 · Accepted**
+
+The deliverable is a vehicle that avoids potholes. **Overall 3-class mAP is not
+chased**, and its ceiling is roughly the in-domain 0.58 Model A reached on
+non-India — pushing India's aggregate toward that would mostly be gains on crack
+classes the avoidance loop never acts on.
+
+The targets are **pothole AP** and **per-pothole detection in video**.
+
+### Model B is converged; more epochs is not the lever
+
+From B's own `results.csv`, `india_val` mAP50 over the last epochs:
+
+| window | slope |
+|---|---|
+| last 5 epochs | **+0.00072** mAP50/epoch (+0.007 per 10) |
+| last 10 epochs | +0.00263/epoch |
+
+Best 0.4381 at epoch 24, final 0.4378. The step at epoch 21 (0.4212 -> 0.4358) is
+`close_mosaic` firing at epoch 20, not learning. Extending B would buy roughly
++0.007 per ten further epochs, which does not justify the GPU time.
+
+### Model P — pothole-only
+
+One class, so the detector spends none of its capacity separating crack types it
+will never act on, and cracks appear as background it learns to reject.
+
+**Data.** `india_train` with pothole -> 0 and every other class dropped, plus
+BharatPotHole's own train split. Validation is `india_val` under the same remap.
+Separate label tree, images shared by hard link.
+
+| source | images | pothole boxes |
+|---|---|---|
+| india_train | 4,622 | 2,025 |
+| BharatPotHole train | 5,067 | **8,795** |
+| **p_train** | **9,689** | **10,820** |
+| india_val | 772 | 342 |
+| BharatPotHole valid | 1,345 | 2,276 |
+
+**BharatPotHole contributes 4.3x more pothole boxes than india_train**, so it
+dominates the annotation style. That is a real risk to India performance and is
+precisely why selection is on `india_val` alone — if BharatPotHole's convention
+hurts Indian roads, `india_val` shows it and Model P loses.
+
+**BharatPotHole is CC BY 4.0** (Roboflow `dashcam-mg6en` v14) and must be
+credited wherever Model P results appear.
+
+### BharatPotHole does not overlap the India holdout
+
+Checked before training, exhaustively, at the **cross-dataset duplicate
+threshold of 0.98** (D066 — "same file", not "same scene", since two Indian
+dashcam datasets sharing a road is not contamination while sharing a file is):
+
+| split | images | pairs vs india_cal+test | max corr | duplicates |
+|---|---|---|---|---|
+| train | 5,067 | 11,714,904 | 0.9246 | **0** |
+| valid | 1,345 | 3,109,640 | 0.9207 | **0** |
+| test | 662 | 1,530,544 | 0.9187 | **0** |
+
+`india_cal` and `india_test` are absent from the pothole pool by construction and
+are not uploaded, exactly as in the main pool.
+
+### Selection and locking
+
+**Selection uses `india_val` only.** Held-out sets play no part in choosing
+between B, P or any learning-curve variant. Finalists receive **one**
+`eval_locked` run each under a new lock name, and **every model tried is
+reported**, including those that lose — a comparison that lists only the winner
+is a selection effect, not a result.

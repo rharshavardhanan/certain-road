@@ -131,10 +131,10 @@ def resolve_init_weights(name: str) -> str:
     return name
 
 
-def find_dataset_root() -> Path:
-    hits = glob.glob(f"/kaggle/input/**/{ANCHOR}", recursive=True)
+def find_dataset_root(anchor: str = ANCHOR) -> Path:
+    hits = glob.glob(f"/kaggle/input/**/{anchor}", recursive=True)
     if not hits:
-        raise FileNotFoundError(f"no {ANCHOR} under /kaggle/input - is the dataset attached?")
+        raise FileNotFoundError(f"no {anchor} under /kaggle/input - is the dataset attached?")
     root = Path(sorted(hits)[0]).parent
     print(f"dataset root: {root}", flush=True)
     return root
@@ -192,7 +192,7 @@ def main() -> int:
     import torch
     from ultralytics import YOLO
 
-    root = find_dataset_root()
+    root = find_dataset_root(job.get("anchor", ANCHOR))
     data_yaml = write_data_yaml(root, job)
     assert_no_forbidden_prefix(root, job)
     device = list(range(torch.cuda.device_count())) or "cpu"

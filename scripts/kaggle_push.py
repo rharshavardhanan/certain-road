@@ -21,6 +21,7 @@ CFG = yaml.safe_load((repo_root() / "configs" / "project.yaml").read_text())
 KAGGLE_USER = CFG["kaggle"]["username"]
 DATASET = f"{KAGGLE_USER}/{CFG['kaggle']['dataset_slug']}"
 WEIGHTS_DATASET = f"{KAGGLE_USER}/roadsight-weights"
+POTHOLE_DATASET = f"{KAGGLE_USER}/roadsight-pothole"
 BUILD = repo_root() / "kaggle" / "build"
 ULTRALYTICS_PIN = "8.4.115"
 
@@ -49,7 +50,8 @@ def build(job: dict, slug: str, kernel_sources: list[str]) -> Path:
         "id": f"{KAGGLE_USER}/{slug}", "title": slug,
         "code_file": "train.py", "language": "python", "kernel_type": "script",
         "is_private": True, "enable_gpu": True, "enable_internet": True,
-        "dataset_sources": [DATASET, WEIGHTS_DATASET], "kernel_sources": kernel_sources,
+        "dataset_sources": ([POTHOLE_DATASET, WEIGHTS_DATASET] if slug.endswith("-p")
+                            else [DATASET, WEIGHTS_DATASET]), "kernel_sources": kernel_sources,
         "competition_sources": [],
     }, indent=2))
     return target
@@ -89,6 +91,17 @@ def job_for(kind: str) -> tuple[str, dict]:
             "names": names, "train_cfg": cfg, "resume": False,
             # No India guard here: Model B trains on india_train by design. The
             # held-out sets are not on Kaggle at all, so they cannot be reached.
+            "ultralytics": ULTRALYTICS_PIN,
+        }
+    if kind == "p":
+        cfg = dict(CFG["train_B"])
+        cfg.update(epochs=40, patience=10)
+        return "roadsight-train-p", {
+            "run": "model_p",
+            "init_weights": "export/model_b/best.pt",
+            "train": "p_train.txt", "val": "p_val.txt",
+            "names": {"0": "pothole"}, "train_cfg": cfg, "resume": False,
+            "anchor": "p_train.txt",
             "ultralytics": ULTRALYTICS_PIN,
         }
     raise SystemExit(f"unknown job kind {kind!r}")
