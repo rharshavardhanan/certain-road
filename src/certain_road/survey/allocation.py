@@ -29,6 +29,7 @@ from dataclasses import dataclass
 import numpy as np
 
 PRIORITY_QUANTUM = 0.01
+MAX_TABLE_ENTRIES = 2_000_000
 
 
 @dataclass(frozen=True)
@@ -56,6 +57,15 @@ def allocate_optimal(
     """
     if not segments:
         return []
+
+    # The table is indexed by summed priority, so a fine quantum on large
+    # priorities makes it enormous — varying traffic weight pushed it to ~20M
+    # entries and the run stalled. Coarsen just enough to stay bounded. The
+    # resulting error is at most one quantum per chosen segment, far below the
+    # precision of the vision-estimated PCI feeding it.
+    total_priority = sum(max(0.0, s.priority) for s in segments)
+    if total_priority / quantum > MAX_TABLE_ENTRIES:
+        quantum = total_priority / MAX_TABLE_ENTRIES
 
     weights = [max(0, int(round(s.priority / quantum))) for s in segments]
     total = sum(weights)

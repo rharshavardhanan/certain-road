@@ -1,0 +1,221 @@
+{
+  "n_segments": 200,
+  "n_trials": 1000,
+  "detector_recall": 0.75,
+  "mobilisation_cost": 50000.0,
+  "cost_per_damage": 3000.0,
+  "damage_distribution": "Beta(2,5) x 100",
+  "worst_k": 20,
+  "rows": [
+    {
+      "regime": "uniform_traffic",
+      "budget_fraction": 0.1,
+      "policy": "optimal",
+      "mean_benefit_repaired": 711.8,
+      "mean_worst20_share": 0.521
+    },
+    {
+      "regime": "uniform_traffic",
+      "budget_fraction": 0.1,
+      "policy": "greedy",
+      "mean_benefit_repaired": 711.6,
+      "mean_worst20_share": 0.5387
+    },
+    {
+      "regime": "uniform_traffic",
+      "budget_fraction": 0.1,
+      "policy": "random",
+      "mean_benefit_repaired": 560.7,
+      "mean_worst20_share": 0.0919
+    },
+    {
+      "regime": "uniform_traffic",
+      "budget_fraction": 0.2,
+      "policy": "optimal",
+      "mean_benefit_repaired": 1398.7,
+      "mean_worst20_share": 0.9237
+    },
+    {
+      "regime": "uniform_traffic",
+      "budget_fraction": 0.2,
+      "policy": "greedy",
+      "mean_benefit_repaired": 1398.5,
+      "mean_worst20_share": 1.0
+    },
+    {
+      "regime": "uniform_traffic",
+      "budget_fraction": 0.2,
+      "policy": "random",
+      "mean_benefit_repaired": 1132.5,
+      "mean_worst20_share": 0.1914
+    },
+    {
+      "regime": "uniform_traffic",
+      "budget_fraction": 0.3,
+      "policy": "optimal",
+      "mean_benefit_repaired": 2061.5,
+      "mean_worst20_share": 0.9975
+    },
+    {
+      "regime": "uniform_traffic",
+      "budget_fraction": 0.3,
+      "policy": "greedy",
+      "mean_benefit_repaired": 2061.3,
+      "mean_worst20_share": 1.0
+    },
+    {
+      "regime": "uniform_traffic",
+      "budget_fraction": 0.3,
+      "policy": "random",
+      "mean_benefit_repaired": 1703.6,
+      "mean_worst20_share": 0.2888
+    },
+    {
+      "regime": "uniform_traffic",
+      "budget_fraction": 0.4,
+      "policy": "optimal",
+      "mean_benefit_repaired": 2701.0,
+      "mean_worst20_share": 1.0
+    },
+    {
+      "regime": "uniform_traffic",
+      "budget_fraction": 0.4,
+      "policy": "greedy",
+      "mean_benefit_repaired": 2700.8,
+      "mean_worst20_share": 1.0
+    },
+    {
+      "regime": "uniform_traffic",
+      "budget_fraction": 0.4,
+      "policy": "random",
+      "mean_benefit_repaired": 2274.0,
+      "mean_worst20_share": 0.3874
+    },
+    {
+      "regime": "uniform_traffic",
+      "budget_fraction": 0.5,
+      "policy": "optimal",
+      "mean_benefit_repaired": 3315.0,
+      "mean_worst20_share": 1.0
+    },
+    {
+      "regime": "uniform_traffic",
+      "budget_fraction": 0.5,
+      "policy": "greedy",
+      "mean_benefit_repaired": 3314.9,
+      "mean_worst20_share": 1.0
+    },
+    {
+      "regime": "uniform_traffic",
+      "budget_fraction": 0.5,
+      "policy": "random",
+      "mean_benefit_repaired": 2845.9,
+      "mean_worst20_share": 0.4919
+    },
+    {
+      "regime": "varying_traffic",
+      "budget_fraction": 0.1,
+      "policy": "optimal",
+      "mean_benefit_repaired": 2525.0,
+      "mean_worst20_share": 0.6904
+    },
+    {
+      "regime": "varying_traffic",
+      "budget_fraction": 0.1,
+      "policy": "greedy",
+      "mean_benefit_repaired": 2425.0,
+      "mean_worst20_share": 0.7252
+    },
+    {
+      "regime": "varying_traffic",
+      "budget_fraction": 0.1,
+      "policy": "random",
+      "mean_benefit_repaired": 770.8,
+      "mean_worst20_share": 0.0958
+    },
+    {
+      "regime": "varying_traffic",
+      "budget_fraction": 0.2,
+      "policy": "optimal",
+      "mean_benefit_repaired": 3871.0,
+      "mean_worst20_share": 0.9535
+    },
+    {
+      "regime": "varying_traffic",
+      "budget_fraction": 0.2,
+      "policy": "greedy",
+      "mean_benefit_repaired": 3743.5,
+      "mean_worst20_share": 1.0
+    },
+    {
+      "regime": "varying_traffic",
+      "budget_fraction": 0.2,
+      "policy": "random",
+      "mean_benefit_repaired": 1549.9,
+      "mean_worst20_share": 0.1954
+    },
+    {
+      "regime": "varying_traffic",
+      "budget_fraction": 0.3,
+      "policy": "optimal",
+      "mean_benefit_repaired": 4858.2,
+      "mean_worst20_share": 0.997
+    },
+    {
+      "regime": "varying_traffic",
+      "budget_fraction": 0.3,
+      "policy": "greedy",
+      "mean_benefit_repaired": 4729.0,
+      "mean_worst20_share": 1.0
+    },
+    {
+      "regime": "varying_traffic",
+      "budget_fraction": 0.3,
+      "policy": "random",
+      "mean_benefit_repaired": 2334.8,
+      "mean_worst20_share": 0.2938
+    },
+    {
+      "regime": "varying_traffic",
+      "budget_fraction": 0.4,
+      "policy": "optimal",
+      "mean_benefit_repaired": 5632.5,
+      "mean_worst20_share": 1.0
+    },
+    {
+      "regime": "varying_traffic",
+      "budget_fraction": 0.4,
+      "policy": "greedy",
+      "mean_benefit_repaired": 5513.9,
+      "mean_worst20_share": 1.0
+    },
+    {
+      "regime": "varying_traffic",
+      "budget_fraction": 0.4,
+      "policy": "random",
+      "mean_benefit_repaired": 3115.3,
+      "mean_worst20_share": 0.3929
+    },
+    {
+      "regime": "varying_traffic",
+      "budget_fraction": 0.5,
+      "policy": "optimal",
+      "mean_benefit_repaired": 6255.6,
+      "mean_worst20_share": 1.0
+    },
+    {
+      "regime": "varying_traffic",
+      "budget_fraction": 0.5,
+      "policy": "greedy",
+      "mean_benefit_repaired": 6150.4,
+      "mean_worst20_share": 1.0
+    },
+    {
+      "regime": "varying_traffic",
+      "budget_fraction": 0.5,
+      "policy": "random",
+      "mean_benefit_repaired": 3889.9,
+      "mean_worst20_share": 0.4918
+    }
+  ]
+}
