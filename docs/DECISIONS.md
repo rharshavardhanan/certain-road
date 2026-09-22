@@ -87,6 +87,7 @@ Current design spec: [`design.md`](design.md)
 | D063 | Leak verification is exhaustive, not hash-prefiltered; held-out India is never uploaded | Accepted |
 | D064 | T10 resampling permutes scene groups, not images | Accepted |
 | D065 | India x nonindia_val checked (68 false positives, 0 copies); kernel-side India guard added; NaN val loss shown to be inert | Accepted |
+| D066 | Cross-country checks test for copies at 0.98, not the within-India same-scene 0.93; amends D063 | Accepted |
 
 ---
 
@@ -2050,3 +2051,51 @@ It is treated as real only if a **training** loss goes NaN, or if val mAP50
 stalls — both of which would indicate divergence rather than a logging artifact.
 The diagnosis if so: re-run validation locally on `best.pt` with `half=False`,
 since fp16 underflow in an empty-prediction batch is the likeliest cause.
+
+## D066 — Cross-country checks use a duplicate threshold, not the same-scene one
+
+**2026-09-22 · Accepted · amends D063 and D065**
+
+D063 applied one threshold, 0.93, to every comparison. That conflates two
+different questions.
+
+**Within India**, the question is *same scene*: two frames of one location
+seconds apart, which contaminate a holdout even though they are different files.
+0.93 was calibrated for exactly that, by inspecting correlation bands.
+
+**Across countries, same-scene is impossible.** An Indian road and a Japanese
+one are never the same place. The only cross-country failure that matters is a
+**curation duplicate** — the identical file appearing in two country folders —
+and that scores ~0.99, not 0.93. Applying the same-scene threshold across
+countries measures nothing but shared composition: a hazy road centred in frame
+under a blown-out sky, which is most of this dataset.
+
+**Rule: cross-country comparisons flag at >= 0.98. Within-India stays at 0.93.**
+
+### What this means for the figures already recorded
+
+**India x `nonindia_val` (D065): 0 copies, confirmed.** 47,330,252 pairs, max
+correlation **0.9516** — comfortably below the duplicate level. The 68 pairs
+D065 reported at >= 0.93 were never evidence of copying, and the top ten were
+viewed: all hazy Indian roads against Japanese urban streets.
+
+**The 29 removed `nonindia_train` images were not copies either.** Their best
+India match runs from **0.9562 down to 0.9318**, median 0.9357, and **none
+reaches 0.98**. Six were viewed: Japanese, US and Norwegian roads against Indian
+ones, distinguishable by signage, the Street View watermark and kerb striping.
+They share only a layout.
+
+They are therefore relabelled **"removed conservatively; not copies"** rather
+than "duplicates of an India image" as D063 described them.
+
+**They are not restored.** T5b is training on the list without them, and the
+cost of their absence is 29 images out of 24,537 — 0.12% of Model A's training
+data, with no measurable effect. Reverting would mean discarding a run in
+progress to recover a tenth of a percent, and would invalidate the manifest
+SHA256 that currently pins what the kernel is reading. The conservative removal
+stands; only its justification is corrected.
+
+**The general lesson.** A threshold is calibrated against a specific question on
+specific data. Carrying it to a different question is how a measurement starts
+reporting something other than what it names — here, "duplicates" that were
+really "two pictures of a road".

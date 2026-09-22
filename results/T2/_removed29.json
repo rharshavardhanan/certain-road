@@ -1,0 +1,147 @@
+[
+ {
+  "corr": 0.9562,
+  "nonindia": "Japan__Japan_007252",
+  "india": "India__India_002934"
+ },
+ {
+  "corr": 0.9509,
+  "nonindia": "Japan__Japan_004808",
+  "india": "India__India_002841"
+ },
+ {
+  "corr": 0.9485,
+  "nonindia": "Japan__Japan_004725",
+  "india": "India__India_002841"
+ },
+ {
+  "corr": 0.9411,
+  "nonindia": "United_States__United_States_004516",
+  "india": "India__India_000294"
+ },
+ {
+  "corr": 0.9406,
+  "nonindia": "Japan__Japan_003279",
+  "india": "India__India_001179"
+ },
+ {
+  "corr": 0.9406,
+  "nonindia": "Japan__Japan_002781",
+  "india": "India__India_003159"
+ },
+ {
+  "corr": 0.9401,
+  "nonindia": "Japan__Japan_012262",
+  "india": "India__India_006283"
+ },
+ {
+  "corr": 0.9399,
+  "nonindia": "Japan__Japan_008259",
+  "india": "India__India_001179"
+ },
+ {
+  "corr": 0.9369,
+  "nonindia": "Japan__Japan_012210",
+  "india": "India__India_001372"
+ },
+ {
+  "corr": 0.9367,
+  "nonindia": "Japan__Japan_003846",
+  "india": "India__India_002841"
+ },
+ {
+  "corr": 0.9365,
+  "nonindia": "Japan__Japan_003305",
+  "india": "India__India_003361"
+ },
+ {
+  "corr": 0.9364,
+  "nonindia": "Japan__Japan_006592",
+  "india": "India__India_003159"
+ },
+ {
+  "corr": 0.9364,
+  "nonindia": "United_States__United_States_001869",
+  "india": "India__India_007596"
+ },
+ {
+  "corr": 0.9362,
+  "nonindia": "Japan__Japan_009885",
+  "india": "India__India_008028"
+ },
+ {
+  "corr": 0.9357,
+  "nonindia": "Norway__Norway_002757",
+  "india": "India__India_000999"
+ },
+ {
+  "corr": 0.9354,
+  "nonindia": "Japan__Japan_002518",
+  "india": "India__India_006703"
+ },
+ {
+  "corr": 0.9354,
+  "nonindia": "Japan__Japan_006578",
+  "india": "India__India_002130"
+ },
+ {
+  "corr": 0.9353,
+  "nonindia": "United_States__United_States_001780",
+  "india": "India__India_001958"
+ },
+ {
+  "corr": 0.935,
+  "nonindia": "Japan__Japan_005948",
+  "india": "India__India_000318"
+ },
+ {
+  "corr": 0.9347,
+  "nonindia": "Norway__Norway_007030",
+  "india": "India__India_000999"
+ },
+ {
+  "corr": 0.9341,
+  "nonindia": "Japan__Japan_000072",
+  "india": "India__India_003159"
+ },
+ {
+  "corr": 0.934,
+  "nonindia": "Japan__Japan_005364",
+  "india": "India__India_001404"
+ },
+ {
+  "corr": 0.9336,
+  "nonindia": "Japan__Japan_000989",
+  "india": "India__India_007596"
+ },
+ {
+  "corr": 0.9331,
+  "nonindia": "Japan__Japan_012310",
+  "india": "India__India_004722"
+ },
+ {
+  "corr": 0.9326,
+  "nonindia": "Japan__Japan_009994",
+  "india": "India__India_001245"
+ },
+ {
+  "corr": 0.9325,
+  "nonindia": "United_States__United_States_003842",
+  "india": "India__India_000294"
+ },
+ {
+  "corr": 0.9324,
+  "nonindia": "Norway__Norway_000154",
+  "india": "India__India_000999"
+ },
+ {
+  "corr": 0.9319,
+  "nonindia": "Japan__Japan_010998",
+  "india": "India__India_007596"
+ },
+ {
+  "corr": 0.9318,
+  "nonindia": "Japan__Japan_008643",
+  "india": "India__India_002343"
+ }
+]
