@@ -147,6 +147,31 @@ def write_data_yaml(root: Path, job: dict) -> Path:
     return out
 
 
+def assert_no_forbidden_prefix(root: Path, job: dict) -> None:
+    """Refuse to train if a forbidden prefix appears in any training list.
+
+    Model A's entire claim is that it never saw India. The split tests assert
+    that locally, but they run against the repo — not against the file the kernel
+    actually reads after an upload, a dataset version bump or a hand-edited yaml.
+    This is the last check before the optimiser sees a single image, and it costs
+    milliseconds against a six-hour run producing a number that would have to be
+    thrown away.
+    """
+    forbidden = job.get("forbid_prefixes") or []
+    if not forbidden:
+        return
+    lists = job["train"] if isinstance(job["train"], list) else [job["train"]]
+    for name in lists:
+        entries = (root / name).read_text().splitlines()
+        hits = [e for e in entries
+                if any(Path(e).name.startswith(p) for p in forbidden)]
+        if hits:
+            raise SystemExit(
+                f"REFUSING TO TRAIN: {name} contains {len(hits)} forbidden "
+                f"entries (prefixes {forbidden}); first: {hits[:3]}")
+        print(f"guard ok: {name} has 0 of {forbidden} in {len(entries)} entries", flush=True)
+
+
 def find_resume_checkpoint(run: str) -> str | None:
     hits = glob.glob(f"/kaggle/input/**/{run}/weights/last.pt", recursive=True)
     return sorted(hits)[0] if hits else None
@@ -164,6 +189,7 @@ def main() -> int:
 
     root = find_dataset_root()
     data_yaml = write_data_yaml(root, job)
+    assert_no_forbidden_prefix(root, job)
     device = list(range(torch.cuda.device_count())) or "cpu"
     print(f"device: {device}", flush=True)
 

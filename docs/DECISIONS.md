@@ -86,6 +86,7 @@ Current design spec: [`design.md`](design.md)
 | D062 | Allocation solved by exact priority-indexed DP, not PuLP: the bundled CBC binary is x86_64 and cannot run here | Accepted |
 | D063 | Leak verification is exhaustive, not hash-prefiltered; held-out India is never uploaded | Accepted |
 | D064 | T10 resampling permutes scene groups, not images | Accepted |
+| D065 | India x nonindia_val checked (68 false positives, 0 copies); kernel-side India guard added; NaN val loss shown to be inert | Accepted |
 
 ---
 
@@ -1983,3 +1984,69 @@ would look slightly better than it is — a quiet overstatement of exactly the
 property conformal prediction exists to establish honestly.
 
 Resampling therefore permutes groups, with singleton images as groups of one.
+
+## D065 — The third exhaustive comparison, a kernel-side guard, and the NaN val loss
+
+**2026-09-22 · Accepted · completes D063**
+
+Three gaps, found by review after T5b had already launched.
+
+### India x nonindia_val was never compared
+
+D063 ran two exhaustive checks — `india_train` x held-out, and India x
+`nonindia_train`. It did **not** compare India against `nonindia_val`, which is
+the set Model A's early stopping and best-epoch selection read. A duplicate there
+would bias model *selection* toward the India domain without ever putting an
+India image in training.
+
+Run now, exhaustively: 7,706 x 6,142 = **47,330,252 pairs**, max correlation
+**0.9516**, **68 pairs at or above 0.93**.
+
+**All 68 are false positives; none is a copy.** The top ten were viewed. Every
+one pairs a hazy, washed-out Indian road against a Japanese urban street, and
+`Japan__Japan_008910` alone accounts for six of the ten — the same low-information
+hub-frame effect seen within India. A dusty Indian highway and a Japanese car
+park are not the same scene under any reading.
+
+**This exposes a limit of the 0.93 threshold worth recording.** It was calibrated
+on within-India pairs, where both images share a dashcam domain, lighting and
+aspect. Across countries the discriminating power is lower: two low-texture
+frames from different continents can exceed it while being obviously unrelated.
+The threshold remains right for its calibrated purpose — grouping India scenes —
+and cross-country figures must be read with inspection, not taken as counts.
+
+**No retrain.** Zero copies means nothing to remove, so T5b continues.
+
+### The kernel had no India guard
+
+`test_splits.py` asserts the lists *in this repo* are clean. Nothing asserted the
+list the **kernel actually reads** after an upload, a dataset version bump or a
+hand-edited yaml. `assert_no_forbidden_prefix` now runs inside the kernel before
+the optimiser sees an image, and refuses to train if any forbidden prefix appears
+in any training list. It is job-configured (`forbid_prefixes: ["India__"]` for
+Model A) because Model B legitimately trains on `india_train`.
+
+**T5b launched without it**, so that run was verified another way: its
+`nonindia_train.txt` has 0 `India__` entries and its local SHA256
+`8a18dba1431e...` matches the uploaded manifest exactly. The guard protects
+T7 and any resume.
+
+### NaN `val/cls_loss` is inert
+
+Traced in ultralytics 8.4.115:
+
+| file:line | finding |
+|---|---|
+| `utils/metrics.py:1007-1010` | `fitness()` = `[P, R, mAP50, mAP50-95]` weighted `[0, 0, 0, 1]` — mAP50-95 alone, and wrapped in `np.nan_to_num` |
+| `engine/trainer.py:596` | `self.metrics, self.fitness = self.validate()` |
+| `engine/trainer.py:605` | `self.stop \|= self.stopper(epoch + 1, self.fitness)` — early stopping consumes fitness |
+| `engine/trainer.py:766-767` | `if self.best_fitness == self.fitness: ... save best.pt` — checkpoint selection consumes fitness |
+
+**Neither early stopping nor best.pt selection reads any validation loss.** The
+NaN is written to `results.csv` and never consulted, so it cannot affect which
+epoch is chosen or when training stops.
+
+It is treated as real only if a **training** loss goes NaN, or if val mAP50
+stalls — both of which would indicate divergence rather than a logging artifact.
+The diagnosis if so: re-run validation locally on `best.pt` with `half=False`,
+since fp16 underflow in an empty-prediction batch is the likeliest cause.

@@ -65,6 +65,7 @@ def job_for(kind: str) -> tuple[str, dict]:
             "run": "smoke", "init_weights": CFG["train_A"]["model"],
             "train": "nonindia_train.txt", "val": "nonindia_val.txt",
             "names": names, "train_cfg": cfg, "resume": False,
+            "forbid_prefixes": ["India__"],
             "ultralytics": ULTRALYTICS_PIN,
         }
     if kind == "a":
@@ -74,6 +75,8 @@ def job_for(kind: str) -> tuple[str, dict]:
             "run": "model_a", "init_weights": CFG["train_A"]["model"],
             "train": "nonindia_train.txt", "val": "nonindia_val.txt",
             "names": names, "train_cfg": cfg, "resume": False,
+            # Model A's whole claim is that it never saw India (D055).
+            "forbid_prefixes": ["India__"],
             "ultralytics": ULTRALYTICS_PIN,
         }
     raise SystemExit(f"unknown job kind {kind!r}")

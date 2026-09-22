@@ -1,0 +1,57 @@
+{
+  "pairs": 47330252,
+  "max_corr": 0.9516,
+  "count_over": 68,
+  "top10": [
+    {
+      "corr": 0.9516,
+      "india": "India__India_009741",
+      "nonindia_val": "Japan__Japan_008910"
+    },
+    {
+      "corr": 0.9504,
+      "india": "India__India_002841",
+      "nonindia_val": "Japan__Japan_008820"
+    },
+    {
+      "corr": 0.9495,
+      "india": "India__India_007492",
+      "nonindia_val": "Japan__Japan_008910"
+    },
+    {
+      "corr": 0.9483,
+      "india": "India__India_004814",
+      "nonindia_val": "Japan__Japan_008910"
+    },
+    {
+      "corr": 0.9479,
+      "india": "India__India_007657",
+      "nonindia_val": "Japan__Japan_008910"
+    },
+    {
+      "corr": 0.9476,
+      "india": "India__India_005963",
+      "nonindia_val": "Japan__Japan_008910"
+    },
+    {
+      "corr": 0.9475,
+      "india": "India__India_008586",
+      "nonindia_val": "Japan__Japan_008910"
+    },
+    {
+      "corr": 0.9467,
+      "india": "India__India_002296",
+      "nonindia_val": "Japan__Japan_008820"
+    },
+    {
+      "corr": 0.9447,
+      "india": "India__India_000704",
+      "nonindia_val": "Japan__Japan_001556"
+    },
+    {
+      "corr": 0.9442,
+      "india": "India__India_001110",
+      "nonindia_val": "Japan__Japan_008910"
+    }
+  ]
+}
