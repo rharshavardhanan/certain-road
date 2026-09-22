@@ -5,7 +5,7 @@ resume — is data in `job.json`, not a code edit. That keeps the script that
 produced Model A byte-identical to the one that produced Model B, so a difference
 in results cannot be a difference in code.
 
-Three Kaggle-specific hazards are handled explicitly:
+Several Kaggle-specific hazards are handled explicitly:
 
 **The mount path varies.** `/kaggle/input/<slug>/` is not stable across dataset
 versions or attachments, so the root is found by globbing for a file we know is
@@ -28,6 +28,12 @@ attached dataset and are installed with `--no-index`. The version that actually
 ran is recorded in `status.json`, because a silently different ultralytics is a
 silently different experiment.
 
+**A dataset version can land partially.** One did: 8,000 labels arrived and zero
+images, so ultralytics called all 9,689 pairs corrupt and a GPU session bought
+nothing. `preflight_dataset` re-asks that question where it can actually be
+answered — on the mount, against the lists the trainer reads — because Kaggle's
+`datasets files` endpoint paginates and cannot.
+
 **The job is embedded, not shipped alongside.** Kaggle uploads only the file named
 by `code_file` — a sibling `job.json` simply does not arrive, which is how the
 first smoke run died. `kaggle_push.py` rewrites `EMBEDDED_JOB` in a copy of this
@@ -37,9 +43,11 @@ locally.
 
 import glob
 import json
+import os
 import shutil
 import subprocess
 import sys
+from multiprocessing.pool import ThreadPool
 from pathlib import Path
 
 WORKING = Path("/kaggle/working")
@@ -177,6 +185,76 @@ def assert_no_forbidden_prefix(root: Path, job: dict) -> None:
         print(f"guard ok: {name} has 0 of {forbidden} in {len(entries)} entries", flush=True)
 
 
+def preflight_dataset(root: Path, job: dict) -> dict:
+    """Prove every listed image and label is on the mount before the run starts.
+
+    A dataset version can land partially. One did: 8,000 labels arrived, zero
+    images, and ultralytics dutifully scanned 9,689 entries, called every one
+    corrupt, and spent a GPU session producing nothing. The readiness check
+    written after that asked Kaggle's `datasets files` endpoint instead, which
+    **paginates** — a file on page two reads as absent and a lucky prefix on
+    page one reads as present however few of its members arrived. It answers a
+    question about an API listing when the question is about the bytes the
+    trainer will open. Only the kernel can answer that, after the mount
+    resolves, against the same list files the trainer reads.
+
+    Label paths come from ultralytics' own `img2label_paths`. Deriving them here
+    would let the pre-flight pass while the trainer still finds nothing, which
+    is worse than no pre-flight: it turns a loud failure into a confident one.
+
+    Two passes, cheapest first. Existence is a second over 11k paths and catches
+    the failure actually observed; the ultralytics scan decodes every image and
+    catches truncation. **Empty label files are not an error** — most images in
+    a pothole pool carry no box (india_train is 4,622 images and 2,025 boxes),
+    and ultralytics counts those `ne`, not `nm`. Aborting on `ne` would refuse
+    every correctly-built pool.
+    """
+    from ultralytics.data.utils import img2label_paths, verify_image_label
+
+    def as_list(value) -> list[str]:
+        return value if isinstance(value, list) else [value]
+
+    named = ([("train", n) for n in as_list(job["train"])]
+             + [("val", n) for n in as_list(job["val"])])
+    num_cls = len(job["names"])
+
+    report: dict[str, dict] = {}
+    pairs: list[tuple[str, str]] = []
+    for role, name in named:
+        entries = [e.strip() for e in (root / name).read_text().splitlines() if e.strip()]
+        images = [os.path.normpath(str(root / e)) for e in entries]
+        labels = img2label_paths(images)
+        found_i = sum(1 for p in images if os.path.isfile(p))
+        found_l = sum(1 for p in labels if os.path.isfile(p))
+        report[name] = {"role": role, "listed": len(entries),
+                        "images_present": found_i, "labels_present": found_l}
+        print(f"preflight {role} {name}: {found_i}/{len(entries)} images, "
+              f"{found_l}/{len(entries)} labels", flush=True)
+        if found_i < len(entries) or found_l < len(entries):
+            raise SystemExit(
+                f"REFUSING TO TRAIN: {name} lists {len(entries)} entries but the "
+                f"mount has {found_i} images and {found_l} labels "
+                f"(root {root}). The dataset version is incomplete.")
+        pairs += list(zip(images, labels, strict=True))
+
+    nm = ne = nc = 0
+    msgs: list[str] = []
+    args = [(im, lb, "", False, num_cls, 0, 0, False) for im, lb in pairs]
+    with ThreadPool(min(8, os.cpu_count() or 1)) as pool:
+        for out in pool.imap_unordered(verify_image_label, args):
+            nm, ne, nc = nm + out[5], ne + out[7], nc + out[8]
+            if out[9]:
+                msgs.append(out[9])
+    print(f"preflight scan: {len(pairs)} pairs, missing={nm} empty={ne} "
+          f"corrupt={nc}", flush=True)
+    report["scan"] = {"pairs": len(pairs), "missing": nm, "empty": ne, "corrupt": nc}
+    if nm or nc:
+        raise SystemExit(
+            f"REFUSING TO TRAIN: ultralytics scan of {len(pairs)} pairs reports "
+            f"{nm} missing and {nc} corrupt; first: {msgs[:3]}")
+    return report
+
+
 def find_resume_checkpoint(run: str) -> str | None:
     hits = glob.glob(f"/kaggle/input/**/{run}/weights/last.pt", recursive=True)
     return sorted(hits)[0] if hits else None
@@ -195,6 +273,7 @@ def main() -> int:
     root = find_dataset_root(job.get("anchor", ANCHOR))
     data_yaml = write_data_yaml(root, job)
     assert_no_forbidden_prefix(root, job)
+    preflight_dataset(root, job)
     device = list(range(torch.cuda.device_count())) or "cpu"
     print(f"device: {device}", flush=True)
 

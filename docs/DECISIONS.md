@@ -93,6 +93,7 @@ Current design spec: [`design.md`](design.md)
 | D069 | The India gap is confidence collapse and annotation extent, not blindness; corrects the T6 narrative | Accepted |
 | D070 | T10 alphas come from the measured miss-rate floor, not a fixed list; Model A cannot certify India | Accepted |
 | D072 | Overall 3-class mAP is not the target; pothole AP and per-pothole video detection are | Accepted |
+| D073 | BharatPotHole is 162 drives, not 7,074 images; neither its val nor its test split is held out, so neither is used for evaluation | Accepted |
 
 ---
 
@@ -2376,3 +2377,70 @@ between B, P or any learning-curve variant. Finalists receive **one**
 `eval_locked` run each under a new lock name, and **every model tried is
 reported**, including those that lose — a comparison that lists only the winner
 is a selection effect, not a result.
+
+## D073 — BharatPotHole's val and test splits are not held out; its diversity is 162 drives
+
+**2026-09-22 · Accepted · qualifies D072**
+
+Roboflow exports name files `<videoID>_frame_<index>_jpg.rf.<hash>.jpg`, so the
+source video and frame index survive in the filename and the splits can be
+audited directly.
+
+| | train | valid | test |
+|---|---|---|---|
+| frames | 5,067 | 1,345 | 662 |
+| distinct videos | 153 | 112 | 93 |
+| videos also present in train | — | **107 of 112** | **89 of 93** |
+| **frames from videos seen in train** | — | **1,337 / 1,345 = 99.4%** | **658 / 662 = 99.4%** |
+| near-adjacent pairs vs train (\|delta frame\| <= 10) | — | **17,572** | **9,013** |
+
+Across all three splits the dataset holds **162 distinct videos** sampled into
+**7,074 frames** — 43.7 frames per drive.
+
+**Both of BharatPotHole's evaluation splits are the same footage as its training
+split**, frequently adjacent frames of the same drive. A model trained on it
+scores highly on either while having learned nothing transferable.
+
+### Effective diversity
+
+**BharatPotHole contributes 153 training videos, not 5,067 independent images.**
+The whole dataset — train, valid and test together — is **162 distinct drives**
+sampled into 7,074 frames, roughly 44 frames per drive. Frames from one drive
+share vehicle, camera, mounting, weather, time of day, road surface and often the
+same physical potholes from slightly different distances.
+
+This is the number that belongs in any statement about what the pothole pool
+consists of. `p_train.txt` is 9,689 images — 4,622 India frames and 5,067
+BharatPotHole frames — but counted in independent scenes the BharatPotHole
+contribution is roughly two orders of magnitude smaller than its image count
+suggests. Any later claim of the form "BharatPotHole is the bulk of the pothole
+data" is true by box count (8,795 vs 2,025) and misleading by scene count.
+
+**Consequences:**
+
+- **Neither BPH val nor BPH test is used for any evaluation**, reported or
+  internal, and neither appears in a selection or acceptance decision. They are
+  not "optimistic numbers to be discounted"; they are not measurements. The
+  `p_bph_val.txt` list stays in the pool only as the training-time val hook
+  ultralytics requires, and no number computed on it is reported.
+- **BharatPotHole remains valid training data.** Nothing here says its images or
+  its labels are wrong.
+- **This is not evidence about annotation convention.** The audit reads frame
+  indices out of filenames; it is silent on whether BharatPotHole boxes are drawn
+  to the same convention as RDD2022 — how tight, what counts as one pothole
+  versus a cluster, what minimum size is annotated. That risk is real and
+  separate, and it is judged where the two conventions actually compete: on
+  `india_val`. A filename result must not be allowed to stand in for a labelling
+  result.
+- **Nothing touches `india_val`, `india_cal` or `india_test`.** D072 already
+  showed zero duplicate-level overlap between any BharatPotHole split and the
+  India holdout (max correlation 0.9246 against a 0.98 threshold), so the India
+  numbers are unaffected.
+- **Selection remains on `india_val` alone**, which this makes more important
+  rather than less: the BharatPotHole numbers that would have looked impressive
+  are precisely the ones that mean least.
+
+This is the same failure D059 tested for in India and did not find there.
+Adjacent RDD2022 India filenames proved uncorrelated (+0.004 over random);
+BharatPotHole's are 99.4% same-video. Two datasets, opposite answers, and the
+only reason we know either is that both were measured.

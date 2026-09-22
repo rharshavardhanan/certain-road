@@ -1,0 +1,179 @@
+{
+  "adjacent_window": 10,
+  "train_videos": 153,
+  "train_frames": 5067,
+  "distinct_videos_all_splits": 162,
+  "frames_all_splits": 7074,
+  "frames_per_video": 43.7,
+  "eval_splits": [
+    {
+      "split": "valid",
+      "videos": 112,
+      "frames": 1345,
+      "shared_video_ids": 107,
+      "shared_video_examples": [
+        "20250430190719_0060",
+        "20250501091722_0060",
+        "20250501091922_0060",
+        "20250501140317_0060",
+        "20250501140917_0060",
+        "20250501141117_0060",
+        "20250501144117_0060",
+        "20250503144127_0060",
+        "20250503174629_0060",
+        "20250503174729_0060"
+      ],
+      "frames_from_shared_videos": 1337,
+      "share_of_frames_from_shared_videos": 0.9941,
+      "near_adjacent_pairs": 17572,
+      "near_adjacent_examples": [
+        {
+          "video": "20250501091722_0060",
+          "train_frame": 4,
+          "eval_frame": 9,
+          "delta": 5
+        },
+        {
+          "video": "20250501091722_0060",
+          "train_frame": 4,
+          "eval_frame": 5,
+          "delta": 1
+        },
+        {
+          "video": "20250501091722_0060",
+          "train_frame": 6,
+          "eval_frame": 9,
+          "delta": 3
+        },
+        {
+          "video": "20250501091722_0060",
+          "train_frame": 6,
+          "eval_frame": 5,
+          "delta": 1
+        },
+        {
+          "video": "20250501091722_0060",
+          "train_frame": 7,
+          "eval_frame": 9,
+          "delta": 2
+        },
+        {
+          "video": "20250501091722_0060",
+          "train_frame": 7,
+          "eval_frame": 5,
+          "delta": 2
+        },
+        {
+          "video": "20250501091722_0060",
+          "train_frame": 8,
+          "eval_frame": 9,
+          "delta": 1
+        },
+        {
+          "video": "20250501091722_0060",
+          "train_frame": 8,
+          "eval_frame": 5,
+          "delta": 3
+        },
+        {
+          "video": "20250501091722_0060",
+          "train_frame": 10,
+          "eval_frame": 9,
+          "delta": 1
+        },
+        {
+          "video": "20250501091722_0060",
+          "train_frame": 10,
+          "eval_frame": 5,
+          "delta": 5
+        }
+      ],
+      "held_out": false
+    },
+    {
+      "split": "test",
+      "videos": 93,
+      "frames": 662,
+      "shared_video_ids": 89,
+      "shared_video_examples": [
+        "20250501091922_0060",
+        "20250501143317_0060",
+        "20250501144017_0060",
+        "20250503174629_0060",
+        "20250503174729_0060",
+        "20250506112351_0060",
+        "20250506175123_0060",
+        "20250506175823_0060",
+        "20250506180123_0060",
+        "20250506180423_0060"
+      ],
+      "frames_from_shared_videos": 658,
+      "share_of_frames_from_shared_videos": 0.994,
+      "near_adjacent_pairs": 9013,
+      "near_adjacent_examples": [
+        {
+          "video": "20250501091922_0060",
+          "train_frame": 20,
+          "eval_frame": 21,
+          "delta": 1
+        },
+        {
+          "video": "20250501091922_0060",
+          "train_frame": 22,
+          "eval_frame": 21,
+          "delta": 1
+        },
+        {
+          "video": "20250501091922_0060",
+          "train_frame": 27,
+          "eval_frame": 21,
+          "delta": 6
+        },
+        {
+          "video": "20250501091922_0060",
+          "train_frame": 29,
+          "eval_frame": 21,
+          "delta": 8
+        },
+        {
+          "video": "20250501091922_0060",
+          "train_frame": 33,
+          "eval_frame": 40,
+          "delta": 7
+        },
+        {
+          "video": "20250501091922_0060",
+          "train_frame": 34,
+          "eval_frame": 40,
+          "delta": 6
+        },
+        {
+          "video": "20250501091922_0060",
+          "train_frame": 35,
+          "eval_frame": 40,
+          "delta": 5
+        },
+        {
+          "video": "20250501091922_0060",
+          "train_frame": 36,
+          "eval_frame": 40,
+          "delta": 4
+        },
+        {
+          "video": "20250501091922_0060",
+          "train_frame": 37,
+          "eval_frame": 40,
+          "delta": 3
+        },
+        {
+          "video": "20250501091922_0060",
+          "train_frame": 39,
+          "eval_frame": 40,
+          "delta": 1
+        }
+      ],
+      "held_out": false
+    }
+  ],
+  "verdict": "valid/test not held out; excluded from all evaluation"
+}
