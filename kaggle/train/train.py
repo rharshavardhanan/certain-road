@@ -118,7 +118,12 @@ def ensure_ultralytics(pin: str) -> str:
 
 def resolve_init_weights(name: str) -> str:
     """Prefer an attached dataset copy over a name ultralytics would download."""
-    hits = glob.glob(f"/kaggle/input/**/{Path(name).name}", recursive=True)
+    # Match the whole suffix, not just the basename: several attached datasets can
+    # contain a `best.pt`, and picking the wrong one would train Model B from the
+    # wrong parent without any error.
+    hits = glob.glob(f"/kaggle/input/**/{name}", recursive=True)
+    if not hits and "/" in name:
+        hits = glob.glob(f"/kaggle/input/**/{Path(name).name}", recursive=True)
     if hits:
         print(f"init weights from dataset: {hits[0]}", flush=True)
         return sorted(hits)[0]

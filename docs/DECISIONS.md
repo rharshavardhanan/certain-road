@@ -89,6 +89,7 @@ Current design spec: [`design.md`](design.md)
 | D065 | India x nonindia_val checked (68 false positives, 0 copies); kernel-side India guard added; NaN val loss shown to be inert | Accepted |
 | D066 | Cross-country checks test for copies at 0.98, not the within-India same-scene 0.93; amends D063 | Accepted |
 | D067 | The India generalization gap is the finding; Model A is never retuned because that number looks low | Accepted |
+| D068 | Model A accepted; evaluation settings frozen and stamped so every reported number is like-for-like | Accepted |
 
 ---
 
@@ -2137,3 +2138,74 @@ near-zero on the class India has most of would point at a class-mapping error,
 not domain shift. `test_metrics_coco.py` makes that unlikely — it proves a
 mis-shifted class id scores under 0.4 where the correct shift scores 1.0 — but
 if it appears, the response is to debug the mapping, never to retrain.
+
+## D068 — Model A accepted; evaluation settings frozen
+
+**2026-09-22 · Accepted**
+
+Model A is the first checkpoint in this project that can support a held-out India
+claim. D055's gate disqualified all three predecessors; this one was trained from
+COCO `yolov8s.pt` on non-India only, with the fixed `train_A` hyperparameters.
+
+**Accepted on evidence, not on completion.** `scripts/verify_run.py` reads the
+kernel's own log rather than this repo:
+
+| check | result |
+|---|---|
+| train scanned | **24,508** = `nonindia_train.txt` |
+| val scanned | **6,142** = `nonindia_val.txt` |
+| `India__` in either list | **0** |
+| training losses, all 40 epochs | finite |
+| non-India val mAP50 (training log) | 0.5912 |
+| `val/cls_loss` NaN | none |
+| ultralytics requested / used | 8.4.115 / **8.4.115** |
+| `best.pt` sha256 | `4c169bc3f965582ceb6c38ca4811d65b133f0de09da8dd57fef3789961f7b904` |
+
+The scan counts are the run-level evidence standing in for the kernel guard,
+which landed after this run had already launched (D065).
+
+The NaN validation loss seen in the smoke run never recurred across 40 epochs,
+consistent with D065's reading that it was an artefact of having no positive
+matches in a single epoch on 5% of the data.
+
+### Evaluation settings are frozen and stamped
+
+Comparing two models under different settings compares the settings. Every
+reported number — `eval_open`, `eval_locked`, Model A and Model B alike — reads
+one block in `configs/project.yaml`, and the lock metadata records it.
+
+Values confirmed in the installed ultralytics 8.4.115 source:
+
+| setting | value | source |
+|---|---|---|
+| NMS `iou` | 0.7 | `cfg/default.yaml:56` |
+| `conf` | 0.001 | `cfg/default.yaml:55` (val default; predict is 0.25) |
+| `max_det` | 300 | `cfg/default.yaml:57` |
+| `imgsz` | 640 | `cfg/default.yaml:16` |
+| `rect` | **false** | `cfg/default.yaml:32`; `detect/val.py` passes no `rect` kwarg to `build_yolo_dataset`, which resolves `rect=cfg.rect or rect` |
+| `half` | false | fp32, so CPU and GPU agree |
+| `device` | cpu | MPS lacks deterministic kernels for several ops used here (T4) |
+
+`rect` is pinned explicitly although it already resolves false, because
+`rect=True` letterboxes to 672 and this project has measured that shifting mAP50
+by ~0.03.
+
+### 0.5912 is a training-log number and is not used in the gap
+
+It came from a GPU, fp16, and ultralytics' own aggregation. Subtracting an India
+number computed on CPU, fp32 and pycocotools from it would measure the pipelines
+as much as the domains.
+
+**Recomputed through the pipeline India will use**, Model A on `nonindia_val`:
+
+| scorer | mAP50 | mAP50-95 |
+|---|---|---|
+| ultralytics | **0.5787** | 0.2998 |
+| pycocotools | **0.5778** | 0.3015 |
+
+Cross-check delta **0.0009**, far inside T6's 0.03 tolerance — two independent
+implementations agreeing to a thousandth, which is the check that would have
+caught a ground-truth conversion error. Per-class AP50: `linear_crack` 0.5790,
+`alligator_crack` 0.6663, `pothole` 0.4909.
+
+**0.5787 is the baseline the generalization gap is measured against.**

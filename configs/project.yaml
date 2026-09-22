@@ -36,6 +36,31 @@ train_B: {imgsz: 640, epochs: 25, patience: 8, batch: 32, optimizer: AdamW, lr0:
 # D056: kernels install only `ultralytics==<pin>` + pycocotools, never requirements.txt.
 kaggle: {username: harshavardhananr, dataset_slug: roadsight-rdd-yolo, accelerator: NvidiaTeslaT4}
 
+# Frozen evaluation settings (D068). Every reported number - eval_open, eval_locked,
+# Model A and Model B alike - uses exactly these, and the lock metadata stamps them.
+# Comparing two models under different settings compares the settings.
+#
+# Values confirmed in the installed ultralytics 8.4.115 source, not assumed:
+#   iou 0.7      cfg/default.yaml:56  (NMS IoU threshold)
+#   conf 0.001   cfg/default.yaml:55  (val default; predict defaults to 0.25)
+#   max_det 300  cfg/default.yaml:57
+#   imgsz 640    cfg/default.yaml:16
+#   rect False   cfg/default.yaml:32, and detect/val.py passes no rect kwarg to
+#                build_yolo_dataset, which resolves `rect=cfg.rect or rect`.
+#                Pinned explicitly because rect=True letterboxes to 672 and this
+#                project has already measured that shifting mAP50 by ~0.03.
+# half: false and device: cpu because MPS lacks deterministic kernels for several
+# ops used here (T4), so CPU is the result another machine can reproduce.
+eval:
+  conf: 0.001
+  iou: 0.7
+  max_det: 300
+  imgsz: 640
+  rect: false
+  half: false
+  device: cpu
+  report_conf: 0.25   # operating point for the P/R table, not for mAP
+
 conformal: {alphas: [0.05, 0.10, 0.20], iou: 0.5, n_resamples: 200, tau_step: 0.001}
 
 drift: {eps: 0.5, alarm_threshold: 100, topk: 3, n_streams: 200, null_prefix: 500}

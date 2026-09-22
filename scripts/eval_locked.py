@@ -34,6 +34,7 @@ from certain_road.perception.metrics_coco import (  # noqa: E402
 )
 
 CFG = yaml.safe_load((repo_root() / "configs" / "project.yaml").read_text())
+EVAL = CFG["eval"]
 YOLO_DIR = repo_root() / CFG["paths"]["yolo"]
 LOCKED = repo_root() / "results" / "LOCKED"
 ALLOWED = {"A": {"india_full", "bharatpothole", "chennai"},
@@ -64,7 +65,7 @@ def main() -> int:
     ap.add_argument("--set", required=True, dest="eval_set")
     ap.add_argument("--weights", required=True, type=Path)
     ap.add_argument("--data-root", type=Path, default=YOLO_DIR)
-    ap.add_argument("--conf", type=float, default=0.001)
+
     ap.add_argument("--self-test", action="store_true",
                     help="exercise the whole path on a dummy set; writes the lock "
                          "to a scratch directory so it can never collide with a "
@@ -101,9 +102,12 @@ def main() -> int:
                         "names": names}, fh, sort_keys=False)
 
     model = YOLO(str(args.weights))
-    result = model.val(data=str(data_yaml), split="val", device="cpu", conf=args.conf,
-                       save_json=True, plots=True, project=str(out_dir), name="val",
-                       exist_ok=True, verbose=False)
+    result = model.val(
+        data=str(data_yaml), split="val", save_json=True, plots=True,
+        project=str(out_dir), name="val", exist_ok=True, verbose=False,
+        conf=EVAL["conf"], iou=EVAL["iou"], max_det=EVAL["max_det"],
+        imgsz=EVAL["imgsz"], rect=EVAL["rect"], half=EVAL["half"], device=EVAL["device"],
+    )
 
     image_paths = [args.data_root / "images" / f"{Path(x).stem}.jpg"
                    for x in (args.data_root / f"{args.eval_set}.txt").read_text().splitlines()
@@ -119,7 +123,7 @@ def main() -> int:
     payload = {
         "model": args.model, "set": args.eval_set,
         "weights": str(args.weights), "weights_sha256": sha256(args.weights),
-        "images": len(image_paths), "conf": args.conf, "device": "cpu",
+        "images": len(image_paths), "eval_settings": EVAL,
         "ultralytics_metrics": ultra, "pycocotools_metrics": coco,
         "cross_check": {"map50_abs_delta": round(delta, 4), "tolerance": 0.03,
                         "ok": delta <= 0.03},

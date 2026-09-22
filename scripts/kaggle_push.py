@@ -79,6 +79,18 @@ def job_for(kind: str) -> tuple[str, dict]:
             "forbid_prefixes": ["India__"],
             "ultralytics": ULTRALYTICS_PIN,
         }
+    if kind == "b":
+        cfg = dict(CFG["train_B"])
+        return "roadsight-train-b", {
+            "run": "model_b",
+            # A's best.pt, reached through kernel_sources rather than re-uploaded.
+            "init_weights": "export/model_a/best.pt",
+            "train": ["india_train.txt", "nonindia_replay.txt"], "val": "india_val.txt",
+            "names": names, "train_cfg": cfg, "resume": False,
+            # No India guard here: Model B trains on india_train by design. The
+            # held-out sets are not on Kaggle at all, so they cannot be reached.
+            "ultralytics": ULTRALYTICS_PIN,
+        }
     raise SystemExit(f"unknown job kind {kind!r}")
 
 
