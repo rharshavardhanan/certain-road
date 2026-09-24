@@ -2517,6 +2517,28 @@ matched recall can flatter either model when the curves cross, and here they do.
 **Selected: Model P.** The contingency in D072 — P2, `india_train` oversampled
 3×, otherwise identical — is **not triggered**, because P did not lose.
 
+### The comparison is biased toward P, by construction
+
+**P's `best.pt` was chosen on `india_val` pothole fitness. B's was chosen on
+`india_val` 3-class fitness.** Ultralytics selects the best epoch by `fitness()`,
+which is mAP50-95 averaged over whatever classes the run declares
+(`metrics.py:1007`). P's job declared one class, so its checkpoint is the epoch
+that maximised *pothole* mAP50-95 on the very set — and the very metric — the
+D074 comparison then scored. B's job declared three, so its checkpoint is the
+epoch that maximised the mean over `linear_crack`, `alligator_crack` and
+`pothole`; the epoch best at potholes alone may have been discarded.
+
+This is a real advantage to P and it is not small. It is also not removable
+without retraining B under a pothole-only val, which would change B into a
+different model. So it is declared rather than corrected, and it is one more
+reason the AP50 gap failing to separate from zero is the honest reading.
+
+**The locked `india_test` comparison is the unbiased referee.** Neither
+checkpoint was selected against it, neither model has seen it, and it is run once.
+D074's selection stands on `india_val` regardless of what that run returns —
+selection and verification are different jobs, and re-deciding on the held-out
+number would spend the one thing it is for.
+
 ### Models tried, all of them
 
 | model | provenance | outcome |
