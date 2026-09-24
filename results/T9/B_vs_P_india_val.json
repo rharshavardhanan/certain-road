@@ -13,7 +13,7 @@
     "report_conf": 0.25
   },
   "iou_match": 0.5,
-  "gt": "pothole-only, data/yolo_pothole/labels",
+  "gt": "pothole-only, /Users/harshav/PROJECTS/certain-road/data/yolo_pothole",
   "models": {
     "B": {
       "weights": "runs/kaggle/roadsight-train-b/export/model_b/best.pt",
@@ -111,7 +111,95 @@
       "P": 12.1192
     }
   },
+  "bootstrap_units": {
+    "kind": "scene_groups",
+    "count": 662
+  },
   "bootstrap_P_minus_B": {
+    "pothole_ap50": {
+      "draws": 2000,
+      "mean_delta": 0.0307,
+      "ci95": [
+        -0.0097,
+        0.0735
+      ],
+      "share_favouring_P": 0.922,
+      "separates_from_zero": false
+    },
+    "false_alarms_at_matched_recall": {
+      "0.3": {
+        "draws": 2000,
+        "mean_delta": -0.0631,
+        "ci95": [
+          -0.1178,
+          -0.0151
+        ],
+        "share_favouring_P": 0.9925,
+        "separates_from_zero": true
+      },
+      "0.4": {
+        "draws": 2000,
+        "mean_delta": -0.1187,
+        "ci95": [
+          -0.2009,
+          -0.0423
+        ],
+        "share_favouring_P": 0.998,
+        "separates_from_zero": true
+      },
+      "0.5": {
+        "draws": 2000,
+        "mean_delta": -0.1822,
+        "ci95": [
+          -0.3172,
+          -0.0634
+        ],
+        "share_favouring_P": 0.997,
+        "separates_from_zero": true
+      },
+      "0.6": {
+        "draws": 2000,
+        "mean_delta": -0.2478,
+        "ci95": [
+          -0.5574,
+          0.0666
+        ],
+        "share_favouring_P": 0.9405,
+        "separates_from_zero": false
+      },
+      "0.7": {
+        "draws": 2000,
+        "mean_delta": -0.0813,
+        "ci95": [
+          -0.8083,
+          0.8097
+        ],
+        "share_favouring_P": 0.6265,
+        "separates_from_zero": false
+      },
+      "0.8": {
+        "draws": 2000,
+        "mean_delta": 0.8686,
+        "ci95": [
+          -0.9231,
+          2.6934
+        ],
+        "share_favouring_P": 0.1815,
+        "separates_from_zero": false
+      },
+      "0.9": {
+        "draws": 1871,
+        "mean_delta": -0.1236,
+        "ci95": [
+          -11.5374,
+          8.3712
+        ],
+        "share_favouring_P": 0.4741,
+        "separates_from_zero": false
+      }
+    }
+  },
+  "bootstrap_P_minus_B_image_level": {
     "pothole_ap50": {
       "draws": 2000,
       "mean_delta": 0.0309,

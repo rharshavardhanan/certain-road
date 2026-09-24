@@ -187,26 +187,31 @@ def _fa_at(recall: np.ndarray, fa: np.ndarray, target: float) -> float | None:
 
 
 def bootstrap_delta(b_img: dict, p_img: dict, gt_counts: dict[str, int],
-                    stems: list[str], recalls: list[float],
+                    units: list[list[str]], recalls: list[float],
                     draws: int = 2000, seed: int = 0) -> dict:
-    """Paired bootstrap over images: pothole AP50, and false alarms at matched recall.
+    """Paired bootstrap: pothole AP50, and false alarms at matched recall.
 
-    Paired and over *images*: both models are scored on the same resampled
-    india_val each draw, so the shared difficulty of a hard image cancels and
-    what is left is the difference between the models. 342 pothole boxes is not
-    many, and a gap that does not clear its own resampling noise is not a reason
-    to prefer either model.
+    Paired, so both models are scored on the same resample each draw and the
+    shared difficulty of a hard image cancels; what is left is the difference
+    between the models.
+
+    **`units` are the exchangeable units, and they are scene groups, not
+    images** (D064). india_val holds many near-duplicate frames of the same
+    location. Resampling images treats two frames of one pothole as two
+    independent observations, which makes each resample more like the original
+    than an genuinely independent sample would be, and the intervals come out
+    too narrow. Groups of one are singleton images.
 
     False alarms at matched recall get the same treatment as AP, because the
     recommendation rests on them. Reporting one difference with an interval and
     the other bare would be choosing which number gets scrutinised.
     """
     rng = np.random.default_rng(seed)
-    n = len(stems)
+    n = len(units)
     ap_delta = np.empty(draws)
     fa_delta: dict[float, list[float]] = {r: [] for r in recalls}
     for d in range(draws):
-        pick = [stems[i] for i in rng.integers(0, n, n)]
+        pick = [s for i in rng.integers(0, n, n) for s in units[i]]
         n_gt = sum(gt_counts[s] for s in pick)
         bi = {f"{s}#{k}": b_img[s] for k, s in enumerate(pick)}
         pi = {f"{s}#{k}": p_img[s] for k, s in enumerate(pick)}
@@ -269,27 +274,63 @@ def at_recall(rows: np.ndarray, target: float) -> dict:
             "false_alarms_per_image": round(float(rows[i, 2]), 4)}
 
 
+def scene_units(stems: list[str], groups_json: Path | None) -> list[list[str]]:
+    """Exchangeable units for the bootstrap: scene groups, singletons included.
+
+    D064 established this for T10's resampling and the same reasoning applies
+    here. Two near-duplicate frames of one pothole are one observation, not two.
+    """
+    if groups_json is None:
+        return [[s] for s in stems]
+    groups = json.loads(groups_json.read_text())["groups"]
+    keep = set(stems)
+    seen: set[str] = set()
+    units: list[list[str]] = []
+    for members in groups.values():
+        unit = [m for m in members if m in keep]
+        if unit:
+            units.append(unit)
+            seen.update(unit)
+    units += [[s] for s in stems if s not in seen]
+    sizes = sorted((len(u) for u in units), reverse=True)
+    print(f"bootstrap units: {len(units)} scene groups over {len(stems)} images "
+          f"(largest {sizes[0]}, grouped {sum(x for x in sizes if x > 1)})", flush=True)
+    return units
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--b-weights", required=True, type=Path)
-    ap.add_argument("--p-weights", required=True, type=Path)
+    ap.add_argument("--b-weights", type=Path)
+    ap.add_argument("--p-weights", type=Path)
+    ap.add_argument("--split", default=SPLIT)
+    ap.add_argument("--b-preds", type=Path, help="locked predictions.json; skips inference")
+    ap.add_argument("--p-preds", type=Path, help="locked predictions.json; skips inference")
+    ap.add_argument("--gt-root", type=Path, default=POTHOLE_DIR,
+                    help="root holding pothole-only images/ and labels/")
+    ap.add_argument("--groups", type=Path,
+                    default=repo_root() / "results/T2/india_scene_groups.json",
+                    help="scene groups for the bootstrap; omit for image-level")
+    ap.add_argument("--image-level-too", action="store_true",
+                    help="also report the image-level bootstrap, for comparison")
+    ap.add_argument("--out", default="B_vs_P_india_val.json")
     args = ap.parse_args()
 
-    stems = [Path(x).stem for x in (YOLO_DIR / f"{SPLIT}.txt").read_text().split() if x.strip()]
+    split, gt_root = args.split, args.gt_root
+    stems = [Path(x).stem for x in (YOLO_DIR / f"{split}.txt").read_text().split() if x.strip()]
     keep = set(stems)
     OUT.mkdir(parents=True, exist_ok=True)
 
     # One ground truth object for both models: pothole-only, 0-indexed.
-    paths = [POTHOLE_DIR / "images" / f"{s}.jpg" for s in stems]
-    gt_coco, stem_to_id = yolo_to_coco_gt(paths, POTHOLE_DIR / "labels", PONLY)
+    paths = [gt_root / "images" / f"{s}.jpg" for s in stems]
+    gt_coco, stem_to_id = yolo_to_coco_gt(paths, gt_root / "labels", PONLY)
 
     gt_boxes: dict[str, np.ndarray] = {}
     n_gt = 0
     for s in stems:
-        with Image.open(POTHOLE_DIR / "images" / f"{s}.jpg") as im:
+        with Image.open(gt_root / "images" / f"{s}.jpg") as im:
             w, h = im.size
         rows = []
-        lab = POTHOLE_DIR / "labels" / f"{s}.txt"
+        lab = gt_root / "labels" / f"{s}.txt"
         for line in lab.read_text().splitlines() if lab.exists() else []:
             if line.strip():
                 _, cx, cy, bw, bh = map(float, line.split())
@@ -299,19 +340,23 @@ def main() -> int:
         n_gt += len(rows)
 
     spec = {
-        "B": (args.b_weights, YOLO_DIR, SPLIT, NAMES, POTHOLE),
-        "P": (args.p_weights, POTHOLE_DIR, "p_val", PONLY, 0),
+        "B": (args.b_weights, args.b_preds, YOLO_DIR, split, NAMES, POTHOLE),
+        "P": (args.p_weights, args.p_preds, POTHOLE_DIR, "p_val", PONLY, 0),
     }
-    report = {"split": SPLIT, "images": len(stems), "pothole_instances": n_gt,
+    report = {"split": split, "images": len(stems), "pothole_instances": n_gt,
               "eval_settings": EVAL, "iou_match": IOU_MATCH,
-              "gt": "pothole-only, data/yolo_pothole/labels", "models": {}}
+              "gt": f"pothole-only, {gt_root}", "models": {}}
 
     conf_key = f"at_conf_{EVAL['report_conf']}"
     recall_key = f"at_recall_{MATCH_RECALL}"
     curves, per_image = {}, {}
     gt_counts = {s: int(len(gt_boxes[s])) for s in stems}
-    for tag, (weights, root, list_name, names, channel) in spec.items():
-        pj = predictions_for(tag, weights, root, list_name, names)
+    for tag, (weights, given, root, list_name, names, channel) in spec.items():
+        # Locked predictions when supplied: the point of the held-out check is
+        # that nothing is re-run, so nothing can be tuned against the result.
+        pj = given if given else predictions_for(tag, weights, root, list_name, names)
+        if given:
+            print(f"{tag}: locked predictions {given}", flush=True)
         dets = pothole_detections(pj, channel, len(names), keep)
         coco_preds = [{"image_id": stem_to_id[s], "category_id": 0,
                        "bbox": list(b[:4]), "score": b[4]}
@@ -352,13 +397,19 @@ def main() -> int:
         f"{r:.1f}": {t: at_recall(curves[t], r).get("false_alarms_per_image")
                      for t in spec} for r in grid}
 
+    units = scene_units(stems, args.groups if args.groups and args.groups.exists() else None)
+    report["bootstrap_units"] = {"kind": "scene_groups" if args.groups else "images",
+                                 "count": len(units)}
     report["bootstrap_P_minus_B"] = bootstrap_delta(
-        per_image["B"], per_image["P"], gt_counts, stems, grid)
+        per_image["B"], per_image["P"], gt_counts, units, grid)
+    if args.image_level_too:
+        report["bootstrap_P_minus_B_image_level"] = bootstrap_delta(
+            per_image["B"], per_image["P"], gt_counts, [[s] for s in stems], grid)
 
-    (OUT / "B_vs_P_india_val.json").write_text(json.dumps(report, indent=2))
+    (OUT / args.out).write_text(json.dumps(report, indent=2))
 
     b, p = report["models"]["B"], report["models"]["P"]
-    print(f"\n=== B vs P on {SPLIT}, pothole only "
+    print(f"\n=== B vs P on {split}, pothole only "
           f"({len(stems)} images, {n_gt} pothole boxes) ===")
     print(f"{'':<34}{'B':>10}{'P':>10}{'delta':>10}")
     for key, label in (("pothole_ap50", "pothole AP50"),
@@ -381,7 +432,9 @@ def main() -> int:
 
     bs = report["bootstrap_P_minus_B"]
     ap = bs["pothole_ap50"]
-    print(f"\npaired bootstrap over images, {ap['draws']} draws (P - B):")
+    kind = report["bootstrap_units"]["kind"]
+    print(f"\npaired bootstrap over {report['bootstrap_units']['count']} {kind}, "
+          f"{ap['draws']} draws (P - B):")
     print(f"  pothole AP50   {ap['mean_delta']:+.4f}  95% CI "
           f"[{ap['ci95'][0]:+.4f}, {ap['ci95'][1]:+.4f}]  P ahead "
           f"{ap['share_favouring_P']:.1%}  separates={ap['separates_from_zero']}")
@@ -390,6 +443,10 @@ def main() -> int:
         print(f"    recall {r}  {v['mean_delta']:+.3f}  95% CI "
               f"[{v['ci95'][0]:+.3f}, {v['ci95'][1]:+.3f}]  P ahead "
               f"{v['share_favouring_P']:.1%}  separates={v['separates_from_zero']}")
+    if "bootstrap_P_minus_B_image_level" in report:
+        im = report["bootstrap_P_minus_B_image_level"]["pothole_ap50"]
+        print(f"  [image-level, for comparison] AP50 {im['mean_delta']:+.4f} "
+              f"95% CI [{im['ci95'][0]:+.4f}, {im['ci95'][1]:+.4f}]")
     for t in ("B", "P"):
         c = report["models"][t]["ap50_self_check"]
         print(f"  AP50 self-check {t}: own {c['own']:.4f} vs pycocotools "
@@ -398,7 +455,7 @@ def main() -> int:
     print(f"\nhighest recall both reach: {both_max:.4f}")
     print(json.dumps({"B": b["at_highest_common_recall"],
                       "P": p["at_highest_common_recall"]}, indent=2))
-    print(f"\nwritten: {OUT / 'B_vs_P_india_val.json'}")
+    print(f"\nwritten: {OUT / args.out}")
     return 0
 
 

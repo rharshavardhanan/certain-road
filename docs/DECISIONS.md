@@ -94,7 +94,7 @@ Current design spec: [`design.md`](design.md)
 | D070 | T10 alphas come from the measured miss-rate floor, not a fixed list; Model A cannot certify India | Accepted |
 | D072 | Overall 3-class mAP is not the target; pothole AP and per-pothole video detection are | Accepted |
 | D073 | BharatPotHole is 162 drives, not 7,074 images; neither its val nor its test split is held out, so neither is used for evaluation | Accepted |
-| D074 | Model P selected over Model B on india_val; the AP50 gap does not separate from zero but the false-alarm gap at usable recall does | Accepted |
+| D074 | Model P selected over Model B on india_val; the advantage survives scene-group resampling there but does not transfer to locked india_test, where the two are indistinguishable | Accepted |
 
 ---
 
@@ -2516,6 +2516,65 @@ matched recall can flatter either model when the curves cross, and here they do.
 
 **Selected: Model P.** The contingency in D072 — P2, `india_train` oversampled
 3×, otherwise identical — is **not triggered**, because P did not lose.
+
+### Re-run over scene groups (D064): the india_val advantage holds
+
+The first bootstrap resampled images. `india_val` holds near-duplicate frames of
+the same location, so image-level resampling treats two frames of one pothole as
+two independent observations and the intervals come out too narrow. Redone over
+**662 scene groups** covering the 772 images (largest group 17, 134 images
+grouped), same grouping as D064:
+
+| P − B on india_val | group-level 95% CI | separates | (image-level was) |
+|---|---|---|---|
+| pothole AP50 | +0.0307 [−0.0097, +0.0735] | no | [−0.0125, +0.0757] |
+| FA/img @ recall 0.3 | −0.063 [−0.118, −0.015] | **yes, P** | [−0.101, −0.014] |
+| FA/img @ recall 0.4 | −0.119 [−0.201, −0.042] | **yes, P** | [−0.175, −0.035] |
+| FA/img @ recall 0.5 | −0.182 [−0.317, −0.063] | **yes, P** | [−0.271, −0.058] |
+
+The intervals widened, as they should, and **the 0.3–0.5 advantage still clears
+zero**. The "tie on india_val" amendment is therefore not triggered. The widening
+is modest because `india_val` turns out to be mostly singletons — 662 groups for
+772 images — so the correction matters less here than it will for T10, where the
+same grouping governs re-partitioning.
+
+### Held-out verification on india_test: the advantage does not transfer
+
+One locked run each, no re-runs, pothole-only ground truth derived inside the run
+directory, same scorer. `P_india_heldout`: pothole AP50 **0.3416** over 2,312
+images and 820 instances, cross-check delta 0.0009. Sliced to `india_test`
+(1,156 images, 413 pothole boxes) and compared against B's existing locked
+predictions filtered to its pothole channel:
+
+| | B | P | delta |
+|---|---|---|---|
+| pothole AP50 | **0.3582** | 0.3559 | −0.0023 |
+| pothole AP50-95 | **0.1437** | 0.1375 | −0.0062 |
+| recall @ conf 0.25 | 0.3462 | **0.3753** | +0.0291 |
+| false alarms/image @ conf 0.25 | **0.1315** | 0.1678 | +0.0363 |
+
+| matched recall | 0.3 | 0.4 | 0.5 | 0.6 | 0.7 | 0.8 | 0.9 |
+|---|---|---|---|---|---|---|---|
+| B | 0.087 | 0.196 | **0.340** | **0.894** | **1.906** | **5.872** | 30.368 |
+| P | 0.097 | 0.195 | 0.411 | 1.041 | 2.471 | 6.996 | **28.941** |
+
+**Nothing separates from zero**, in either direction, at any operating point
+(group-level bootstrap over 1,037 scene groups, 2,000 draws; AP50 delta −0.0031,
+95% CI [−0.0361, +0.0298]). On the held-out set **B and P are indistinguishable**,
+and every point estimate in the usable range now leans very slightly to B.
+
+**This is what the declared selection bias predicts.** P's advantage lived on
+`india_val`, which is the set P's checkpoint was selected against, and it does not
+appear on a set neither model was selected against. The honest summary is that
+**adding BharatPotHole did not measurably improve pothole detection on held-out
+Indian roads** — 153 drives of extra footage, 8,795 extra boxes, and no
+transferable gain.
+
+**The selection is not re-decided.** D074 chose P on `india_val` before this run
+existed, and re-deciding on the held-out number would spend the one thing a
+held-out set is for. P remains the model carried forward; what changes is the
+claim made about it, which is now "no worse than B on held-out India" rather than
+"better". T10's certified result will be reported for P on that basis.
 
 ### The comparison is biased toward P, by construction
 

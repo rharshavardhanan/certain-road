@@ -1,0 +1,5 @@
+path: /Users/harshav/PROJECTS/certain-road/results/LOCKED/P_india_heldout_run/gt_root
+train: india_heldout.txt
+val: india_heldout.txt
+names:
+  0: pothole

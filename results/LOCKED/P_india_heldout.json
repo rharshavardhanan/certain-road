@@ -1,0 +1,50 @@
+{
+  "model": "P",
+  "set": "india_heldout",
+  "classes": {
+    "0": "pothole"
+  },
+  "gt": "pothole-only (derived)",
+  "weights": "runs/kaggle/roadsight-train-p/export/model_p/best.pt",
+  "weights_sha256": "b336e44c5ba4d230106a561b9b1940d6898925d99aab31ea96572e3155329618",
+  "images": 2312,
+  "eval_settings": {
+    "conf": 0.001,
+    "iou": 0.7,
+    "max_det": 300,
+    "imgsz": 640,
+    "rect": false,
+    "half": false,
+    "device": "cpu",
+    "report_conf": 0.25
+  },
+  "ultralytics_metrics": {
+    "map50": 0.34071418060771275,
+    "map50_95": 0.12927832670754597,
+    "precision": 0.43445067723368475,
+    "recall": 0.4024390243902439
+  },
+  "pycocotools_metrics": {
+    "per_class": {
+      "pothole": {
+        "ap50": 0.3416041790880983,
+        "ap50_95": 0.13142831945206568,
+        "instances": 820,
+        "unreliable": false
+      }
+    },
+    "map50": 0.3416041790880983,
+    "map50_95": 0.13142831945206568
+  },
+  "cross_check": {
+    "map50_abs_delta": 0.0009,
+    "tolerance": 0.03,
+    "ok": true
+  },
+  "stamp": {
+    "utc": "2026-09-24T11:49:54.155622+00:00",
+    "git_commit": "83571fe575eb549c82bd4f500108dc495780b17c",
+    "python": "3.12.13",
+    "platform": "macOS-27.0-arm64-arm-64bit"
+  }
+}
