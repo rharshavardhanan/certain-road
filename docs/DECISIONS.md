@@ -95,6 +95,7 @@ Current design spec: [`design.md`](design.md)
 | D072 | Overall 3-class mAP is not the target; pothole AP and per-pothole video detection are | Accepted |
 | D073 | BharatPotHole is 162 drives, not 7,074 images; neither its val nor its test split is held out, so neither is used for evaluation | Accepted |
 | D074 | Model P selected over Model B on india_val; the advantage survives scene-group resampling there but does not transfer to locked india_test, where the two are indistinguishable | Accepted |
+| D076 | The T10 tau grid never reached the measured floor, so D070's feasible-alpha prose contradicted its own table; fixed, and Model P's floors measured | Accepted |
 
 ---
 
@@ -2264,7 +2265,7 @@ sensitivity analysis used to locate the failure.
 
 ## D070 — T10 alphas come from the measured floor; Model A cannot certify India
 
-**2026-09-22 · Accepted**
+**2026-09-22 · Accepted · one number corrected by D076**
 
 CRC returns the largest tau whose bound holds. If even `tau = 0.001` — keeping
 every prediction the detector emits — misses more than alpha of the potholes,
@@ -2619,3 +2620,94 @@ recorded in D060 and in the `train.py` docstring, not here.
 - **Nothing about held-out performance.** `india_val` is the selection set.
   P's held-out number comes from one `eval_locked` run and does not exist yet.
 - **Nothing that licenses re-tuning A** (D067 stands).
+
+## D076 — The tau grid never reached the floor; Model P's feasible alphas
+
+**2026-09-24 · Accepted · corrects one number in D070**
+
+### The bug
+
+D070 established that the alpha grid must come from the measured miss-rate floor
+rather than habit. The floor was measured at `tau = 0.001`. **The risk-vs-alpha
+curve searched `np.arange(0.01, 0.99, 0.01)`** — it could never consider a
+threshold looser than 0.01, and risk climbs steeply below that:
+
+| tau | B risk on india_cal | P risk on india_cal |
+|---|---|---|
+| **0.001** | **0.0827** | **0.1052** |
+| 0.002 | 0.1113 | 0.1446 |
+| 0.005 | 0.1627 | 0.1882 |
+| **0.010** | **0.2198** | **0.2398** |
+
+So D070's table said Model B is certifiable from alpha 0.087, while the curve in
+the same artifact marked every alpha below **0.24** infeasible. Both numbers were
+printed, from the same run, and they disagreed by a factor of nearly three. The
+prose — "its floor of 0.087 makes alphas from ~0.09 upward feasible" — described
+the table, not the curve, and the curve was what any plot would have shown.
+
+`tau_step: 0.001` was already in `configs/project.yaml`. The grid ignored it and
+hardcoded its own, which is also the magic-number rule this project set itself.
+
+### The fix, and the check that it is a fix
+
+The grid is now `np.arange(TAU_STEP, 1.0, TAU_STEP)` with `FLOOR_TAU = TAU_STEP`,
+so the loosest threshold the search may consider **is** the one the floor is
+measured at. The boundary alpha is then resolved on a fine grid rather than read
+off the first coarse step past it.
+
+Floor and curve now agree for all three models, which is what makes this a fix
+rather than a different arbitrary choice:
+
+| model | floor predicts | curve gives |
+|---|---|---|
+| A | 0.6407 | 0.642 |
+| B | 0.0869 | 0.088 |
+| P | 0.1093 | 0.110 |
+
+### Model P's floors
+
+| model · set | n | miss-rate floor | min certifiable alpha |
+|---|---|---|---|
+| **P · india_cal** | 217 | **0.1052** | **0.1093** |
+| **P · india_test** | 219 | **0.0789** | **0.0830** |
+| B · india_cal | 217 | 0.0827 | 0.0869 |
+| B · india_test | 219 | 0.0867 | 0.0908 |
+
+**Calibration happens on `india_cal`, so the binding number is P's 0.1093 and
+P's feasible range is alpha >= 0.11.** B's is alpha >= 0.088.
+
+**B can certify a tighter pothole miss rate than P.** P is worse on `india_cal`
+(0.1052 vs 0.0827) and better on `india_test` (0.0789 vs 0.0867); the two halves
+are 217 and 219 images and the disagreement is the size one would expect from
+that. It is one more reading consistent with D074's held-out finding that the two
+models are not distinguishable.
+
+### P's certified curve holds
+
+Calibrated on `india_cal`, evaluated on `india_test`, **test risk stays at or
+below alpha at every feasible alpha**:
+
+| alpha | 0.12 | 0.16 | 0.20 | 0.26 | 0.30 | 0.40 |
+|---|---|---|---|---|---|---|
+| tau | 0.001 | 0.002 | 0.005 | 0.013 | 0.023 | 0.069 |
+| risk on india_test | 0.0789 | 0.1216 | 0.1595 | 0.2243 | 0.2686 | 0.3917 |
+
+Both halves are India and the split is group-aware, so exchangeability holds and
+the bound does too — which is the point of also having a case where it does not.
+
+### The transfer violation is now sharper
+
+With the grid reaching 0.001, Model A calibrated on non-India becomes feasible at
+alpha 0.20, which it previously was not:
+
+| alpha | tau from non-India | risk on non-India | risk on india_test |
+|---|---|---|---|
+| **0.20** | 0.004 | 0.1905 | **0.7317** |
+| 0.30 | 0.024 | 0.2980 | **0.8100** |
+| 0.50 | 0.183 | 0.4975 | **0.8777** |
+
+The bound holds in-domain and is exceeded by **3.8x** at alpha 0.20 — a stronger
+statement of the same failure than D070 could make, because the tighter alpha is
+now reachable.
+
+Primary loss stays IoU 0.5 (D070 unchanged).

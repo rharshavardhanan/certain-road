@@ -34,14 +34,24 @@ CFG = yaml.safe_load((repo_root() / "configs" / "project.yaml").read_text())
 YOLO_DIR = repo_root() / CFG["paths"]["yolo"]
 POTHOLE = CFG["pothole_class"]
 IOU = CFG["conformal"]["iou"]
-FLOOR_TAU = 0.001
+TAU_STEP = CFG["conformal"]["tau_step"]
+# The loosest threshold the search may consider. It must equal the grid's first
+# step, or the floor is computed somewhere the curve can never reach.
+FLOOR_TAU = TAU_STEP
 
 
-def per_image_matched(split, pred_json):
-    """Matched confidence per GT pothole, for images that contain one."""
+def per_image_matched(split, pred_json, channel=POTHOLE):
+    """Matched confidence per GT pothole, for images that contain one.
+
+    `channel` is the model's pothole class index, which is not the same number
+    for every model: the 3-class models emit pothole as index 2, Model P is a
+    1-class detector and emits it as index 0. Ground truth is always read from
+    the 3-class labels and filtered to `POTHOLE`, so all models are measured
+    against identical potholes.
+    """
     preds = defaultdict(list)
     for r in json.loads(Path(pred_json).read_text()):
-        if int(r["category_id"]) - 1 == POTHOLE:
+        if int(r["category_id"]) - 1 == channel:
             preds[Path(str(r["image_id"])).stem].append((*r["bbox"], float(r["score"])))
 
     out = []
@@ -82,13 +92,19 @@ def main() -> int:
                                           .glob("predictions.json"))),
         "B_india_test": ("india_test", next((locked / "B_india_heldout_run" / "val")
                                             .glob("predictions.json"))),
+        "P_india_cal": ("india_cal", next((locked / "P_india_heldout_run" / "val")
+                                          .glob("predictions.json"))),
+        "P_india_test": ("india_test", next((locked / "P_india_heldout_run" / "val")
+                                            .glob("predictions.json"))),
     }
+    # Model P is 1-class; its pothole channel is 0, not 2.
+    channels = {"P_india_cal": 0, "P_india_test": 0}
 
     report = {"iou": IOU, "floor_tau": FLOOR_TAU, "sources": {}}
     matched = {}
     for tag, (split, pj) in sources.items():
         print(f"{tag} ...", flush=True)
-        m = per_image_matched(split, pj)
+        m = per_image_matched(split, pj, channels.get(tag, POTHOLE))
         matched[tag] = m
         floor = empirical_risk(m, FLOOR_TAU)
         n = len(m)
@@ -102,9 +118,15 @@ def main() -> int:
               f"{(floor * n + 1) / (n + 1):.4f}  (n={n})", flush=True)
 
     # Risk vs alpha across the whole feasible range, not a fixed habit list.
-    grid = np.arange(0.01, 0.99, 0.01)
+    # The tau grid must start at FLOOR_TAU. It used to start at 0.01 while the
+    # floor was measured at 0.001, and risk climbs steeply in between - 0.0827
+    # to 0.2198 for B on india_cal. The curve therefore reported a minimum
+    # feasible alpha of 0.24 while the floor table in the same artifact said
+    # 0.087. Both were printed, and they disagreed. `tau_step` was already in
+    # configs/project.yaml; the grid simply ignored it.
+    grid = np.arange(TAU_STEP, 1.0, TAU_STEP)
     curves = {}
-    for tag in ("A", "B"):
+    for tag in ("A", "B", "P"):
         cal, test = matched.get(f"{tag}_india_cal"), matched.get(f"{tag}_india_test")
         if not cal or not test:
             continue
@@ -117,8 +139,17 @@ def main() -> int:
                          "feasible": tau is not None})
         curves[f"{tag}_india_cal_to_test"] = rows
         feas = [r for r in rows if r["feasible"]]
-        print(f"\n{tag}: feasible from alpha {feas[0]['alpha'] if feas else 'none'}; "
-              f"{len(rows) - len(feas)}/{len(rows)} alphas infeasible")
+        # The curve steps alpha coarsely; resolve the boundary finely so the
+        # reported range is the real one, not the first coarse step past it.
+        fine = None
+        for a in np.arange(0.01, 1.0, 0.002):
+            if crc_threshold(cal, float(a), grid) is not None:
+                fine = round(float(a), 3)
+                break
+        floor_alpha = report["sources"][f"{tag}_india_cal"]["min_certifiable_alpha"]
+        report["sources"][f"{tag}_india_cal"]["feasible_from_alpha"] = fine
+        print(f"\n{tag}: feasible from alpha {fine} (floor predicts {floor_alpha}); "
+              f"{len(rows) - len(feas)}/{len(rows)} coarse alphas infeasible")
 
     # The violation: calibrate on non-India, deploy on India.
     non = matched["A_nonindia_val"]

@@ -14,7 +14,8 @@
       "images_with_pothole": 217,
       "miss_rate_floor": 0.639,
       "finite_sample_floor": 0.6407,
-      "min_certifiable_alpha": 0.6407
+      "min_certifiable_alpha": 0.6407,
+      "feasible_from_alpha": 0.642
     },
     "A_india_test": {
       "split": "india_test",
@@ -28,7 +29,8 @@
       "images_with_pothole": 217,
       "miss_rate_floor": 0.0827,
       "finite_sample_floor": 0.0869,
-      "min_certifiable_alpha": 0.0869
+      "min_certifiable_alpha": 0.0869,
+      "feasible_from_alpha": 0.088
     },
     "B_india_test": {
       "split": "india_test",
@@ -36,6 +38,21 @@
       "miss_rate_floor": 0.0867,
       "finite_sample_floor": 0.0908,
       "min_certifiable_alpha": 0.0908
+    },
+    "P_india_cal": {
+      "split": "india_cal",
+      "images_with_pothole": 217,
+      "miss_rate_floor": 0.1052,
+      "finite_sample_floor": 0.1093,
+      "min_certifiable_alpha": 0.1093,
+      "feasible_from_alpha": 0.11
+    },
+    "P_india_test": {
+      "split": "india_test",
+      "images_with_pothole": 219,
+      "miss_rate_floor": 0.0789,
+      "finite_sample_floor": 0.083,
+      "min_certifiable_alpha": 0.083
     }
   },
   "risk_vs_alpha": {
@@ -234,80 +251,80 @@
       },
       {
         "alpha": 0.66,
-        "tau": null,
-        "test_risk": null,
-        "feasible": false
+        "tau": 0.002,
+        "test_risk": 0.6899,
+        "feasible": true
       },
       {
         "alpha": 0.68,
-        "tau": null,
-        "test_risk": null,
-        "feasible": false
+        "tau": 0.003,
+        "test_risk": 0.7105,
+        "feasible": true
       },
       {
         "alpha": 0.7,
-        "tau": null,
-        "test_risk": null,
-        "feasible": false
+        "tau": 0.005,
+        "test_risk": 0.7378,
+        "feasible": true
       },
       {
         "alpha": 0.72,
-        "tau": null,
-        "test_risk": null,
-        "feasible": false
+        "tau": 0.009,
+        "test_risk": 0.764,
+        "feasible": true
       },
       {
         "alpha": 0.74,
-        "tau": 0.01,
-        "test_risk": 0.7671,
+        "tau": 0.013,
+        "test_risk": 0.7738,
         "feasible": true
       },
       {
         "alpha": 0.76,
-        "tau": 0.01,
-        "test_risk": 0.7671,
+        "tau": 0.017,
+        "test_risk": 0.7905,
         "feasible": true
       },
       {
         "alpha": 0.78,
-        "tau": 0.02,
-        "test_risk": 0.7928,
+        "tau": 0.022,
+        "test_risk": 0.8008,
         "feasible": true
       },
       {
         "alpha": 0.8,
-        "tau": 0.02,
-        "test_risk": 0.7928,
+        "tau": 0.027,
+        "test_risk": 0.8192,
         "feasible": true
       },
       {
         "alpha": 0.82,
-        "tau": 0.05,
-        "test_risk": 0.8402,
+        "tau": 0.057,
+        "test_risk": 0.8487,
         "feasible": true
       },
       {
         "alpha": 0.84,
-        "tau": 0.07,
+        "tau": 0.079,
         "test_risk": 0.8544,
         "feasible": true
       },
       {
         "alpha": 0.86,
-        "tau": 0.11,
+        "tau": 0.115,
         "test_risk": 0.8688,
         "feasible": true
       },
       {
         "alpha": 0.88,
-        "tau": 0.2,
-        "test_risk": 0.8952,
+        "tau": 0.207,
+        "test_risk": 0.8998,
         "feasible": true
       },
       {
         "alpha": 0.9,
-        "tau": 0.27,
-        "test_risk": 0.915,
+        "tau": 0.277,
+        "test_risk": 0.9195,
         "feasible": true
       },
       {
@@ -318,12 +335,296 @@
       },
       {
         "alpha": 0.94,
-        "tau": 0.52,
+        "tau": 0.524,
         "test_risk": 0.9616,
         "feasible": true
       }
     ],
     "B_india_cal_to_test": [
+      {
+        "alpha": 0.02,
+        "tau": null,
+        "test_risk": null,
+        "feasible": false
+      },
+      {
+        "alpha": 0.04,
+        "tau": null,
+        "test_risk": null,
+        "feasible": false
+      },
+      {
+        "alpha": 0.06,
+        "tau": null,
+        "test_risk": null,
+        "feasible": false
+      },
+      {
+        "alpha": 0.08,
+        "tau": null,
+        "test_risk": null,
+        "feasible": false
+      },
+      {
+        "alpha": 0.1,
+        "tau": 0.001,
+        "test_risk": 0.0867,
+        "feasible": true
+      },
+      {
+        "alpha": 0.12,
+        "tau": 0.002,
+        "test_risk": 0.1047,
+        "feasible": true
+      },
+      {
+        "alpha": 0.14,
+        "tau": 0.003,
+        "test_risk": 0.1196,
+        "feasible": true
+      },
+      {
+        "alpha": 0.16,
+        "tau": 0.004,
+        "test_risk": 0.1303,
+        "feasible": true
+      },
+      {
+        "alpha": 0.18,
+        "tau": 0.006,
+        "test_risk": 0.1337,
+        "feasible": true
+      },
+      {
+        "alpha": 0.2,
+        "tau": 0.008,
+        "test_risk": 0.1499,
+        "feasible": true
+      },
+      {
+        "alpha": 0.22,
+        "tau": 0.009,
+        "test_risk": 0.1674,
+        "feasible": true
+      },
+      {
+        "alpha": 0.24,
+        "tau": 0.013,
+        "test_risk": 0.2012,
+        "feasible": true
+      },
+      {
+        "alpha": 0.26,
+        "tau": 0.016,
+        "test_risk": 0.2155,
+        "feasible": true
+      },
+      {
+        "alpha": 0.28,
+        "tau": 0.022,
+        "test_risk": 0.2323,
+        "feasible": true
+      },
+      {
+        "alpha": 0.3,
+        "tau": 0.029,
+        "test_risk": 0.2572,
+        "feasible": true
+      },
+      {
+        "alpha": 0.32,
+        "tau": 0.031,
+        "test_risk": 0.264,
+        "feasible": true
+      },
+      {
+        "alpha": 0.34,
+        "tau": 0.037,
+        "test_risk": 0.2806,
+        "feasible": true
+      },
+      {
+        "alpha": 0.36,
+        "tau": 0.046,
+        "test_risk": 0.295,
+        "feasible": true
+      },
+      {
+        "alpha": 0.38,
+        "tau": 0.057,
+        "test_risk": 0.3245,
+        "feasible": true
+      },
+      {
+        "alpha": 0.4,
+        "tau": 0.063,
+        "test_risk": 0.3332,
+        "feasible": true
+      },
+      {
+        "alpha": 0.42,
+        "tau": 0.079,
+        "test_risk": 0.3522,
+        "feasible": true
+      },
+      {
+        "alpha": 0.44,
+        "tau": 0.087,
+        "test_risk": 0.3676,
+        "feasible": true
+      },
+      {
+        "alpha": 0.46,
+        "tau": 0.098,
+        "test_risk": 0.4005,
+        "feasible": true
+      },
+      {
+        "alpha": 0.48,
+        "tau": 0.109,
+        "test_risk": 0.4237,
+        "feasible": true
+      },
+      {
+        "alpha": 0.5,
+        "tau": 0.117,
+        "test_risk": 0.426,
+        "feasible": true
+      },
+      {
+        "alpha": 0.52,
+        "tau": 0.127,
+        "test_risk": 0.4364,
+        "feasible": true
+      },
+      {
+        "alpha": 0.54,
+        "tau": 0.148,
+        "test_risk": 0.4707,
+        "feasible": true
+      },
+      {
+        "alpha": 0.56,
+        "tau": 0.168,
+        "test_risk": 0.5025,
+        "feasible": true
+      },
+      {
+        "alpha": 0.58,
+        "tau": 0.188,
+        "test_risk": 0.5331,
+        "feasible": true
+      },
+      {
+        "alpha": 0.6,
+        "tau": 0.198,
+        "test_risk": 0.5578,
+        "feasible": true
+      },
+      {
+        "alpha": 0.62,
+        "tau": 0.217,
+        "test_risk": 0.5795,
+        "feasible": true
+      },
+      {
+        "alpha": 0.64,
+        "tau": 0.25,
+        "test_risk": 0.6075,
+        "feasible": true
+      },
+      {
+        "alpha": 0.66,
+        "tau": 0.263,
+        "test_risk": 0.6257,
+        "feasible": true
+      },
+      {
+        "alpha": 0.68,
+        "tau": 0.274,
+        "test_risk": 0.6305,
+        "feasible": true
+      },
+      {
+        "alpha": 0.7,
+        "tau": 0.298,
+        "test_risk": 0.6584,
+        "feasible": true
+      },
+      {
+        "alpha": 0.72,
+        "tau": 0.326,
+        "test_risk": 0.6934,
+        "feasible": true
+      },
+      {
+        "alpha": 0.74,
+        "tau": 0.336,
+        "test_risk": 0.6934,
+        "feasible": true
+      },
+      {
+        "alpha": 0.76,
+        "tau": 0.355,
+        "test_risk": 0.7164,
+        "feasible": true
+      },
+      {
+        "alpha": 0.78,
+        "tau": 0.387,
+        "test_risk": 0.7377,
+        "feasible": true
+      },
+      {
+        "alpha": 0.8,
+        "tau": 0.422,
+        "test_risk": 0.7881,
+        "feasible": true
+      },
+      {
+        "alpha": 0.82,
+        "tau": 0.461,
+        "test_risk": 0.8302,
+        "feasible": true
+      },
+      {
+        "alpha": 0.84,
+        "tau": 0.482,
+        "test_risk": 0.8466,
+        "feasible": true
+      },
+      {
+        "alpha": 0.86,
+        "tau": 0.508,
+        "test_risk": 0.8646,
+        "feasible": true
+      },
+      {
+        "alpha": 0.88,
+        "tau": 0.532,
+        "test_risk": 0.873,
+        "feasible": true
+      },
+      {
+        "alpha": 0.9,
+        "tau": 0.552,
+        "test_risk": 0.8742,
+        "feasible": true
+      },
+      {
+        "alpha": 0.92,
+        "tau": 0.572,
+        "test_risk": 0.8841,
+        "feasible": true
+      },
+      {
+        "alpha": 0.94,
+        "tau": 0.623,
+        "test_risk": 0.9213,
+        "feasible": true
+      }
+    ],
+    "P_india_cal_to_test": [
       {
         "alpha": 0.02,
         "tau": null,
@@ -356,254 +657,254 @@
       },
       {
         "alpha": 0.12,
-        "tau": null,
-        "test_risk": null,
-        "feasible": false
+        "tau": 0.001,
+        "test_risk": 0.0789,
+        "feasible": true
       },
       {
         "alpha": 0.14,
-        "tau": null,
-        "test_risk": null,
-        "feasible": false
+        "tau": 0.001,
+        "test_risk": 0.0789,
+        "feasible": true
       },
       {
         "alpha": 0.16,
-        "tau": null,
-        "test_risk": null,
-        "feasible": false
+        "tau": 0.002,
+        "test_risk": 0.1216,
+        "feasible": true
       },
       {
         "alpha": 0.18,
-        "tau": null,
-        "test_risk": null,
-        "feasible": false
+        "tau": 0.004,
+        "test_risk": 0.1401,
+        "feasible": true
       },
       {
         "alpha": 0.2,
-        "tau": null,
-        "test_risk": null,
-        "feasible": false
+        "tau": 0.005,
+        "test_risk": 0.1595,
+        "feasible": true
       },
       {
         "alpha": 0.22,
-        "tau": null,
-        "test_risk": null,
-        "feasible": false
+        "tau": 0.007,
+        "test_risk": 0.184,
+        "feasible": true
       },
       {
         "alpha": 0.24,
-        "tau": 0.01,
-        "test_risk": 0.1788,
+        "tau": 0.009,
+        "test_risk": 0.2038,
         "feasible": true
       },
       {
         "alpha": 0.26,
-        "tau": 0.01,
-        "test_risk": 0.1788,
+        "tau": 0.013,
+        "test_risk": 0.2243,
         "feasible": true
       },
       {
         "alpha": 0.28,
-        "tau": 0.02,
-        "test_risk": 0.2285,
+        "tau": 0.017,
+        "test_risk": 0.2389,
         "feasible": true
       },
       {
         "alpha": 0.3,
-        "tau": 0.02,
-        "test_risk": 0.2285,
+        "tau": 0.023,
+        "test_risk": 0.2686,
         "feasible": true
       },
       {
         "alpha": 0.32,
-        "tau": 0.03,
-        "test_risk": 0.2617,
+        "tau": 0.031,
+        "test_risk": 0.3038,
         "feasible": true
       },
       {
         "alpha": 0.34,
-        "tau": 0.03,
-        "test_risk": 0.2617,
+        "tau": 0.033,
+        "test_risk": 0.3076,
         "feasible": true
       },
       {
         "alpha": 0.36,
         "tau": 0.04,
-        "test_risk": 0.2887,
+        "test_risk": 0.326,
         "feasible": true
       },
       {
         "alpha": 0.38,
-        "tau": 0.05,
-        "test_risk": 0.2996,
+        "tau": 0.052,
+        "test_risk": 0.3595,
         "feasible": true
       },
       {
         "alpha": 0.4,
-        "tau": 0.06,
-        "test_risk": 0.3266,
+        "tau": 0.069,
+        "test_risk": 0.3917,
         "feasible": true
       },
       {
         "alpha": 0.42,
-        "tau": 0.07,
-        "test_risk": 0.3484,
+        "tau": 0.077,
+        "test_risk": 0.4006,
         "feasible": true
       },
       {
         "alpha": 0.44,
-        "tau": 0.08,
-        "test_risk": 0.3522,
+        "tau": 0.087,
+        "test_risk": 0.4175,
         "feasible": true
       },
       {
         "alpha": 0.46,
-        "tau": 0.09,
-        "test_risk": 0.376,
+        "tau": 0.098,
+        "test_risk": 0.4363,
         "feasible": true
       },
       {
         "alpha": 0.48,
-        "tau": 0.1,
-        "test_risk": 0.402,
+        "tau": 0.112,
+        "test_risk": 0.4458,
         "feasible": true
       },
       {
         "alpha": 0.5,
-        "tau": 0.11,
-        "test_risk": 0.4237,
+        "tau": 0.117,
+        "test_risk": 0.4493,
         "feasible": true
       },
       {
         "alpha": 0.52,
-        "tau": 0.12,
-        "test_risk": 0.4339,
+        "tau": 0.135,
+        "test_risk": 0.4676,
         "feasible": true
       },
       {
         "alpha": 0.54,
-        "tau": 0.14,
-        "test_risk": 0.459,
+        "tau": 0.161,
+        "test_risk": 0.5,
         "feasible": true
       },
       {
         "alpha": 0.56,
-        "tau": 0.16,
-        "test_risk": 0.497,
+        "tau": 0.174,
+        "test_risk": 0.5111,
         "feasible": true
       },
       {
         "alpha": 0.58,
-        "tau": 0.18,
-        "test_risk": 0.5224,
+        "tau": 0.201,
+        "test_risk": 0.543,
         "feasible": true
       },
       {
         "alpha": 0.6,
-        "tau": 0.19,
-        "test_risk": 0.5473,
+        "tau": 0.237,
+        "test_risk": 0.566,
         "feasible": true
       },
       {
         "alpha": 0.62,
-        "tau": 0.21,
-        "test_risk": 0.5726,
+        "tau": 0.258,
+        "test_risk": 0.5856,
         "feasible": true
       },
       {
         "alpha": 0.64,
-        "tau": 0.25,
-        "test_risk": 0.6075,
+        "tau": 0.271,
+        "test_risk": 0.6057,
         "feasible": true
       },
       {
         "alpha": 0.66,
-        "tau": 0.26,
-        "test_risk": 0.6211,
+        "tau": 0.286,
+        "test_risk": 0.6304,
         "feasible": true
       },
       {
         "alpha": 0.68,
-        "tau": 0.27,
-        "test_risk": 0.6283,
+        "tau": 0.311,
+        "test_risk": 0.6528,
         "feasible": true
       },
       {
         "alpha": 0.7,
-        "tau": 0.29,
-        "test_risk": 0.6408,
+        "tau": 0.332,
+        "test_risk": 0.6643,
         "feasible": true
       },
       {
         "alpha": 0.72,
-        "tau": 0.32,
-        "test_risk": 0.6805,
+        "tau": 0.344,
+        "test_risk": 0.6652,
         "feasible": true
       },
       {
         "alpha": 0.74,
-        "tau": 0.33,
-        "test_risk": 0.6934,
+        "tau": 0.37,
+        "test_risk": 0.6759,
         "feasible": true
       },
       {
         "alpha": 0.76,
-        "tau": 0.35,
-        "test_risk": 0.7119,
+        "tau": 0.394,
+        "test_risk": 0.7018,
         "feasible": true
       },
       {
         "alpha": 0.78,
-        "tau": 0.38,
-        "test_risk": 0.7309,
+        "tau": 0.434,
+        "test_risk": 0.7294,
         "feasible": true
       },
       {
         "alpha": 0.8,
-        "tau": 0.42,
-        "test_risk": 0.7836,
+        "tau": 0.451,
+        "test_risk": 0.7493,
         "feasible": true
       },
       {
         "alpha": 0.82,
-        "tau": 0.46,
-        "test_risk": 0.8287,
+        "tau": 0.476,
+        "test_risk": 0.7685,
         "feasible": true
       },
       {
         "alpha": 0.84,
-        "tau": 0.48,
-        "test_risk": 0.8466,
+        "tau": 0.504,
+        "test_risk": 0.7822,
         "feasible": true
       },
       {
         "alpha": 0.86,
-        "tau": 0.5,
-        "test_risk": 0.8567,
+        "tau": 0.558,
+        "test_risk": 0.8365,
         "feasible": true
       },
       {
         "alpha": 0.88,
-        "tau": 0.53,
-        "test_risk": 0.873,
+        "tau": 0.586,
+        "test_risk": 0.8616,
         "feasible": true
       },
       {
         "alpha": 0.9,
-        "tau": 0.55,
-        "test_risk": 0.8742,
+        "tau": 0.61,
+        "test_risk": 0.8841,
         "feasible": true
       },
       {
         "alpha": 0.92,
-        "tau": 0.57,
-        "test_risk": 0.8818,
+        "tau": 0.645,
+        "test_risk": 0.9194,
         "feasible": true
       },
       {
         "alpha": 0.94,
-        "tau": 0.62,
-        "test_risk": 0.9191,
+        "tau": 0.672,
+        "test_risk": 0.9463,
         "feasible": true
       }
     ]
@@ -623,20 +924,20 @@
     },
     {
       "alpha": 0.2,
-      "tau_from_nonindia": null,
-      "risk_on_nonindia": null,
-      "risk_on_india_test": null
+      "tau_from_nonindia": 0.004,
+      "risk_on_nonindia": 0.1905,
+      "risk_on_india_test": 0.7317
     },
     {
       "alpha": 0.3,
-      "tau_from_nonindia": 0.02,
-      "risk_on_nonindia": 0.2816,
-      "risk_on_india_test": 0.7928
+      "tau_from_nonindia": 0.024,
+      "risk_on_nonindia": 0.298,
+      "risk_on_india_test": 0.81
     },
     {
       "alpha": 0.5,
-      "tau_from_nonindia": 0.18,
-      "risk_on_nonindia": 0.4963,
+      "tau_from_nonindia": 0.183,
+      "risk_on_nonindia": 0.4975,
       "risk_on_india_test": 0.8777
     }
   ]
