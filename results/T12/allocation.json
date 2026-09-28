@@ -1,221 +1,2099 @@
 {
-  "n_segments": 200,
-  "n_trials": 1000,
-  "detector_recall": 0.75,
-  "mobilisation_cost": 50000.0,
-  "cost_per_damage": 3000.0,
-  "damage_distribution": "Beta(2,5) x 100",
-  "worst_k": 20,
+  "generator": {
+    "n_segments": 200,
+    "n_trials": 1000,
+    "severity_gamma": {
+      "shape": 1.2,
+      "scale": 1.0
+    },
+    "instances_per_severity": {
+      "linear_crack": 16,
+      "alligator_crack": 4,
+      "pothole": 8
+    },
+    "footprint_median_m2": {
+      "linear_crack": 0.3,
+      "alligator_crack": 2.0,
+      "pothole": 0.25
+    },
+    "footprint_log_sigma": 0.6,
+    "traffic_log_sigma": 0.8,
+    "mobilisation_cost": 50000,
+    "cost_per_m2": 2500,
+    "worst_k": 20
+  },
+  "scoring": {
+    "segment_m": 50,
+    "lane_width_m": 3.5,
+    "deduct_weights": {
+      "linear_crack": 8,
+      "alligator_crack": 20,
+      "pothole": 30
+    }
+  },
+  "operating_points": [
+    {
+      "alpha": 0.5,
+      "n_cal": 217,
+      "n_test": 219,
+      "feasible": true,
+      "tau": 0.117,
+      "test_risk": 0.426,
+      "instance_miss_rate": 0.4746,
+      "false_alarms_per_image": 0.433,
+      "role": "headline",
+      "recall": {
+        "linear_crack": 0.3645,
+        "alligator_crack": 0.6448,
+        "pothole": 0.5254
+      }
+    },
+    {
+      "alpha": 0.1,
+      "n_cal": 217,
+      "n_test": 219,
+      "feasible": true,
+      "tau": 0.001,
+      "test_risk": 0.0867,
+      "instance_miss_rate": 0.0993,
+      "false_alarms_per_image": 31.198,
+      "role": "sensitivity",
+      "recall": {
+        "linear_crack": 0.8692,
+        "alligator_crack": 0.9575,
+        "pothole": 0.9007
+      }
+    },
+    {
+      "alpha": 0.3,
+      "n_cal": 217,
+      "n_test": 219,
+      "feasible": true,
+      "tau": 0.029,
+      "test_risk": 0.2572,
+      "instance_miss_rate": 0.2833,
+      "false_alarms_per_image": 2.328,
+      "role": "sensitivity",
+      "recall": {
+        "linear_crack": 0.5841,
+        "alligator_crack": 0.8069,
+        "pothole": 0.7167
+      }
+    }
+  ],
+  "false_alarms_modelled": false,
   "rows": [
     {
       "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
       "budget_fraction": 0.1,
-      "policy": "optimal",
-      "mean_benefit_repaired": 711.8,
-      "mean_worst20_share": 0.521
+      "policy": "oracle",
+      "mean_benefit_repaired": 751.7,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.0046
     },
     {
       "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.1,
+      "policy": "nominal",
+      "mean_benefit_repaired": 715.3,
+      "benefit_vs_oracle": 0.9515,
+      "mean_worst20_share": 0.0216
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.1,
+      "policy": "robust",
+      "mean_benefit_repaired": 719.1,
+      "benefit_vs_oracle": 0.9566,
+      "mean_worst20_share": 0.0137
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
       "budget_fraction": 0.1,
       "policy": "greedy",
-      "mean_benefit_repaired": 711.6,
-      "mean_worst20_share": 0.5387
+      "mean_benefit_repaired": 514.8,
+      "benefit_vs_oracle": 0.6849,
+      "mean_worst20_share": 0.3918
     },
     {
       "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
       "budget_fraction": 0.1,
       "policy": "random",
-      "mean_benefit_repaired": 560.7,
-      "mean_worst20_share": 0.0919
+      "mean_benefit_repaired": 574.0,
+      "benefit_vs_oracle": 0.7636,
+      "mean_worst20_share": 0.0926
     },
     {
       "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
       "budget_fraction": 0.2,
-      "policy": "optimal",
-      "mean_benefit_repaired": 1398.7,
-      "mean_worst20_share": 0.9237
+      "policy": "oracle",
+      "mean_benefit_repaired": 1463.6,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.0192
     },
     {
       "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.2,
+      "policy": "nominal",
+      "mean_benefit_repaired": 1399.5,
+      "benefit_vs_oracle": 0.9562,
+      "mean_worst20_share": 0.0792
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.2,
+      "policy": "robust",
+      "mean_benefit_repaired": 1407.8,
+      "benefit_vs_oracle": 0.9619,
+      "mean_worst20_share": 0.0585
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
       "budget_fraction": 0.2,
       "policy": "greedy",
-      "mean_benefit_repaired": 1398.5,
+      "mean_benefit_repaired": 1108.5,
+      "benefit_vs_oracle": 0.7574,
+      "mean_worst20_share": 0.81
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.2,
+      "policy": "random",
+      "mean_benefit_repaired": 1161.7,
+      "benefit_vs_oracle": 0.7937,
+      "mean_worst20_share": 0.1906
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.3,
+      "policy": "oracle",
+      "mean_benefit_repaired": 2148.9,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.0532
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.3,
+      "policy": "nominal",
+      "mean_benefit_repaired": 2062.9,
+      "benefit_vs_oracle": 0.96,
+      "mean_worst20_share": 0.1751
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.3,
+      "policy": "robust",
+      "mean_benefit_repaired": 2075.5,
+      "benefit_vs_oracle": 0.9658,
+      "mean_worst20_share": 0.1445
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.3,
+      "policy": "greedy",
+      "mean_benefit_repaired": 1747.6,
+      "benefit_vs_oracle": 0.8132,
+      "mean_worst20_share": 0.9674
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.3,
+      "policy": "random",
+      "mean_benefit_repaired": 1745.4,
+      "benefit_vs_oracle": 0.8122,
+      "mean_worst20_share": 0.2898
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.4,
+      "policy": "oracle",
+      "mean_benefit_repaired": 2810.6,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.1182
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.4,
+      "policy": "nominal",
+      "mean_benefit_repaired": 2708.2,
+      "benefit_vs_oracle": 0.9636,
+      "mean_worst20_share": 0.3065
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.4,
+      "policy": "robust",
+      "mean_benefit_repaired": 2723.3,
+      "benefit_vs_oracle": 0.969,
+      "mean_worst20_share": 0.2725
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.4,
+      "policy": "greedy",
+      "mean_benefit_repaired": 2416.4,
+      "benefit_vs_oracle": 0.8598,
+      "mean_worst20_share": 0.9962
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.4,
+      "policy": "random",
+      "mean_benefit_repaired": 2329.4,
+      "benefit_vs_oracle": 0.8288,
+      "mean_worst20_share": 0.3926
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.5,
+      "policy": "oracle",
+      "mean_benefit_repaired": 3448.5,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.2179
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.5,
+      "policy": "nominal",
+      "mean_benefit_repaired": 3335.5,
+      "benefit_vs_oracle": 0.9672,
+      "mean_worst20_share": 0.4591
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.5,
+      "policy": "robust",
+      "mean_benefit_repaired": 3351.2,
+      "benefit_vs_oracle": 0.9718,
+      "mean_worst20_share": 0.429
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.5,
+      "policy": "greedy",
+      "mean_benefit_repaired": 3099.7,
+      "benefit_vs_oracle": 0.8989,
+      "mean_worst20_share": 0.9994
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.5,
+      "policy": "random",
+      "mean_benefit_repaired": 2915.2,
+      "benefit_vs_oracle": 0.8454,
+      "mean_worst20_share": 0.4935
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.1,
+      "policy": "oracle",
+      "mean_benefit_repaired": 751.7,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.0046
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.1,
+      "policy": "nominal",
+      "mean_benefit_repaired": 745.5,
+      "benefit_vs_oracle": 0.9917,
+      "mean_worst20_share": 0.006
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.1,
+      "policy": "robust",
+      "mean_benefit_repaired": 745.6,
+      "benefit_vs_oracle": 0.9918,
+      "mean_worst20_share": 0.0049
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.1,
+      "policy": "greedy",
+      "mean_benefit_repaired": 512.5,
+      "benefit_vs_oracle": 0.6818,
+      "mean_worst20_share": 0.3881
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.1,
+      "policy": "random",
+      "mean_benefit_repaired": 574.0,
+      "benefit_vs_oracle": 0.7636,
+      "mean_worst20_share": 0.0926
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.2,
+      "policy": "oracle",
+      "mean_benefit_repaired": 1463.6,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.0192
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.2,
+      "policy": "nominal",
+      "mean_benefit_repaired": 1453.1,
+      "benefit_vs_oracle": 0.9929,
+      "mean_worst20_share": 0.0244
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.2,
+      "policy": "robust",
+      "mean_benefit_repaired": 1453.4,
+      "benefit_vs_oracle": 0.9931,
+      "mean_worst20_share": 0.0229
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.2,
+      "policy": "greedy",
+      "mean_benefit_repaired": 1104.8,
+      "benefit_vs_oracle": 0.7549,
+      "mean_worst20_share": 0.8935
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.2,
+      "policy": "random",
+      "mean_benefit_repaired": 1161.7,
+      "benefit_vs_oracle": 0.7937,
+      "mean_worst20_share": 0.1906
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.3,
+      "policy": "oracle",
+      "mean_benefit_repaired": 2148.9,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.0532
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.3,
+      "policy": "nominal",
+      "mean_benefit_repaired": 2135.8,
+      "benefit_vs_oracle": 0.9939,
+      "mean_worst20_share": 0.0684
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.3,
+      "policy": "robust",
+      "mean_benefit_repaired": 2136.2,
+      "benefit_vs_oracle": 0.9941,
+      "mean_worst20_share": 0.0653
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.3,
+      "policy": "greedy",
+      "mean_benefit_repaired": 1743.7,
+      "benefit_vs_oracle": 0.8114,
+      "mean_worst20_share": 0.9995
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.3,
+      "policy": "random",
+      "mean_benefit_repaired": 1745.4,
+      "benefit_vs_oracle": 0.8122,
+      "mean_worst20_share": 0.2898
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
+      "policy": "oracle",
+      "mean_benefit_repaired": 2810.6,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.1182
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
+      "policy": "nominal",
+      "mean_benefit_repaired": 2796.2,
+      "benefit_vs_oracle": 0.9949,
+      "mean_worst20_share": 0.1439
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
+      "policy": "robust",
+      "mean_benefit_repaired": 2796.7,
+      "benefit_vs_oracle": 0.9951,
+      "mean_worst20_share": 0.1404
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
+      "policy": "greedy",
+      "mean_benefit_repaired": 2414.1,
+      "benefit_vs_oracle": 0.8589,
       "mean_worst20_share": 1.0
     },
     {
       "regime": "uniform_traffic",
-      "budget_fraction": 0.2,
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
       "policy": "random",
-      "mean_benefit_repaired": 1132.5,
-      "mean_worst20_share": 0.1914
+      "mean_benefit_repaired": 2329.4,
+      "benefit_vs_oracle": 0.8288,
+      "mean_worst20_share": 0.3926
     },
     {
       "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.5,
+      "policy": "oracle",
+      "mean_benefit_repaired": 3448.5,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.2179
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.5,
+      "policy": "nominal",
+      "mean_benefit_repaired": 3434.3,
+      "benefit_vs_oracle": 0.9959,
+      "mean_worst20_share": 0.2512
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.5,
+      "policy": "robust",
+      "mean_benefit_repaired": 3434.8,
+      "benefit_vs_oracle": 0.996,
+      "mean_worst20_share": 0.248
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.5,
+      "policy": "greedy",
+      "mean_benefit_repaired": 3103.5,
+      "benefit_vs_oracle": 0.9,
+      "mean_worst20_share": 1.0
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.5,
+      "policy": "random",
+      "mean_benefit_repaired": 2915.2,
+      "benefit_vs_oracle": 0.8454,
+      "mean_worst20_share": 0.4935
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.1,
+      "policy": "oracle",
+      "mean_benefit_repaired": 751.7,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.0046
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.1,
+      "policy": "nominal",
+      "mean_benefit_repaired": 730.9,
+      "benefit_vs_oracle": 0.9723,
+      "mean_worst20_share": 0.0108
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.1,
+      "policy": "robust",
+      "mean_benefit_repaired": 732.3,
+      "benefit_vs_oracle": 0.9742,
+      "mean_worst20_share": 0.0083
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.1,
+      "policy": "greedy",
+      "mean_benefit_repaired": 513.3,
+      "benefit_vs_oracle": 0.6828,
+      "mean_worst20_share": 0.3896
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.1,
+      "policy": "random",
+      "mean_benefit_repaired": 574.0,
+      "benefit_vs_oracle": 0.7636,
+      "mean_worst20_share": 0.0926
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.2,
+      "policy": "oracle",
+      "mean_benefit_repaired": 1463.6,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.0192
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.2,
+      "policy": "nominal",
+      "mean_benefit_repaired": 1427.5,
+      "benefit_vs_oracle": 0.9753,
+      "mean_worst20_share": 0.048
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.2,
+      "policy": "robust",
+      "mean_benefit_repaired": 1430.5,
+      "benefit_vs_oracle": 0.9774,
+      "mean_worst20_share": 0.0392
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.2,
+      "policy": "greedy",
+      "mean_benefit_repaired": 1106.3,
+      "benefit_vs_oracle": 0.7559,
+      "mean_worst20_share": 0.8505
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.2,
+      "policy": "random",
+      "mean_benefit_repaired": 1161.7,
+      "benefit_vs_oracle": 0.7937,
+      "mean_worst20_share": 0.1906
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
       "budget_fraction": 0.3,
-      "policy": "optimal",
-      "mean_benefit_repaired": 2061.5,
+      "policy": "oracle",
+      "mean_benefit_repaired": 2148.9,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.0532
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.3,
+      "policy": "nominal",
+      "mean_benefit_repaired": 2102.3,
+      "benefit_vs_oracle": 0.9783,
+      "mean_worst20_share": 0.1134
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.3,
+      "policy": "robust",
+      "mean_benefit_repaired": 2106.7,
+      "benefit_vs_oracle": 0.9804,
+      "mean_worst20_share": 0.0998
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.3,
+      "policy": "greedy",
+      "mean_benefit_repaired": 1745.7,
+      "benefit_vs_oracle": 0.8124,
+      "mean_worst20_share": 0.9898
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.3,
+      "policy": "random",
+      "mean_benefit_repaired": 1745.4,
+      "benefit_vs_oracle": 0.8122,
+      "mean_worst20_share": 0.2898
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
+      "policy": "oracle",
+      "mean_benefit_repaired": 2810.6,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.1182
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
+      "policy": "nominal",
+      "mean_benefit_repaired": 2757.1,
+      "benefit_vs_oracle": 0.981,
+      "mean_worst20_share": 0.215
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
+      "policy": "robust",
+      "mean_benefit_repaired": 2762.3,
+      "benefit_vs_oracle": 0.9828,
+      "mean_worst20_share": 0.1964
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
+      "policy": "greedy",
+      "mean_benefit_repaired": 2414.5,
+      "benefit_vs_oracle": 0.8591,
+      "mean_worst20_share": 1.0
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
+      "policy": "random",
+      "mean_benefit_repaired": 2329.4,
+      "benefit_vs_oracle": 0.8288,
+      "mean_worst20_share": 0.3926
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.5,
+      "policy": "oracle",
+      "mean_benefit_repaired": 3448.5,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.2179
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.5,
+      "policy": "nominal",
+      "mean_benefit_repaired": 3392.1,
+      "benefit_vs_oracle": 0.9837,
+      "mean_worst20_share": 0.3484
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.5,
+      "policy": "robust",
+      "mean_benefit_repaired": 3398.0,
+      "benefit_vs_oracle": 0.9854,
+      "mean_worst20_share": 0.3302
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.5,
+      "policy": "greedy",
+      "mean_benefit_repaired": 3102.1,
+      "benefit_vs_oracle": 0.8996,
+      "mean_worst20_share": 1.0
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.5,
+      "policy": "random",
+      "mean_benefit_repaired": 2915.2,
+      "benefit_vs_oracle": 0.8454,
+      "mean_worst20_share": 0.4935
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.1,
+      "policy": "oracle",
+      "mean_benefit_repaired": 2621.8,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.6636
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.1,
+      "policy": "nominal",
+      "mean_benefit_repaired": 2565.0,
+      "benefit_vs_oracle": 0.9783,
+      "mean_worst20_share": 0.6521
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.1,
+      "policy": "robust",
+      "mean_benefit_repaired": 2571.4,
+      "benefit_vs_oracle": 0.9808,
+      "mean_worst20_share": 0.6491
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.1,
+      "policy": "greedy",
+      "mean_benefit_repaired": 2305.9,
+      "benefit_vs_oracle": 0.8795,
+      "mean_worst20_share": 0.6493
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.1,
+      "policy": "random",
+      "mean_benefit_repaired": 795.3,
+      "benefit_vs_oracle": 0.3033,
+      "mean_worst20_share": 0.0964
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.2,
+      "policy": "oracle",
+      "mean_benefit_repaired": 4018.9,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.8814
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.2,
+      "policy": "nominal",
+      "mean_benefit_repaired": 3940.0,
+      "benefit_vs_oracle": 0.9804,
+      "mean_worst20_share": 0.8958
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.2,
+      "policy": "robust",
+      "mean_benefit_repaired": 3950.1,
+      "benefit_vs_oracle": 0.9829,
+      "mean_worst20_share": 0.8883
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.2,
+      "policy": "greedy",
+      "mean_benefit_repaired": 3627.1,
+      "benefit_vs_oracle": 0.9025,
+      "mean_worst20_share": 0.961
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.2,
+      "policy": "random",
+      "mean_benefit_repaired": 1604.8,
+      "benefit_vs_oracle": 0.3993,
+      "mean_worst20_share": 0.1989
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.3,
+      "policy": "oracle",
+      "mean_benefit_repaired": 5042.9,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.9602
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.3,
+      "policy": "nominal",
+      "mean_benefit_repaired": 4951.7,
+      "benefit_vs_oracle": 0.9819,
+      "mean_worst20_share": 0.9705
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.3,
+      "policy": "robust",
+      "mean_benefit_repaired": 4963.8,
+      "benefit_vs_oracle": 0.9843,
+      "mean_worst20_share": 0.9665
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.3,
+      "policy": "greedy",
+      "mean_benefit_repaired": 4636.6,
+      "benefit_vs_oracle": 0.9194,
+      "mean_worst20_share": 0.987
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.3,
+      "policy": "random",
+      "mean_benefit_repaired": 2410.2,
+      "benefit_vs_oracle": 0.4779,
+      "mean_worst20_share": 0.3004
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.4,
+      "policy": "oracle",
+      "mean_benefit_repaired": 5843.6,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.9873
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.4,
+      "policy": "nominal",
+      "mean_benefit_repaired": 5747.7,
+      "benefit_vs_oracle": 0.9836,
+      "mean_worst20_share": 0.9913
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.4,
+      "policy": "robust",
+      "mean_benefit_repaired": 5761.4,
+      "benefit_vs_oracle": 0.9859,
+      "mean_worst20_share": 0.9899
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.4,
+      "policy": "greedy",
+      "mean_benefit_repaired": 5454.1,
+      "benefit_vs_oracle": 0.9333,
+      "mean_worst20_share": 0.9938
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.4,
+      "policy": "random",
+      "mean_benefit_repaired": 3201.7,
+      "benefit_vs_oracle": 0.5479,
+      "mean_worst20_share": 0.3986
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.5,
+      "policy": "oracle",
+      "mean_benefit_repaired": 6486.2,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.9969
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.5,
+      "policy": "nominal",
+      "mean_benefit_repaired": 6390.0,
+      "benefit_vs_oracle": 0.9852,
+      "mean_worst20_share": 0.9972
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.5,
+      "policy": "robust",
+      "mean_benefit_repaired": 6404.3,
+      "benefit_vs_oracle": 0.9874,
+      "mean_worst20_share": 0.9972
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.5,
+      "policy": "greedy",
+      "mean_benefit_repaired": 6138.2,
+      "benefit_vs_oracle": 0.9464,
+      "mean_worst20_share": 0.9963
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.5,
+      "policy": "random",
+      "mean_benefit_repaired": 4011.5,
+      "benefit_vs_oracle": 0.6185,
+      "mean_worst20_share": 0.4996
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.1,
+      "policy": "oracle",
+      "mean_benefit_repaired": 2621.8,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.6636
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.1,
+      "policy": "nominal",
+      "mean_benefit_repaired": 2617.2,
+      "benefit_vs_oracle": 0.9982,
+      "mean_worst20_share": 0.665
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.1,
+      "policy": "robust",
+      "mean_benefit_repaired": 2617.2,
+      "benefit_vs_oracle": 0.9983,
+      "mean_worst20_share": 0.6639
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.1,
+      "policy": "greedy",
+      "mean_benefit_repaired": 2377.4,
+      "benefit_vs_oracle": 0.9068,
+      "mean_worst20_share": 0.6764
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.1,
+      "policy": "random",
+      "mean_benefit_repaired": 795.3,
+      "benefit_vs_oracle": 0.3033,
+      "mean_worst20_share": 0.0964
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.2,
+      "policy": "oracle",
+      "mean_benefit_repaired": 4018.9,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.8814
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.2,
+      "policy": "nominal",
+      "mean_benefit_repaired": 4013.2,
+      "benefit_vs_oracle": 0.9986,
+      "mean_worst20_share": 0.884
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.2,
+      "policy": "robust",
+      "mean_benefit_repaired": 4013.2,
+      "benefit_vs_oracle": 0.9986,
+      "mean_worst20_share": 0.8826
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.2,
+      "policy": "greedy",
+      "mean_benefit_repaired": 3722.9,
+      "benefit_vs_oracle": 0.9263,
+      "mean_worst20_share": 0.9977
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.2,
+      "policy": "random",
+      "mean_benefit_repaired": 1604.8,
+      "benefit_vs_oracle": 0.3993,
+      "mean_worst20_share": 0.1989
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.3,
+      "policy": "oracle",
+      "mean_benefit_repaired": 5042.9,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.9602
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.3,
+      "policy": "nominal",
+      "mean_benefit_repaired": 5036.2,
+      "benefit_vs_oracle": 0.9987,
+      "mean_worst20_share": 0.9617
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.3,
+      "policy": "robust",
+      "mean_benefit_repaired": 5036.3,
+      "benefit_vs_oracle": 0.9987,
+      "mean_worst20_share": 0.961
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.3,
+      "policy": "greedy",
+      "mean_benefit_repaired": 4745.6,
+      "benefit_vs_oracle": 0.941,
+      "mean_worst20_share": 0.9995
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.3,
+      "policy": "random",
+      "mean_benefit_repaired": 2410.2,
+      "benefit_vs_oracle": 0.4779,
+      "mean_worst20_share": 0.3004
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
+      "policy": "oracle",
+      "mean_benefit_repaired": 5843.6,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.9873
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
+      "policy": "nominal",
+      "mean_benefit_repaired": 5837.1,
+      "benefit_vs_oracle": 0.9989,
+      "mean_worst20_share": 0.9884
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
+      "policy": "robust",
+      "mean_benefit_repaired": 5837.3,
+      "benefit_vs_oracle": 0.9989,
+      "mean_worst20_share": 0.9879
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
+      "policy": "greedy",
+      "mean_benefit_repaired": 5574.9,
+      "benefit_vs_oracle": 0.954,
+      "mean_worst20_share": 0.9998
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
+      "policy": "random",
+      "mean_benefit_repaired": 3201.7,
+      "benefit_vs_oracle": 0.5479,
+      "mean_worst20_share": 0.3986
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.5,
+      "policy": "oracle",
+      "mean_benefit_repaired": 6486.2,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.9969
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.5,
+      "policy": "nominal",
+      "mean_benefit_repaired": 6479.7,
+      "benefit_vs_oracle": 0.999,
+      "mean_worst20_share": 0.9971
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.5,
+      "policy": "robust",
+      "mean_benefit_repaired": 6479.7,
+      "benefit_vs_oracle": 0.999,
+      "mean_worst20_share": 0.9971
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.5,
+      "policy": "greedy",
+      "mean_benefit_repaired": 6259.3,
+      "benefit_vs_oracle": 0.965,
+      "mean_worst20_share": 0.9998
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.5,
+      "policy": "random",
+      "mean_benefit_repaired": 4011.5,
+      "benefit_vs_oracle": 0.6185,
+      "mean_worst20_share": 0.4996
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.1,
+      "policy": "oracle",
+      "mean_benefit_repaired": 2621.8,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.6636
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.1,
+      "policy": "nominal",
+      "mean_benefit_repaired": 2598.7,
+      "benefit_vs_oracle": 0.9912,
+      "mean_worst20_share": 0.6626
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.1,
+      "policy": "robust",
+      "mean_benefit_repaired": 2600.6,
+      "benefit_vs_oracle": 0.9919,
+      "mean_worst20_share": 0.6597
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.1,
+      "policy": "greedy",
+      "mean_benefit_repaired": 2349.9,
+      "benefit_vs_oracle": 0.8963,
+      "mean_worst20_share": 0.6649
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.1,
+      "policy": "random",
+      "mean_benefit_repaired": 795.3,
+      "benefit_vs_oracle": 0.3033,
+      "mean_worst20_share": 0.0964
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.2,
+      "policy": "oracle",
+      "mean_benefit_repaired": 4018.9,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.8814
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.2,
+      "policy": "nominal",
+      "mean_benefit_repaired": 3987.8,
+      "benefit_vs_oracle": 0.9923,
+      "mean_worst20_share": 0.8932
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.2,
+      "policy": "robust",
+      "mean_benefit_repaired": 3989.9,
+      "benefit_vs_oracle": 0.9928,
+      "mean_worst20_share": 0.8897
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.2,
+      "policy": "greedy",
+      "mean_benefit_repaired": 3686.4,
+      "benefit_vs_oracle": 0.9173,
+      "mean_worst20_share": 0.9866
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.2,
+      "policy": "random",
+      "mean_benefit_repaired": 1604.8,
+      "benefit_vs_oracle": 0.3993,
+      "mean_worst20_share": 0.1989
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.3,
+      "policy": "oracle",
+      "mean_benefit_repaired": 5042.9,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.9602
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.3,
+      "policy": "nominal",
+      "mean_benefit_repaired": 5007.5,
+      "benefit_vs_oracle": 0.993,
+      "mean_worst20_share": 0.9676
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.3,
+      "policy": "robust",
+      "mean_benefit_repaired": 5010.2,
+      "benefit_vs_oracle": 0.9935,
+      "mean_worst20_share": 0.965
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.3,
+      "policy": "greedy",
+      "mean_benefit_repaired": 4702.5,
+      "benefit_vs_oracle": 0.9325,
+      "mean_worst20_share": 0.9968
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.3,
+      "policy": "random",
+      "mean_benefit_repaired": 2410.2,
+      "benefit_vs_oracle": 0.4779,
+      "mean_worst20_share": 0.3004
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
+      "policy": "oracle",
+      "mean_benefit_repaired": 5843.6,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.9873
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
+      "policy": "nominal",
+      "mean_benefit_repaired": 5807.1,
+      "benefit_vs_oracle": 0.9937,
+      "mean_worst20_share": 0.9906
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
+      "policy": "robust",
+      "mean_benefit_repaired": 5810.4,
+      "benefit_vs_oracle": 0.9943,
+      "mean_worst20_share": 0.9898
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
+      "policy": "greedy",
+      "mean_benefit_repaired": 5526.6,
+      "benefit_vs_oracle": 0.9458,
+      "mean_worst20_share": 0.9985
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
+      "policy": "random",
+      "mean_benefit_repaired": 3201.7,
+      "benefit_vs_oracle": 0.5479,
+      "mean_worst20_share": 0.3986
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.5,
+      "policy": "oracle",
+      "mean_benefit_repaired": 6486.2,
+      "benefit_vs_oracle": 1.0,
+      "mean_worst20_share": 0.9969
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.5,
+      "policy": "nominal",
+      "mean_benefit_repaired": 6450.7,
+      "benefit_vs_oracle": 0.9945,
+      "mean_worst20_share": 0.998
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.5,
+      "policy": "robust",
+      "mean_benefit_repaired": 6453.8,
+      "benefit_vs_oracle": 0.995,
       "mean_worst20_share": 0.9975
     },
     {
-      "regime": "uniform_traffic",
-      "budget_fraction": 0.3,
-      "policy": "greedy",
-      "mean_benefit_repaired": 2061.3,
-      "mean_worst20_share": 1.0
-    },
-    {
-      "regime": "uniform_traffic",
-      "budget_fraction": 0.3,
-      "policy": "random",
-      "mean_benefit_repaired": 1703.6,
-      "mean_worst20_share": 0.2888
-    },
-    {
-      "regime": "uniform_traffic",
-      "budget_fraction": 0.4,
-      "policy": "optimal",
-      "mean_benefit_repaired": 2701.0,
-      "mean_worst20_share": 1.0
-    },
-    {
-      "regime": "uniform_traffic",
-      "budget_fraction": 0.4,
-      "policy": "greedy",
-      "mean_benefit_repaired": 2700.8,
-      "mean_worst20_share": 1.0
-    },
-    {
-      "regime": "uniform_traffic",
-      "budget_fraction": 0.4,
-      "policy": "random",
-      "mean_benefit_repaired": 2274.0,
-      "mean_worst20_share": 0.3874
-    },
-    {
-      "regime": "uniform_traffic",
-      "budget_fraction": 0.5,
-      "policy": "optimal",
-      "mean_benefit_repaired": 3315.0,
-      "mean_worst20_share": 1.0
-    },
-    {
-      "regime": "uniform_traffic",
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
       "budget_fraction": 0.5,
       "policy": "greedy",
-      "mean_benefit_repaired": 3314.9,
-      "mean_worst20_share": 1.0
-    },
-    {
-      "regime": "uniform_traffic",
-      "budget_fraction": 0.5,
-      "policy": "random",
-      "mean_benefit_repaired": 2845.9,
-      "mean_worst20_share": 0.4919
+      "mean_benefit_repaired": 6213.0,
+      "benefit_vs_oracle": 0.9579,
+      "mean_worst20_share": 0.9994
     },
     {
       "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.5,
+      "policy": "random",
+      "mean_benefit_repaired": 4011.5,
+      "benefit_vs_oracle": 0.6185,
+      "mean_worst20_share": 0.4996
+    }
+  ],
+  "robust_vs_nominal": [
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
       "budget_fraction": 0.1,
-      "policy": "optimal",
-      "mean_benefit_repaired": 2525.0,
-      "mean_worst20_share": 0.6904
+      "identical_choice_share": 0.053,
+      "benefit_robust_minus_nominal": 3.83,
+      "benefit_ci95": [
+        3.47,
+        4.2
+      ],
+      "worst20_robust_minus_nominal": -0.008,
+      "worst20_ci95": [
+        -0.0093,
+        -0.0066
+      ]
     },
     {
-      "regime": "varying_traffic",
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.2,
+      "identical_choice_share": 0.009,
+      "benefit_robust_minus_nominal": 8.23,
+      "benefit_ci95": [
+        7.71,
+        8.74
+      ],
+      "worst20_robust_minus_nominal": -0.0208,
+      "worst20_ci95": [
+        -0.0228,
+        -0.0187
+      ]
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.3,
+      "identical_choice_share": 0.002,
+      "benefit_robust_minus_nominal": 12.61,
+      "benefit_ci95": [
+        12.0,
+        13.21
+      ],
+      "worst20_robust_minus_nominal": -0.0306,
+      "worst20_ci95": [
+        -0.0329,
+        -0.0282
+      ]
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.4,
+      "identical_choice_share": 0.003,
+      "benefit_robust_minus_nominal": 15.06,
+      "benefit_ci95": [
+        14.34,
+        15.79
+      ],
+      "worst20_robust_minus_nominal": -0.034,
+      "worst20_ci95": [
+        -0.0367,
+        -0.0313
+      ]
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.5,
+      "identical_choice_share": 0.0,
+      "benefit_robust_minus_nominal": 15.67,
+      "benefit_ci95": [
+        14.83,
+        16.5
+      ],
+      "worst20_robust_minus_nominal": -0.0301,
+      "worst20_ci95": [
+        -0.0327,
+        -0.0275
+      ]
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
       "budget_fraction": 0.1,
-      "policy": "greedy",
-      "mean_benefit_repaired": 2425.0,
-      "mean_worst20_share": 0.7252
+      "identical_choice_share": 0.717,
+      "benefit_robust_minus_nominal": 0.08,
+      "benefit_ci95": [
+        0.01,
+        0.15
+      ],
+      "worst20_robust_minus_nominal": -0.0011,
+      "worst20_ci95": [
+        -0.0015,
+        -0.0006
+      ]
     },
     {
-      "regime": "varying_traffic",
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.2,
+      "identical_choice_share": 0.583,
+      "benefit_robust_minus_nominal": 0.33,
+      "benefit_ci95": [
+        0.24,
+        0.42
+      ],
+      "worst20_robust_minus_nominal": -0.0015,
+      "worst20_ci95": [
+        -0.0022,
+        -0.0009
+      ]
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.3,
+      "identical_choice_share": 0.551,
+      "benefit_robust_minus_nominal": 0.36,
+      "benefit_ci95": [
+        0.24,
+        0.48
+      ],
+      "worst20_robust_minus_nominal": -0.003,
+      "worst20_ci95": [
+        -0.004,
+        -0.0021
+      ]
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
+      "identical_choice_share": 0.549,
+      "benefit_robust_minus_nominal": 0.44,
+      "benefit_ci95": [
+        0.31,
+        0.58
+      ],
+      "worst20_robust_minus_nominal": -0.0034,
+      "worst20_ci95": [
+        -0.0045,
+        -0.0024
+      ]
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.5,
+      "identical_choice_share": 0.533,
+      "benefit_robust_minus_nominal": 0.48,
+      "benefit_ci95": [
+        0.33,
+        0.63
+      ],
+      "worst20_robust_minus_nominal": -0.0032,
+      "worst20_ci95": [
+        -0.0045,
+        -0.002
+      ]
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
       "budget_fraction": 0.1,
-      "policy": "random",
-      "mean_benefit_repaired": 770.8,
-      "mean_worst20_share": 0.0958
+      "identical_choice_share": 0.282,
+      "benefit_robust_minus_nominal": 1.43,
+      "benefit_ci95": [
+        1.2,
+        1.65
+      ],
+      "worst20_robust_minus_nominal": -0.0025,
+      "worst20_ci95": [
+        -0.0032,
+        -0.0017
+      ]
     },
     {
-      "regime": "varying_traffic",
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
       "budget_fraction": 0.2,
-      "policy": "optimal",
-      "mean_benefit_repaired": 3871.0,
-      "mean_worst20_share": 0.9535
+      "identical_choice_share": 0.116,
+      "benefit_robust_minus_nominal": 3.0,
+      "benefit_ci95": [
+        2.71,
+        3.3
+      ],
+      "worst20_robust_minus_nominal": -0.0089,
+      "worst20_ci95": [
+        -0.0103,
+        -0.0075
+      ]
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.3,
+      "identical_choice_share": 0.067,
+      "benefit_robust_minus_nominal": 4.44,
+      "benefit_ci95": [
+        4.08,
+        4.8
+      ],
+      "worst20_robust_minus_nominal": -0.0136,
+      "worst20_ci95": [
+        -0.0152,
+        -0.0119
+      ]
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
+      "identical_choice_share": 0.04,
+      "benefit_robust_minus_nominal": 5.27,
+      "benefit_ci95": [
+        4.89,
+        5.64
+      ],
+      "worst20_robust_minus_nominal": -0.0186,
+      "worst20_ci95": [
+        -0.0206,
+        -0.0166
+      ]
+    },
+    {
+      "regime": "uniform_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.5,
+      "identical_choice_share": 0.04,
+      "benefit_robust_minus_nominal": 5.89,
+      "benefit_ci95": [
+        5.45,
+        6.33
+      ],
+      "worst20_robust_minus_nominal": -0.0182,
+      "worst20_ci95": [
+        -0.0202,
+        -0.0162
+      ]
     },
     {
       "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.1,
+      "identical_choice_share": 0.359,
+      "benefit_robust_minus_nominal": 6.4,
+      "benefit_ci95": [
+        4.48,
+        8.33
+      ],
+      "worst20_robust_minus_nominal": -0.003,
+      "worst20_ci95": [
+        -0.0049,
+        -0.001
+      ]
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
       "budget_fraction": 0.2,
-      "policy": "greedy",
-      "mean_benefit_repaired": 3743.5,
-      "mean_worst20_share": 1.0
+      "identical_choice_share": 0.17,
+      "benefit_robust_minus_nominal": 10.09,
+      "benefit_ci95": [
+        8.38,
+        11.79
+      ],
+      "worst20_robust_minus_nominal": -0.0074,
+      "worst20_ci95": [
+        -0.0091,
+        -0.0058
+      ]
     },
     {
       "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.3,
+      "identical_choice_share": 0.054,
+      "benefit_robust_minus_nominal": 12.07,
+      "benefit_ci95": [
+        10.3,
+        13.84
+      ],
+      "worst20_robust_minus_nominal": -0.004,
+      "worst20_ci95": [
+        -0.0052,
+        -0.0028
+      ]
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.4,
+      "identical_choice_share": 0.036,
+      "benefit_robust_minus_nominal": 13.72,
+      "benefit_ci95": [
+        12.04,
+        15.39
+      ],
+      "worst20_robust_minus_nominal": -0.0014,
+      "worst20_ci95": [
+        -0.0021,
+        -0.0007
+      ]
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.5,
+      "role": "headline",
+      "budget_fraction": 0.5,
+      "identical_choice_share": 0.023,
+      "benefit_robust_minus_nominal": 14.29,
+      "benefit_ci95": [
+        12.65,
+        15.94
+      ],
+      "worst20_robust_minus_nominal": 0.0,
+      "worst20_ci95": [
+        -0.0005,
+        0.0005
+      ]
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.1,
+      "identical_choice_share": 0.911,
+      "benefit_robust_minus_nominal": 0.04,
+      "benefit_ci95": [
+        -0.11,
+        0.18
+      ],
+      "worst20_robust_minus_nominal": -0.0011,
+      "worst20_ci95": [
+        -0.0018,
+        -0.0005
+      ]
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
       "budget_fraction": 0.2,
-      "policy": "random",
-      "mean_benefit_repaired": 1549.9,
-      "mean_worst20_share": 0.1954
+      "identical_choice_share": 0.821,
+      "benefit_robust_minus_nominal": -0.01,
+      "benefit_ci95": [
+        -0.18,
+        0.16
+      ],
+      "worst20_robust_minus_nominal": -0.0014,
+      "worst20_ci95": [
+        -0.002,
+        -0.0008
+      ]
     },
     {
       "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
       "budget_fraction": 0.3,
-      "policy": "optimal",
-      "mean_benefit_repaired": 4858.2,
-      "mean_worst20_share": 0.997
+      "identical_choice_share": 0.771,
+      "benefit_robust_minus_nominal": 0.18,
+      "benefit_ci95": [
+        0.0,
+        0.35
+      ],
+      "worst20_robust_minus_nominal": -0.0007,
+      "worst20_ci95": [
+        -0.0011,
+        -0.0003
+      ]
     },
     {
       "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.4,
+      "identical_choice_share": 0.732,
+      "benefit_robust_minus_nominal": 0.16,
+      "benefit_ci95": [
+        -0.03,
+        0.34
+      ],
+      "worst20_robust_minus_nominal": -0.0005,
+      "worst20_ci95": [
+        -0.0008,
+        -0.0002
+      ]
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.1,
+      "role": "sensitivity",
+      "budget_fraction": 0.5,
+      "identical_choice_share": 0.696,
+      "benefit_robust_minus_nominal": -0.0,
+      "benefit_ci95": [
+        -0.14,
+        0.14
+      ],
+      "worst20_robust_minus_nominal": -0.0001,
+      "worst20_ci95": [
+        -0.0001,
+        0.0
+      ]
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.1,
+      "identical_choice_share": 0.667,
+      "benefit_robust_minus_nominal": 1.91,
+      "benefit_ci95": [
+        1.13,
+        2.68
+      ],
+      "worst20_robust_minus_nominal": -0.003,
+      "worst20_ci95": [
+        -0.0044,
+        -0.0015
+      ]
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
+      "budget_fraction": 0.2,
+      "identical_choice_share": 0.487,
+      "benefit_robust_minus_nominal": 2.1,
+      "benefit_ci95": [
+        1.31,
+        2.89
+      ],
+      "worst20_robust_minus_nominal": -0.0035,
+      "worst20_ci95": [
+        -0.0046,
+        -0.0024
+      ]
+    },
+    {
+      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
       "budget_fraction": 0.3,
-      "policy": "greedy",
-      "mean_benefit_repaired": 4729.0,
-      "mean_worst20_share": 1.0
+      "identical_choice_share": 0.337,
+      "benefit_robust_minus_nominal": 2.68,
+      "benefit_ci95": [
+        1.88,
+        3.47
+      ],
+      "worst20_robust_minus_nominal": -0.0027,
+      "worst20_ci95": [
+        -0.0034,
+        -0.0019
+      ]
     },
     {
       "regime": "varying_traffic",
-      "budget_fraction": 0.3,
-      "policy": "random",
-      "mean_benefit_repaired": 2334.8,
-      "mean_worst20_share": 0.2938
-    },
-    {
-      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
       "budget_fraction": 0.4,
-      "policy": "optimal",
-      "mean_benefit_repaired": 5632.5,
-      "mean_worst20_share": 1.0
+      "identical_choice_share": 0.277,
+      "benefit_robust_minus_nominal": 3.35,
+      "benefit_ci95": [
+        2.57,
+        4.14
+      ],
+      "worst20_robust_minus_nominal": -0.0009,
+      "worst20_ci95": [
+        -0.0014,
+        -0.0004
+      ]
     },
     {
       "regime": "varying_traffic",
-      "budget_fraction": 0.4,
-      "policy": "greedy",
-      "mean_benefit_repaired": 5513.9,
-      "mean_worst20_share": 1.0
-    },
-    {
-      "regime": "varying_traffic",
-      "budget_fraction": 0.4,
-      "policy": "random",
-      "mean_benefit_repaired": 3115.3,
-      "mean_worst20_share": 0.3929
-    },
-    {
-      "regime": "varying_traffic",
+      "alpha": 0.3,
+      "role": "sensitivity",
       "budget_fraction": 0.5,
-      "policy": "optimal",
-      "mean_benefit_repaired": 6255.6,
-      "mean_worst20_share": 1.0
-    },
-    {
-      "regime": "varying_traffic",
-      "budget_fraction": 0.5,
-      "policy": "greedy",
-      "mean_benefit_repaired": 6150.4,
-      "mean_worst20_share": 1.0
-    },
-    {
-      "regime": "varying_traffic",
-      "budget_fraction": 0.5,
-      "policy": "random",
-      "mean_benefit_repaired": 3889.9,
-      "mean_worst20_share": 0.4918
+      "identical_choice_share": 0.229,
+      "benefit_robust_minus_nominal": 3.06,
+      "benefit_ci95": [
+        2.31,
+        3.81
+      ],
+      "worst20_robust_minus_nominal": -0.0006,
+      "worst20_ci95": [
+        -0.0009,
+        -0.0002
+      ]
     }
   ]
 }

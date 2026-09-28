@@ -98,6 +98,7 @@ Current design spec: [`design.md`](design.md)
 | D076 | The T10 tau grid never reached the measured floor, so D070's feasible-alpha prose contradicted its own table; fixed, and Model P's floors measured | Accepted |
 | D077 | T10 complete: Model B's certificate holds over 200 group-aware re-partitions, non-India calibration fails in every one, and every tight certificate costs a flood of false alarms | Accepted |
 | D078 | T11: the spec's plain martingale is blind to a shift after 500 in-domain frames; a CUSUM reset at matched null false-alarm rate detects 197/200 with median delay 77 frames | Accepted |
+| D079 | T12: conformal robustness changes repair decisions and helps modestly; maximising benefit defers the worst roads, so the dashboard must report both objectives | Accepted |
 
 ---
 
@@ -2842,3 +2843,76 @@ events cannot pin it down; they are reported, not smoothed.
 
 The spec's statistic is kept in the library and in the results because it is
 what T11 asked for and what the comparison is against.
+
+## D079 — T12: robustness changes decisions; maximising benefit defers the worst roads
+
+**2026-09-28 · Accepted · completes T12 · supersedes the scalar T12 simulation**
+
+### The simulation could not answer its own question
+
+The first T12 reduced damage to one scalar and applied one global stand-in
+recall of 0.75: `observed = true_damage * recall`. Scaling every segment by the
+same constant cannot change a ranking, and the knapsack's choice is invariant to
+it — so detection error changed no decision, and the robust variant (divide by
+1 − alpha, another uniform constant) chose exactly what nominal chose, by
+construction. Rebuilt per class: distress instances drawn per class, each found
+at **Model B's measured recall for that class** at T10's certified threshold,
+condition scored through the real `vision_density -> deduct_value ->
+vision_estimated_pci` pipeline. Generator fixed on the true condition
+distribution alone, against a target declared before adjusting (median in
+Satisfactory, 10–20% Poor or worse; 16/4/8 instances per unit level gives 71.1
+and 20.7%). Exact optimiser parallelised over 14 workers; 2,000 networks.
+
+### Operating point: alpha 0.50, by a rule, because false alarms are not modelled
+
+T10 (D077) showed tight certificates flood false alarms: 31 per image at alpha
+0.10. This simulation models misses only, so it is honest only where false alarms
+are rare. **Headline alpha = the tightest certified alpha at which B raises under
+one false alarm per image: 0.50** (tau 0.117, 0.43 per image; recall linear
+0.36, alligator 0.64, pothole 0.53). Alphas 0.10 and 0.30 run as declared
+sensitivities and are optimistic by construction.
+
+### Results (1,000 paired networks per regime; full tables in `results/T12/`)
+
+- **Robust changes decisions.** At alpha 0.50 it picks a different repair set in
+  95–100% of networks under uniform traffic (the scalar design: 0%).
+- **Robust helps, modestly.** Share of oracle benefit, uniform traffic: nominal
+  95.2–96.7%, robust 95.7–97.2%; every paired interval clears zero. Detection
+  error costs 3–5% of achievable benefit; the correction recovers about a tenth.
+- **At alpha 0.10 there is nothing to correct**: recall is already 0.87–0.96 and
+  the factor is 1.11; robust and nominal agree on 53–91% of networks.
+- **Robust repairs fewer of the true worst 20 (−0.8 to −3.4 pp), because it
+  optimises better.** Its worst-20 coverage sits between nominal's and the
+  oracle's at every uniform budget. A tempting alternative — that the worst roads
+  are dominated by the crack classes the pothole-only correction ignores — was
+  measured and is false (worst-20 deduct: alligator 45% vs 48% overall, pothole
+  40% vs 36%).
+
+### The finding that outranks robustness
+
+**The oracle — exact optimiser, perfect information — repairs 0.5% of the true
+worst 20 at a 10% budget under uniform traffic; greedy worst-first repairs 39%.**
+Benefit per unit cost is hump-shaped in damage: light damage is poor value
+(mobilisation dominates, 9.8 per 100k), moderate damage is best (~31), and the
+worst damage is worse value again (20.5 at p99) because the log deduct saturates
+while cost rises linearly with area. The true worst 20 average a value-rank of
+117 of 200. Maximising network benefit therefore defers the worst roads — the
+optimise-versus-worst-first split, reproduced from the scoring design. Magnitude
+depends on the cost model and deduct shape; direction does not. Greedy pays for
+its coverage: 68.5% of oracle benefit at 10%, below random's 76.4%.
+
+**Consequence for T16:** the dashboard must report both objectives. Showing only
+the optimiser's plan would recommend deferring every failed road at a tight
+budget, silently.
+
+### Scope and caveats
+
+- The correction is pothole-only because the certificate is: cracks stay
+  under-counted (0.36×, 0.64×). A per-class certificate needs a per-class CRC run.
+- `band()` now assigns a continuous score to the band whose lower edge it has
+  reached; the spec's integer edges left one-point gaps (commit 800f7c7).
+- `segment_distress()` implements the spec's counts-per-100 m fallback, which the
+  scoring docstring had promised and nothing implemented, and carries the unit
+  with the value.
+- Scoring remains a monotone proxy after Ibragimov et al. (Sensors 2024); ASTM
+  D6433 deduct curves are not used.

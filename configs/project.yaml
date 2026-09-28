@@ -81,6 +81,31 @@ scoring:
   lane_width_m: 3.5
   deduct_weights: {linear_crack: 8, alligator_crack: 20, pothole: 30}
 
+# T12 synthetic network (D079). Generator parameters were fixed by looking at the
+# TRUE vision-estimated PCI distribution alone, before any policy was run, so they
+# cannot have been tuned toward a result. Target declared before adjusting:
+# median in Satisfactory, 10-20% Poor or worse. 8/2/4 gave 82.0 and 3.8%;
+# 16/4/8 gives 71.1 and 20.7%; 24/6/12 gives 63.2 and 35.3%. Units of cost
+# are arbitrary.
+allocation:
+  n_segments: 200
+  n_trials: 1000
+  budget_fractions: [0.10, 0.20, 0.30, 0.40, 0.50]
+  worst_k: 20
+  mobilisation_cost: 50000
+  cost_per_m2: 2500
+  severity_gamma: {shape: 1.2, scale: 1.0}      # per-segment damage level, right-skewed
+  instances_per_severity: {linear_crack: 16, alligator_crack: 4, pothole: 8}
+  footprint_median_m2: {linear_crack: 0.3, alligator_crack: 2.0, pothole: 0.25}
+  footprint_log_sigma: 0.6
+  traffic_log_sigma: 0.8
+  # Operating point: the tightest certified alpha at which Model B raises fewer
+  # than this many false alarms per image (T10, D077). The simulation models
+  # misses, not false alarms, so it is only honest where false alarms are rare.
+  max_false_alarms_per_image: 1.0
+  sensitivity_alphas: [0.10, 0.30]
+  workers: 14
+
 sim: {speed_kmh: 20, slow_kmh: 10, cam_height_m: 1.3, cam_pitch_deg: 10, cam_fov_rad: 1.2,
       cam_w: 1280, cam_h: 720, lane_center_y: -1.75, lane_width_m: 3.5, margin_m: 0.2,
       lookahead_m: 8.0, perceive_every_steps: 3, conf: 0.35, latency_s: 0.15, a_lat: 2.0,
