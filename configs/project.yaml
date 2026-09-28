@@ -61,7 +61,11 @@ eval:
   device: cpu
   report_conf: 0.25   # operating point for the P/R table, not for mAP
 
-conformal: {alphas: [0.05, 0.10, 0.20], iou: 0.5, n_resamples: 200, tau_step: 0.001}
+# D070: the spec's 0.05/0.10/0.20 are all infeasible for Model A on India (floor
+# 0.64), so 0.30-0.70 are added to let A's India case and the transfer violation
+# appear in the table at all. The full floor-to-0.96 curve is drawn separately.
+conformal: {alphas: [0.05, 0.10, 0.20, 0.30, 0.50, 0.70], iou: 0.5, n_resamples: 200,
+            tau_step: 0.001, curve_alpha_step: 0.02}
 
 drift: {eps: 0.5, alarm_threshold: 100, topk: 3, n_streams: 200, null_prefix: 500}
 

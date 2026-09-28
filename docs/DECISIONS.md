@@ -96,6 +96,7 @@ Current design spec: [`design.md`](design.md)
 | D073 | BharatPotHole is 162 drives, not 7,074 images; neither its val nor its test split is held out, so neither is used for evaluation | Accepted |
 | D074 | Model P selected over Model B on india_val; the advantage survives scene-group resampling there but does not transfer to locked india_test, where the two are indistinguishable | Accepted |
 | D076 | The T10 tau grid never reached the measured floor, so D070's feasible-alpha prose contradicted its own table; fixed, and Model P's floors measured | Accepted |
+| D077 | T10 complete: Model B's certificate holds over 200 group-aware re-partitions, non-India calibration fails in every one, and every tight certificate costs a flood of false alarms | Accepted |
 
 ---
 
@@ -2711,3 +2712,61 @@ statement of the same failure than D070 could make, because the tighter alpha is
 now reachable.
 
 Primary loss stays IoU 0.5 (D070 unchanged).
+
+## D077 — T10: the certificate holds, breaks under shift, and is not free
+
+**2026-09-28 · Accepted · completes T10 · D075 is reserved for the video metric**
+
+`scripts/exp_conformal.py`, locked predictions only, loss = image-level fraction
+of GT potholes missed at IoU 0.5, tau grid 0.001-0.990 step 0.001 (D076).
+Test set `india_test`. Outputs `results/T10/{conformal.json, conformal.md, *.png}`.
+
+### Model B carries the certified India result
+
+| alpha | tau-hat | test risk | instance miss | **false alarms / image** |
+|---|---|---|---|---|
+| 0.05 | infeasible (floor 0.087) | - | - | - |
+| 0.10 | 0.001 | 0.0867 | 0.0993 | **31.2** |
+| 0.20 | 0.008 | 0.1499 | 0.1646 | **7.5** |
+| 0.30 | 0.029 | 0.2572 | 0.2833 | **2.3** |
+| 0.50 | 0.117 | 0.4260 | 0.4746 | 0.43 |
+| 0.70 | 0.298 | 0.6584 | 0.7046 | 0.09 |
+
+### The guarantee is checked where it lives: in expectation, over re-partitions
+
+CRC promises *expected* risk <= alpha; one split can land above it legitimately.
+So `india_cal U india_test` was re-partitioned 200 times by **scene group**
+(D064; 2,017 units, 196 multi-image, zero groups crossing the original split;
+realised calibration halves 1,156-1,161 images):
+
+| case | alpha 0.10 | 0.20 | 0.30 | 0.50 | 0.70 |
+|---|---|---|---|---|---|
+| **B, india_cal** | 0.0941 (168/200 feasible) | 0.1918 | 0.2961 | 0.4962 | 0.6960 |
+| P, india_cal | 0.0993 (128/200) | 0.1930 | 0.2984 | 0.4968 | 0.6963 |
+| A, india_cal | infeasible | infeasible | infeasible | infeasible | 0.6818 |
+| **A, non-India** | infeasible | **0.7049** | **0.7962** | **0.8748** | **0.9500** |
+
+**Every India-calibrated mean sits at or below alpha, at every feasible alpha.**
+About half of individual draws land above alpha, which is what a tight marginal
+bound looks like — not a failure.
+
+**Non-India calibration exceeds alpha in all 200 draws at every alpha**: promised
+0.20, delivered 0.70. The shift violation D070 found on one split is not a split
+artefact.
+
+Near the floor, feasibility is itself random: at alpha 0.10 B abstains in 32 of
+200 draws and P in 72. Those means are over the draws where the procedure issued
+a threshold, which is conditioning, and is stated as such.
+
+### The certificate controls misses and nothing else
+
+At alpha 0.10 the certified threshold is **0.001** — keep every box the detector
+emits — and B flags **31 phantom potholes per image**. False alarms fall below one
+per image only at alpha 0.50, i.e. once the system is allowed to miss half the
+potholes. **This detector can certify a low miss rate or a usable false-alarm
+rate on Indian roads, not both.** That is a property of the detector (D069's
+confidence problem), not of CRC, and it is the most decision-relevant number in
+T10: any downstream use that consumes tau-hat inherits its false alarms.
+
+`false_alarms_vs_alpha.png` draws this. It is one figure beyond the spec's two,
+added because the trade-off is the finding.
