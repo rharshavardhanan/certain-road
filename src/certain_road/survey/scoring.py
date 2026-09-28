@@ -19,6 +19,7 @@ dashboard ends up comparing two things that are not the same.
 """
 
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 from certain_road.core.geometry import ground_point, haversine_m
@@ -39,10 +40,19 @@ class Camera:
 
 
 def band(score: float) -> str:
-    for low, high, name in BANDS:
-        if low <= score <= high:
+    """The band whose lower edge `score` has reached.
+
+    The spec writes the bands with integer edges (56-70 Fair, 71-85 Satisfactory),
+    but vision-estimated PCI is continuous. Matching `low <= score <= high` left a
+    one-point gap at every boundary, so 70.04 raised. Each band therefore covers
+    [low, next band's low), and Good closes at 100.
+    """
+    if not 0.0 <= score <= 100.0:
+        raise ValueError(f"score {score} outside 0-100")
+    for low, _high, name in BANDS:
+        if score >= low:
             return name
-    raise ValueError(f"score {score} outside 0-100")
+    raise AssertionError("unreachable: BANDS ends at 0")
 
 
 def segment_index(distances_m: list[float], segment_m: float) -> list[int]:
@@ -88,6 +98,29 @@ def vision_density(
     """Projected distress footprint as a percentage of the nominal lane area."""
     area = segment_m * lane_width_m
     return 0.0 if area <= 0 else footprint_m2 / area * 100.0
+
+
+VISION_DENSITY_UNIT = "vision_density_pct"
+COUNT_UNIT = "count_per_100m"
+
+
+def segment_distress(
+    footprints_m2: Sequence[float | None], *, segment_m: float, lane_width_m: float
+) -> tuple[float, str]:
+    """One class's distress in one evaluation segment, with its unit.
+
+    `vision_density` when every box has a ground footprint. If any does not — no
+    calibrated camera, or a box whose bottom edge is above the horizon — the
+    whole segment falls back to **counts per 100 m**. Mixing projected area with
+    unprojectable boxes would silently understate the segment, and returning a
+    bare number would let a dashboard compare a percentage with a count. The unit
+    travels with the value so that cannot happen.
+    """
+    if all(f is not None for f in footprints_m2):
+        area = float(sum(f for f in footprints_m2 if f is not None))
+        return vision_density(area, segment_m=segment_m, lane_width_m=lane_width_m), \
+            VISION_DENSITY_UNIT
+    return len(footprints_m2) / segment_m * 100.0, COUNT_UNIT
 
 
 def deduct_value(vision_density_pct: float, weight: float) -> float:

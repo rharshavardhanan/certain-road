@@ -19,6 +19,7 @@ from certain_road.survey.scoring import (
     cumulative_distance_m,
     deduct_value,
     robust_vision_density,
+    segment_distress,
     segment_index,
     vision_density,
     vision_estimated_pci,
@@ -140,3 +141,38 @@ def test_traffic_weight_shifts_priority():
 def test_random_policy_is_reproducible():
     segments = [Segment(i, vision_estimated_pci=i, cost=5) for i in range(30)]
     assert allocate_random(segments, 50.0, seed=9) == allocate_random(segments, 50.0, seed=9)
+
+
+def test_bands_cover_continuous_scores_between_the_integer_edges():
+    """Vision-estimated PCI is continuous; the spec's bands are written with
+    integer edges. 70.04 sits between Fair's 70 and Satisfactory's 71 and used to
+    raise — about one real score in fifteen. A score belongs to the band whose
+    lower edge it has reached."""
+    assert band(85.5) == "Satisfactory"
+    assert band(70.036) == "Fair"
+    assert band(40.999) == "Very Poor"
+    assert band(10.5) == "Failed"
+    assert band(99.99) == "Good"
+
+
+# --- the counts-per-100 m fallback -----------------------------------------
+#
+# The module docstring promised it; nothing implemented it. The unit travels with
+# the value so a dashboard can never compare a percentage with a count.
+
+def test_segment_distress_is_vision_density_when_every_footprint_is_known():
+    value, unit = segment_distress([1.75, 1.75], segment_m=50, lane_width_m=3.5)
+    assert unit == "vision_density_pct"
+    assert value == pytest.approx(2.0)  # 3.5 m2 of a 175 m2 lane rectangle
+
+
+def test_one_missing_footprint_falls_back_to_counts_per_100m():
+    """Mixing projected area with unprojectable boxes would understate the
+    segment silently, so the whole segment changes unit instead."""
+    value, unit = segment_distress([1.0, None, 2.0], segment_m=50, lane_width_m=3.5)
+    assert unit == "count_per_100m"
+    assert value == pytest.approx(6.0)  # 3 boxes over 50 m
+
+
+def test_a_segment_with_no_distress_is_zero_vision_density():
+    assert segment_distress([], segment_m=50, lane_width_m=3.5) == (0.0, "vision_density_pct")
