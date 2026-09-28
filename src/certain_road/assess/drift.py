@@ -43,7 +43,13 @@ class DriftMartingale:
     """Power martingale over randomised conformal p-values from a growing bag."""
 
     def __init__(
-        self, reference: Iterable[float], *, eps: float, alarm_threshold: float, seed: int = 0
+        self,
+        reference: Iterable[float],
+        *,
+        eps: float,
+        alarm_threshold: float,
+        seed: int = 0,
+        cusum: bool = False,
     ) -> None:
         if not 0.0 < eps < 1.0:
             raise ValueError(f"eps must be in (0, 1), got {eps}")
@@ -51,6 +57,7 @@ class DriftMartingale:
         self.eps = eps
         self.log_threshold = math.log(alarm_threshold)
         self.log_m = 0.0
+        self.cusum = cusum
         self._rng = random.Random(seed)
 
     def p_value(self, score: float) -> float:
@@ -65,6 +72,8 @@ class DriftMartingale:
         p = max(self.p_value(score), MIN_P)
         bisect.insort(self.bag, score)
         self.log_m += math.log(self.eps) + (self.eps - 1.0) * math.log(p)
+        if self.cusum:
+            self.log_m = max(0.0, self.log_m)
         return p
 
     @property
@@ -79,9 +88,11 @@ def run_stream(
     eps: float,
     alarm_threshold: float,
     seed: int = 0,
+    cusum: bool = False,
 ) -> tuple[int | None, list[float]]:
     """Feed `stream`; return (index of first alarm or None, log-martingale trace)."""
-    m = DriftMartingale(reference, eps=eps, alarm_threshold=alarm_threshold, seed=seed)
+    m = DriftMartingale(reference, eps=eps, alarm_threshold=alarm_threshold, seed=seed,
+                        cusum=cusum)
     trace, alarm = [], None
     for i, score in enumerate(stream):
         m.update(score)

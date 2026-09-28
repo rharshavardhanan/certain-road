@@ -97,6 +97,7 @@ Current design spec: [`design.md`](design.md)
 | D074 | Model P selected over Model B on india_val; the advantage survives scene-group resampling there but does not transfer to locked india_test, where the two are indistinguishable | Accepted |
 | D076 | The T10 tau grid never reached the measured floor, so D070's feasible-alpha prose contradicted its own table; fixed, and Model P's floors measured | Accepted |
 | D077 | T10 complete: Model B's certificate holds over 200 group-aware re-partitions, non-India calibration fails in every one, and every tight certificate costs a flood of false alarms | Accepted |
+| D078 | T11: the spec's plain martingale is blind to a shift after 500 in-domain frames; a CUSUM reset at matched null false-alarm rate detects 197/200 with median delay 77 frames | Accepted |
 
 ---
 
@@ -2770,3 +2771,74 @@ T10: any downstream use that consumes tau-hat inherits its false alarms.
 
 `false_alarms_vs_alpha.png` draws this. It is one figure beyond the spec's two,
 added because the trade-off is the finding.
+
+## D078 — T11: the drift alarm needs a CUSUM reset to see a late shift
+
+**2026-09-28 · Accepted · amends the T11 statistic; the spec's is kept beside it**
+
+`scripts/exp_drift.py`, Model A predictions (nonindia_val open, india_full
+locked). Frame score 1 − mean(top-3 confidences), eps 0.5. `nonindia_val` split
+50/50 into a 3,071-frame reference bag and a 3,071-frame null pool; shift streams
+are 500 null frames then shuffled India frames. Median frame score is 0.770
+non-India vs **0.981** India, so the signal is large.
+
+### As specified, the alarm misses the shift
+
+| | null false-alarm rate | detected after shift | never | median delay |
+|---|---|---|---|---|
+| **plain power martingale (spec), M >= 100** | 0.005 | **6/200** | 193 | 1,248 frames |
+
+The null side is fine — 1 in 200 against Ville's 0.010. The shift side is not.
+
+**Cause, measured rather than assumed.** Under the null the plain martingale's
+log-wealth drifts by `log eps + (1 - eps)` = **−0.193 nats per frame**, without
+bound. After the 500-frame prefix it sat at **−94.2** (predicted −96.5), so a
+shift must first repay ~94 nats before it can reach log 100 = 4.6, while the
+growing bag absorbs India frames and dilutes each new p-value. Varying only the
+prefix, on 40 streams each:
+
+| null frames before the shift | 0 | 100 | 500 |
+|---|---|---|---|
+| detected | 40/40 | 39/40 | **0/40** |
+| median delay | 42 | 245 | — |
+
+**Why it matters.** The plain martingale tests exchangeability *from the start of
+the stream*. Its sensitivity decays linearly with uptime. A survey vehicle runs
+in-domain for hours before it crosses into new territory, and 500 frames is
+~17 s of 30 fps video — as specified, the alarm is blind after the first minute.
+
+### The fix, and what it costs
+
+`DriftMartingale(cusum=True)` floors log M at zero, so no debt accumulates. The
+guarantee changes: Ville's *P(ever alarms) <= 1/C* becomes Lorden's *E[frames to
+a false alarm] >= C*. That is a much weaker promise per unit of C — at C = 100
+the CUSUM null false-alarm rate over a 3,071-frame stream is **0.970** — so the
+threshold must be far larger.
+
+**Threshold chosen by a rule fixed in config before any shift stream ran**: the
+smallest value in {10², 10³, 10⁴, 10⁵} whose null false-alarm rate is within the
+spec's own budget 1/100.
+
+| C | 100 | 1,000 | **10,000** | 100,000 |
+|---|---|---|---|---|
+| null false-alarm rate | 0.970 | 0.290 | **0.005** | 0.000 |
+
+### At matched null false-alarm rate
+
+| | null false-alarm rate | detected after shift | early | never | median delay | p90 |
+|---|---|---|---|---|---|---|
+| plain (spec), M >= 100 | 0.005 | 6/200 | 1 | 193 | 1,248 | 1,538 |
+| **CUSUM reset, M >= 10⁴** | 0.005 | **197/200** | 3 | **0** | **77** | 121 |
+
+**Every shifted stream alarms, median 77 India frames after the shift** (range
+22–203). At 30 fps that is ~2.6 s; at a survey's one frame per ~5 m, ~400 m.
+
+**One caveat carried forward.** C was selected on the same null streams its 0.005
+is measured on, so that number is mildly optimistic. The out-of-sample check is
+the 500-frame null prefixes of the shift streams, independently drawn: CUSUM
+alarmed inside them in **3 of 200**. That is the better estimate of its
+false-alarm rate on short runs, and it is above the in-sample figure. Three
+events cannot pin it down; they are reported, not smoothed.
+
+The spec's statistic is kept in the library and in the results because it is
+what T11 asked for and what the comparison is against.

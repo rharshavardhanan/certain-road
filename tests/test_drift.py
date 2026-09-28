@@ -86,3 +86,54 @@ def test_same_seed_reproduces_the_run():
     a = run_stream(ref, stream, eps=EPS, alarm_threshold=THRESHOLD, seed=42)
     b = run_stream(ref, stream, eps=EPS, alarm_threshold=THRESHOLD, seed=42)
     assert a[0] == b[0] and a[1] == b[1]
+
+
+# --- CUSUM reset -----------------------------------------------------------
+#
+# The plain power martingale sinks ~0.19 nats per frame on in-domain data, so a
+# shift that arrives late must first repay the debt: after 500 null frames of
+# Model A's real scores it detected the India shift in 0 of 40 streams. The
+# reset floors log M at zero so no debt accumulates.
+
+def test_cusum_delay_does_not_grow_with_time_spent_in_domain():
+    """The plain martingale's delay grows with the null prefix; the reset's does not.
+
+    With a shift this extreme the plain statistic does eventually climb out of
+    its hole, so the property is the delay, not detect-versus-miss.
+    """
+    rng = np.random.default_rng(11)
+    reference = rng.uniform(0.0, 0.5, 300)
+    shifted = rng.uniform(0.5, 1.0, 400)
+    # CUSUM's guarantee is E[frames to false alarm] >= threshold, so it needs a
+    # far larger threshold than Ville's: at 100 it false-alarms inside a
+    # 2,000-frame null prefix, which is the bound behaving exactly as stated.
+    thresholds = {False: THRESHOLD, True: 1e6}
+    delays = {}
+    for prefix in (0, 2000):
+        stream = np.concatenate([rng.uniform(0.0, 0.5, prefix), shifted])
+        for cusum in (False, True):
+            alarm, _ = run_stream(reference, stream, eps=EPS,
+                                  alarm_threshold=thresholds[cusum], seed=0, cusum=cusum)
+            assert alarm is not None and alarm >= prefix
+            delays[(prefix, cusum)] = alarm - prefix
+    assert delays[(2000, False)] > 10 * delays[(0, False)]      # plain: debt repaid first
+    assert delays[(2000, True)] <= delays[(0, True)] + 2        # reset: no debt
+
+
+def test_cusum_statistic_never_goes_below_zero():
+    rng = np.random.default_rng(2)
+    _, trace = run_stream(rng.uniform(0, 1, 200), rng.uniform(0, 1, 1000), eps=EPS,
+                          alarm_threshold=THRESHOLD, cusum=True)
+    assert min(trace) >= 0.0
+
+
+def test_cusum_run_length_under_the_null_respects_the_lorden_bound():
+    """E[time to false alarm] >= threshold for CUSUM on a nonnegative martingale."""
+    rng = np.random.default_rng(5)
+    threshold, runs = 50.0, []
+    for trial in range(200):
+        pool = rng.uniform(0, 1, 5200)
+        alarm, _ = run_stream(pool[:200], pool[200:], eps=EPS, alarm_threshold=threshold,
+                              seed=trial, cusum=True)
+        runs.append(5000 if alarm is None else alarm + 1)  # censored at stream end
+    assert float(np.mean(runs)) >= threshold, float(np.mean(runs))

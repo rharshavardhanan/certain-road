@@ -67,7 +67,12 @@ eval:
 conformal: {alphas: [0.05, 0.10, 0.20, 0.30, 0.50, 0.70], iou: 0.5, n_resamples: 200,
             tau_step: 0.001, curve_alpha_step: 0.02}
 
-drift: {eps: 0.5, alarm_threshold: 100, topk: 3, n_streams: 200, null_prefix: 500}
+# D078: the spec's plain martingale sinks ~0.19 nats/frame in-domain and misses a
+# late shift. The CUSUM reset is run beside it. Its threshold is chosen by a rule
+# fixed before any shift result was seen: the smallest grid value whose null
+# false-alarm rate is within the spec's own budget of 1/alarm_threshold.
+drift: {eps: 0.5, alarm_threshold: 100, topk: 3, n_streams: 200, null_prefix: 500,
+        cusum_threshold_grid: [100, 1000, 10000, 100000]}
 
 # D055: the spec's D00 and D10 both carried weight 8 precisely because they share
 # a deduct curve; merged, that is one weight of 8.
