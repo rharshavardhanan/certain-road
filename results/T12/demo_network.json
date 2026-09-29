@@ -1,0 +1,1616 @@
+{
+  "source": "scripts/exp_allocation.py --export-demo",
+  "seed": 0,
+  "regime": "uniform_traffic",
+  "note": "One network of T12's 1,000, seed fixed in advance. Averages over all 1,000 are in results/T12/allocation.json.",
+  "alpha": 0.5,
+  "tau": 0.117,
+  "recall": {
+    "linear_crack": 0.3645,
+    "alligator_crack": 0.6448,
+    "pothole": 0.5254
+  },
+  "detector": "Model B's per-class recall at tau-hat for every class, pothole included, as in T12. Under D082 the survey takes potholes from Model P; P's recall is not used in this simulation.",
+  "segments": [
+    {
+      "id": 0,
+      "true_pci": 69.82,
+      "observed_pci": 78.84,
+      "robust_pci": 73.988,
+      "cost": 86882.13,
+      "traffic": 1.0
+    },
+    {
+      "id": 1,
+      "true_pci": 59.801,
+      "observed_pci": 68.584,
+      "robust_pci": 62.954,
+      "cost": 128011.95,
+      "traffic": 1.0
+    },
+    {
+      "id": 2,
+      "true_pci": 72.218,
+      "observed_pci": 94.994,
+      "robust_pci": 92.085,
+      "cost": 84717.41,
+      "traffic": 1.0
+    },
+    {
+      "id": 3,
+      "true_pci": 42.328,
+      "observed_pci": 53.623,
+      "robust_pci": 46.375,
+      "cost": 180478.01,
+      "traffic": 1.0
+    },
+    {
+      "id": 4,
+      "true_pci": 91.522,
+      "observed_pci": 96.437,
+      "robust_pci": 96.437,
+      "cost": 59951.94,
+      "traffic": 1.0
+    },
+    {
+      "id": 5,
+      "true_pci": 81.828,
+      "observed_pci": 85.556,
+      "robust_pci": 81.734,
+      "cost": 68856.57,
+      "traffic": 1.0
+    },
+    {
+      "id": 6,
+      "true_pci": 100.0,
+      "observed_pci": 100.0,
+      "robust_pci": 100.0,
+      "cost": 50000.0,
+      "traffic": 1.0
+    },
+    {
+      "id": 7,
+      "true_pci": 96.309,
+      "observed_pci": 96.67,
+      "robust_pci": 94.02,
+      "cost": 51753.5,
+      "traffic": 1.0
+    },
+    {
+      "id": 8,
+      "true_pci": 87.731,
+      "observed_pci": 96.207,
+      "robust_pci": 94.66,
+      "cost": 62920.11,
+      "traffic": 1.0
+    },
+    {
+      "id": 9,
+      "true_pci": 62.281,
+      "observed_pci": 76.251,
+      "robust_pci": 73.525,
+      "cost": 126733.08,
+      "traffic": 1.0
+    },
+    {
+      "id": 10,
+      "true_pci": 70.048,
+      "observed_pci": 93.554,
+      "robust_pci": 89.559,
+      "cost": 89720.83,
+      "traffic": 1.0
+    },
+    {
+      "id": 11,
+      "true_pci": 96.564,
+      "observed_pci": 98.239,
+      "robust_pci": 97.27,
+      "cost": 54691.9,
+      "traffic": 1.0
+    },
+    {
+      "id": 12,
+      "true_pci": 57.35,
+      "observed_pci": 68.673,
+      "robust_pci": 63.663,
+      "cost": 126727.39,
+      "traffic": 1.0
+    },
+    {
+      "id": 13,
+      "true_pci": 73.941,
+      "observed_pci": 83.054,
+      "robust_pci": 80.54,
+      "cost": 89381.07,
+      "traffic": 1.0
+    },
+    {
+      "id": 14,
+      "true_pci": 83.977,
+      "observed_pci": 90.731,
+      "robust_pci": 87.647,
+      "cost": 64443.7,
+      "traffic": 1.0
+    },
+    {
+      "id": 15,
+      "true_pci": 94.666,
+      "observed_pci": 96.336,
+      "robust_pci": 94.281,
+      "cost": 54604.71,
+      "traffic": 1.0
+    },
+    {
+      "id": 16,
+      "true_pci": 66.408,
+      "observed_pci": 75.429,
+      "robust_pci": 71.137,
+      "cost": 96945.33,
+      "traffic": 1.0
+    },
+    {
+      "id": 17,
+      "true_pci": 58.054,
+      "observed_pci": 72.818,
+      "robust_pci": 66.864,
+      "cost": 120234.64,
+      "traffic": 1.0
+    },
+    {
+      "id": 18,
+      "true_pci": 79.087,
+      "observed_pci": 94.845,
+      "robust_pci": 92.701,
+      "cost": 75281.07,
+      "traffic": 1.0
+    },
+    {
+      "id": 19,
+      "true_pci": 58.883,
+      "observed_pci": 72.607,
+      "robust_pci": 65.675,
+      "cost": 114953.85,
+      "traffic": 1.0
+    },
+    {
+      "id": 20,
+      "true_pci": 93.209,
+      "observed_pci": 93.209,
+      "robust_pci": 91.058,
+      "cost": 53688.48,
+      "traffic": 1.0
+    },
+    {
+      "id": 21,
+      "true_pci": 40.892,
+      "observed_pci": 55.963,
+      "robust_pci": 48.829,
+      "cost": 225635.95,
+      "traffic": 1.0
+    },
+    {
+      "id": 22,
+      "true_pci": 59.09,
+      "observed_pci": 69.492,
+      "robust_pci": 64.149,
+      "cost": 118346.05,
+      "traffic": 1.0
+    },
+    {
+      "id": 23,
+      "true_pci": 47.783,
+      "observed_pci": 60.673,
+      "robust_pci": 54.071,
+      "cost": 170537.28,
+      "traffic": 1.0
+    },
+    {
+      "id": 24,
+      "true_pci": 31.899,
+      "observed_pci": 52.369,
+      "robust_pci": 45.688,
+      "cost": 331705.37,
+      "traffic": 1.0
+    },
+    {
+      "id": 25,
+      "true_pci": 56.719,
+      "observed_pci": 63.79,
+      "robust_pci": 57.777,
+      "cost": 126366.42,
+      "traffic": 1.0
+    },
+    {
+      "id": 26,
+      "true_pci": 73.48,
+      "observed_pci": 83.285,
+      "robust_pci": 80.589,
+      "cost": 90121.55,
+      "traffic": 1.0
+    },
+    {
+      "id": 27,
+      "true_pci": 98.516,
+      "observed_pci": 99.129,
+      "robust_pci": 99.129,
+      "cost": 52331.72,
+      "traffic": 1.0
+    },
+    {
+      "id": 28,
+      "true_pci": 61.542,
+      "observed_pci": 75.322,
+      "robust_pci": 68.639,
+      "cost": 102874.15,
+      "traffic": 1.0
+    },
+    {
+      "id": 29,
+      "true_pci": 94.859,
+      "observed_pci": 98.851,
+      "robust_pci": 98.851,
+      "cost": 53283.64,
+      "traffic": 1.0
+    },
+    {
+      "id": 30,
+      "true_pci": 85.224,
+      "observed_pci": 93.187,
+      "robust_pci": 93.187,
+      "cost": 66333.13,
+      "traffic": 1.0
+    },
+    {
+      "id": 31,
+      "true_pci": 38.968,
+      "observed_pci": 52.692,
+      "robust_pci": 45.648,
+      "cost": 234626.35,
+      "traffic": 1.0
+    },
+    {
+      "id": 32,
+      "true_pci": 71.148,
+      "observed_pci": 81.457,
+      "robust_pci": 80.28,
+      "cost": 84327.71,
+      "traffic": 1.0
+    },
+    {
+      "id": 33,
+      "true_pci": 43.28,
+      "observed_pci": 55.4,
+      "robust_pci": 49.171,
+      "cost": 225820.36,
+      "traffic": 1.0
+    },
+    {
+      "id": 34,
+      "true_pci": 49.867,
+      "observed_pci": 57.913,
+      "robust_pci": 51.095,
+      "cost": 163355.43,
+      "traffic": 1.0
+    },
+    {
+      "id": 35,
+      "true_pci": 73.141,
+      "observed_pci": 80.481,
+      "robust_pci": 78.009,
+      "cost": 88517.57,
+      "traffic": 1.0
+    },
+    {
+      "id": 36,
+      "true_pci": 60.279,
+      "observed_pci": 69.725,
+      "robust_pci": 64.342,
+      "cost": 113893.3,
+      "traffic": 1.0
+    },
+    {
+      "id": 37,
+      "true_pci": 82.827,
+      "observed_pci": 89.376,
+      "robust_pci": 84.693,
+      "cost": 63165.6,
+      "traffic": 1.0
+    },
+    {
+      "id": 38,
+      "true_pci": 70.092,
+      "observed_pci": 78.855,
+      "robust_pci": 77.064,
+      "cost": 113625.08,
+      "traffic": 1.0
+    },
+    {
+      "id": 39,
+      "true_pci": 65.519,
+      "observed_pci": 70.394,
+      "robust_pci": 68.565,
+      "cost": 139923.83,
+      "traffic": 1.0
+    },
+    {
+      "id": 40,
+      "true_pci": 77.36,
+      "observed_pci": 88.124,
+      "robust_pci": 86.08,
+      "cost": 70168.7,
+      "traffic": 1.0
+    },
+    {
+      "id": 41,
+      "true_pci": 98.105,
+      "observed_pci": 99.093,
+      "robust_pci": 99.093,
+      "cost": 53173.41,
+      "traffic": 1.0
+    },
+    {
+      "id": 42,
+      "true_pci": 65.095,
+      "observed_pci": 87.739,
+      "robust_pci": 82.545,
+      "cost": 99384.97,
+      "traffic": 1.0
+    },
+    {
+      "id": 43,
+      "true_pci": 89.893,
+      "observed_pci": 97.652,
+      "robust_pci": 95.664,
+      "cost": 55691.0,
+      "traffic": 1.0
+    },
+    {
+      "id": 44,
+      "true_pci": 94.766,
+      "observed_pci": 97.437,
+      "robust_pci": 96.385,
+      "cost": 60221.9,
+      "traffic": 1.0
+    },
+    {
+      "id": 45,
+      "true_pci": 82.936,
+      "observed_pci": 83.732,
+      "robust_pci": 81.253,
+      "cost": 68868.49,
+      "traffic": 1.0
+    },
+    {
+      "id": 46,
+      "true_pci": 65.665,
+      "observed_pci": 80.133,
+      "robust_pci": 75.463,
+      "cost": 95589.69,
+      "traffic": 1.0
+    },
+    {
+      "id": 47,
+      "true_pci": 69.555,
+      "observed_pci": 82.395,
+      "robust_pci": 78.109,
+      "cost": 84790.04,
+      "traffic": 1.0
+    },
+    {
+      "id": 48,
+      "true_pci": 99.148,
+      "observed_pci": 99.363,
+      "robust_pci": 99.363,
+      "cost": 51215.61,
+      "traffic": 1.0
+    },
+    {
+      "id": 49,
+      "true_pci": 60.552,
+      "observed_pci": 77.451,
+      "robust_pci": 72.529,
+      "cost": 123880.94,
+      "traffic": 1.0
+    },
+    {
+      "id": 50,
+      "true_pci": 77.969,
+      "observed_pci": 87.927,
+      "robust_pci": 86.606,
+      "cost": 76457.56,
+      "traffic": 1.0
+    },
+    {
+      "id": 51,
+      "true_pci": 52.855,
+      "observed_pci": 62.459,
+      "robust_pci": 55.226,
+      "cost": 125112.85,
+      "traffic": 1.0
+    },
+    {
+      "id": 52,
+      "true_pci": 95.999,
+      "observed_pci": 98.013,
+      "robust_pci": 98.013,
+      "cost": 59462.08,
+      "traffic": 1.0
+    },
+    {
+      "id": 53,
+      "true_pci": 100.0,
+      "observed_pci": 100.0,
+      "robust_pci": 100.0,
+      "cost": 50000.0,
+      "traffic": 1.0
+    },
+    {
+      "id": 54,
+      "true_pci": 90.228,
+      "observed_pci": 92.351,
+      "robust_pci": 91.388,
+      "cost": 59296.37,
+      "traffic": 1.0
+    },
+    {
+      "id": 55,
+      "true_pci": 72.677,
+      "observed_pci": 86.833,
+      "robust_pci": 83.117,
+      "cost": 82475.08,
+      "traffic": 1.0
+    },
+    {
+      "id": 56,
+      "true_pci": 55.827,
+      "observed_pci": 63.015,
+      "robust_pci": 56.285,
+      "cost": 130510.91,
+      "traffic": 1.0
+    },
+    {
+      "id": 57,
+      "true_pci": 45.546,
+      "observed_pci": 60.811,
+      "robust_pci": 53.801,
+      "cost": 189594.81,
+      "traffic": 1.0
+    },
+    {
+      "id": 58,
+      "true_pci": 62.285,
+      "observed_pci": 72.414,
+      "robust_pci": 67.53,
+      "cost": 106860.7,
+      "traffic": 1.0
+    },
+    {
+      "id": 59,
+      "true_pci": 66.135,
+      "observed_pci": 77.104,
+      "robust_pci": 74.026,
+      "cost": 122194.9,
+      "traffic": 1.0
+    },
+    {
+      "id": 60,
+      "true_pci": 71.987,
+      "observed_pci": 75.874,
+      "robust_pci": 71.994,
+      "cost": 88124.79,
+      "traffic": 1.0
+    },
+    {
+      "id": 61,
+      "true_pci": 87.393,
+      "observed_pci": 93.99,
+      "robust_pci": 92.266,
+      "cost": 68978.68,
+      "traffic": 1.0
+    },
+    {
+      "id": 62,
+      "true_pci": 95.907,
+      "observed_pci": 99.198,
+      "robust_pci": 98.442,
+      "cost": 52292.69,
+      "traffic": 1.0
+    },
+    {
+      "id": 63,
+      "true_pci": 80.498,
+      "observed_pci": 87.891,
+      "robust_pci": 85.481,
+      "cost": 71603.46,
+      "traffic": 1.0
+    },
+    {
+      "id": 64,
+      "true_pci": 83.899,
+      "observed_pci": 90.931,
+      "robust_pci": 88.647,
+      "cost": 62484.57,
+      "traffic": 1.0
+    },
+    {
+      "id": 65,
+      "true_pci": 65.823,
+      "observed_pci": 71.945,
+      "robust_pci": 67.601,
+      "cost": 104953.09,
+      "traffic": 1.0
+    },
+    {
+      "id": 66,
+      "true_pci": 71.395,
+      "observed_pci": 81.174,
+      "robust_pci": 77.028,
+      "cost": 78846.6,
+      "traffic": 1.0
+    },
+    {
+      "id": 67,
+      "true_pci": 49.233,
+      "observed_pci": 61.713,
+      "robust_pci": 55.293,
+      "cost": 170143.9,
+      "traffic": 1.0
+    },
+    {
+      "id": 68,
+      "true_pci": 60.104,
+      "observed_pci": 69.067,
+      "robust_pci": 64.271,
+      "cost": 119504.05,
+      "traffic": 1.0
+    },
+    {
+      "id": 69,
+      "true_pci": 67.981,
+      "observed_pci": 75.819,
+      "robust_pci": 70.196,
+      "cost": 85505.26,
+      "traffic": 1.0
+    },
+    {
+      "id": 70,
+      "true_pci": 66.832,
+      "observed_pci": 79.152,
+      "robust_pci": 75.135,
+      "cost": 103208.79,
+      "traffic": 1.0
+    },
+    {
+      "id": 71,
+      "true_pci": 98.576,
+      "observed_pci": 98.576,
+      "robust_pci": 97.292,
+      "cost": 50505.41,
+      "traffic": 1.0
+    },
+    {
+      "id": 72,
+      "true_pci": 72.753,
+      "observed_pci": 80.513,
+      "robust_pci": 77.161,
+      "cost": 80860.58,
+      "traffic": 1.0
+    },
+    {
+      "id": 73,
+      "true_pci": 67.636,
+      "observed_pci": 77.802,
+      "robust_pci": 73.512,
+      "cost": 96474.01,
+      "traffic": 1.0
+    },
+    {
+      "id": 74,
+      "true_pci": 79.189,
+      "observed_pci": 82.674,
+      "robust_pci": 80.555,
+      "cost": 73705.53,
+      "traffic": 1.0
+    },
+    {
+      "id": 75,
+      "true_pci": 82.275,
+      "observed_pci": 88.958,
+      "robust_pci": 87.947,
+      "cost": 72738.96,
+      "traffic": 1.0
+    },
+    {
+      "id": 76,
+      "true_pci": 72.662,
+      "observed_pci": 82.57,
+      "robust_pci": 79.785,
+      "cost": 94283.61,
+      "traffic": 1.0
+    },
+    {
+      "id": 77,
+      "true_pci": 87.99,
+      "observed_pci": 89.798,
+      "robust_pci": 89.798,
+      "cost": 62771.99,
+      "traffic": 1.0
+    },
+    {
+      "id": 78,
+      "true_pci": 73.111,
+      "observed_pci": 79.844,
+      "robust_pci": 74.756,
+      "cost": 83726.04,
+      "traffic": 1.0
+    },
+    {
+      "id": 79,
+      "true_pci": 75.211,
+      "observed_pci": 80.123,
+      "robust_pci": 75.772,
+      "cost": 72861.61,
+      "traffic": 1.0
+    },
+    {
+      "id": 80,
+      "true_pci": 38.391,
+      "observed_pci": 52.26,
+      "robust_pci": 45.147,
+      "cost": 230172.86,
+      "traffic": 1.0
+    },
+    {
+      "id": 81,
+      "true_pci": 79.092,
+      "observed_pci": 90.64,
+      "robust_pci": 88.129,
+      "cost": 72955.33,
+      "traffic": 1.0
+    },
+    {
+      "id": 82,
+      "true_pci": 42.099,
+      "observed_pci": 60.723,
+      "robust_pci": 54.551,
+      "cost": 199927.11,
+      "traffic": 1.0
+    },
+    {
+      "id": 83,
+      "true_pci": 59.519,
+      "observed_pci": 64.583,
+      "robust_pci": 58.379,
+      "cost": 125411.02,
+      "traffic": 1.0
+    },
+    {
+      "id": 84,
+      "true_pci": 51.53,
+      "observed_pci": 63.477,
+      "robust_pci": 56.919,
+      "cost": 153260.09,
+      "traffic": 1.0
+    },
+    {
+      "id": 85,
+      "true_pci": 60.363,
+      "observed_pci": 73.783,
+      "robust_pci": 68.186,
+      "cost": 116716.62,
+      "traffic": 1.0
+    },
+    {
+      "id": 86,
+      "true_pci": 98.966,
+      "observed_pci": 98.966,
+      "robust_pci": 98.342,
+      "cost": 50729.28,
+      "traffic": 1.0
+    },
+    {
+      "id": 87,
+      "true_pci": 96.527,
+      "observed_pci": 97.237,
+      "robust_pci": 94.958,
+      "cost": 52024.89,
+      "traffic": 1.0
+    },
+    {
+      "id": 88,
+      "true_pci": 80.284,
+      "observed_pci": 85.849,
+      "robust_pci": 83.913,
+      "cost": 68703.45,
+      "traffic": 1.0
+    },
+    {
+      "id": 89,
+      "true_pci": 52.155,
+      "observed_pci": 61.14,
+      "robust_pci": 54.24,
+      "cost": 127715.87,
+      "traffic": 1.0
+    },
+    {
+      "id": 90,
+      "true_pci": 79.024,
+      "observed_pci": 85.256,
+      "robust_pci": 82.187,
+      "cost": 73448.91,
+      "traffic": 1.0
+    },
+    {
+      "id": 91,
+      "true_pci": 88.89,
+      "observed_pci": 95.765,
+      "robust_pci": 93.52,
+      "cost": 60148.59,
+      "traffic": 1.0
+    },
+    {
+      "id": 92,
+      "true_pci": 68.286,
+      "observed_pci": 74.836,
+      "robust_pci": 70.599,
+      "cost": 95410.82,
+      "traffic": 1.0
+    },
+    {
+      "id": 93,
+      "true_pci": 50.379,
+      "observed_pci": 57.288,
+      "robust_pci": 50.258,
+      "cost": 150849.91,
+      "traffic": 1.0
+    },
+    {
+      "id": 94,
+      "true_pci": 72.01,
+      "observed_pci": 75.741,
+      "robust_pci": 70.795,
+      "cost": 84012.87,
+      "traffic": 1.0
+    },
+    {
+      "id": 95,
+      "true_pci": 98.574,
+      "observed_pci": 99.178,
+      "robust_pci": 99.178,
+      "cost": 51375.56,
+      "traffic": 1.0
+    },
+    {
+      "id": 96,
+      "true_pci": 74.795,
+      "observed_pci": 84.913,
+      "robust_pci": 81.747,
+      "cost": 74181.79,
+      "traffic": 1.0
+    },
+    {
+      "id": 97,
+      "true_pci": 71.113,
+      "observed_pci": 80.271,
+      "robust_pci": 76.624,
+      "cost": 86882.4,
+      "traffic": 1.0
+    },
+    {
+      "id": 98,
+      "true_pci": 56.94,
+      "observed_pci": 62.98,
+      "robust_pci": 56.439,
+      "cost": 118483.24,
+      "traffic": 1.0
+    },
+    {
+      "id": 99,
+      "true_pci": 27.629,
+      "observed_pci": 45.038,
+      "robust_pci": 37.684,
+      "cost": 348496.22,
+      "traffic": 1.0
+    },
+    {
+      "id": 100,
+      "true_pci": 65.439,
+      "observed_pci": 74.364,
+      "robust_pci": 69.824,
+      "cost": 102520.4,
+      "traffic": 1.0
+    },
+    {
+      "id": 101,
+      "true_pci": 81.347,
+      "observed_pci": 92.583,
+      "robust_pci": 88.364,
+      "cost": 67592.81,
+      "traffic": 1.0
+    },
+    {
+      "id": 102,
+      "true_pci": 67.622,
+      "observed_pci": 82.544,
+      "robust_pci": 77.405,
+      "cost": 91688.38,
+      "traffic": 1.0
+    },
+    {
+      "id": 103,
+      "true_pci": 74.975,
+      "observed_pci": 83.909,
+      "robust_pci": 82.717,
+      "cost": 86558.74,
+      "traffic": 1.0
+    },
+    {
+      "id": 104,
+      "true_pci": 74.202,
+      "observed_pci": 80.005,
+      "robust_pci": 75.403,
+      "cost": 79064.9,
+      "traffic": 1.0
+    },
+    {
+      "id": 105,
+      "true_pci": 74.831,
+      "observed_pci": 82.562,
+      "robust_pci": 81.393,
+      "cost": 80952.77,
+      "traffic": 1.0
+    },
+    {
+      "id": 106,
+      "true_pci": 77.264,
+      "observed_pci": 93.814,
+      "robust_pci": 89.875,
+      "cost": 72385.02,
+      "traffic": 1.0
+    },
+    {
+      "id": 107,
+      "true_pci": 68.922,
+      "observed_pci": 93.146,
+      "robust_pci": 90.132,
+      "cost": 89555.91,
+      "traffic": 1.0
+    },
+    {
+      "id": 108,
+      "true_pci": 89.595,
+      "observed_pci": 90.262,
+      "robust_pci": 87.702,
+      "cost": 57062.32,
+      "traffic": 1.0
+    },
+    {
+      "id": 109,
+      "true_pci": 77.318,
+      "observed_pci": 84.334,
+      "robust_pci": 80.952,
+      "cost": 74908.57,
+      "traffic": 1.0
+    },
+    {
+      "id": 110,
+      "true_pci": 51.636,
+      "observed_pci": 59.912,
+      "robust_pci": 52.752,
+      "cost": 148049.1,
+      "traffic": 1.0
+    },
+    {
+      "id": 111,
+      "true_pci": 75.476,
+      "observed_pci": 80.182,
+      "robust_pci": 77.996,
+      "cost": 89786.83,
+      "traffic": 1.0
+    },
+    {
+      "id": 112,
+      "true_pci": 80.71,
+      "observed_pci": 89.392,
+      "robust_pci": 88.743,
+      "cost": 69462.47,
+      "traffic": 1.0
+    },
+    {
+      "id": 113,
+      "true_pci": 49.385,
+      "observed_pci": 69.375,
+      "robust_pci": 63.084,
+      "cost": 161056.3,
+      "traffic": 1.0
+    },
+    {
+      "id": 114,
+      "true_pci": 89.404,
+      "observed_pci": 95.284,
+      "robust_pci": 91.829,
+      "cost": 58717.37,
+      "traffic": 1.0
+    },
+    {
+      "id": 115,
+      "true_pci": 100.0,
+      "observed_pci": 100.0,
+      "robust_pci": 100.0,
+      "cost": 50000.0,
+      "traffic": 1.0
+    },
+    {
+      "id": 116,
+      "true_pci": 86.892,
+      "observed_pci": 87.385,
+      "robust_pci": 85.045,
+      "cost": 62108.7,
+      "traffic": 1.0
+    },
+    {
+      "id": 117,
+      "true_pci": 70.884,
+      "observed_pci": 80.096,
+      "robust_pci": 78.75,
+      "cost": 93273.29,
+      "traffic": 1.0
+    },
+    {
+      "id": 118,
+      "true_pci": 68.9,
+      "observed_pci": 80.17,
+      "robust_pci": 77.901,
+      "cost": 100408.04,
+      "traffic": 1.0
+    },
+    {
+      "id": 119,
+      "true_pci": 65.706,
+      "observed_pci": 73.327,
+      "robust_pci": 68.542,
+      "cost": 97258.46,
+      "traffic": 1.0
+    },
+    {
+      "id": 120,
+      "true_pci": 84.955,
+      "observed_pci": 91.339,
+      "robust_pci": 88.835,
+      "cost": 62568.14,
+      "traffic": 1.0
+    },
+    {
+      "id": 121,
+      "true_pci": 72.585,
+      "observed_pci": 82.388,
+      "robust_pci": 78.779,
+      "cost": 93522.92,
+      "traffic": 1.0
+    },
+    {
+      "id": 122,
+      "true_pci": 85.888,
+      "observed_pci": 90.411,
+      "robust_pci": 90.411,
+      "cost": 67053.08,
+      "traffic": 1.0
+    },
+    {
+      "id": 123,
+      "true_pci": 53.526,
+      "observed_pci": 66.596,
+      "robust_pci": 61.105,
+      "cost": 155902.53,
+      "traffic": 1.0
+    },
+    {
+      "id": 124,
+      "true_pci": 60.886,
+      "observed_pci": 71.684,
+      "robust_pci": 66.12,
+      "cost": 112313.22,
+      "traffic": 1.0
+    },
+    {
+      "id": 125,
+      "true_pci": 30.363,
+      "observed_pci": 46.84,
+      "robust_pci": 39.523,
+      "cost": 320284.64,
+      "traffic": 1.0
+    },
+    {
+      "id": 126,
+      "true_pci": 71.211,
+      "observed_pci": 79.354,
+      "robust_pci": 76.213,
+      "cost": 89442.46,
+      "traffic": 1.0
+    },
+    {
+      "id": 127,
+      "true_pci": 83.968,
+      "observed_pci": 87.243,
+      "robust_pci": 85.151,
+      "cost": 67505.35,
+      "traffic": 1.0
+    },
+    {
+      "id": 128,
+      "true_pci": 50.99,
+      "observed_pci": 64.905,
+      "robust_pci": 58.756,
+      "cost": 160177.11,
+      "traffic": 1.0
+    },
+    {
+      "id": 129,
+      "true_pci": 82.589,
+      "observed_pci": 91.741,
+      "robust_pci": 87.679,
+      "cost": 68972.3,
+      "traffic": 1.0
+    },
+    {
+      "id": 130,
+      "true_pci": 95.478,
+      "observed_pci": 100.0,
+      "robust_pci": 100.0,
+      "cost": 53538.64,
+      "traffic": 1.0
+    },
+    {
+      "id": 131,
+      "true_pci": 55.312,
+      "observed_pci": 66.594,
+      "robust_pci": 61.323,
+      "cost": 141788.61,
+      "traffic": 1.0
+    },
+    {
+      "id": 132,
+      "true_pci": 75.703,
+      "observed_pci": 84.476,
+      "robust_pci": 81.531,
+      "cost": 75148.74,
+      "traffic": 1.0
+    },
+    {
+      "id": 133,
+      "true_pci": 87.419,
+      "observed_pci": 97.094,
+      "robust_pci": 97.094,
+      "cost": 60274.58,
+      "traffic": 1.0
+    },
+    {
+      "id": 134,
+      "true_pci": 52.818,
+      "observed_pci": 64.816,
+      "robust_pci": 58.333,
+      "cost": 153119.78,
+      "traffic": 1.0
+    },
+    {
+      "id": 135,
+      "true_pci": 86.102,
+      "observed_pci": 94.613,
+      "robust_pci": 91.224,
+      "cost": 65045.99,
+      "traffic": 1.0
+    },
+    {
+      "id": 136,
+      "true_pci": 82.655,
+      "observed_pci": 90.024,
+      "robust_pci": 90.024,
+      "cost": 74077.01,
+      "traffic": 1.0
+    },
+    {
+      "id": 137,
+      "true_pci": 55.734,
+      "observed_pci": 61.612,
+      "robust_pci": 55.2,
+      "cost": 144510.54,
+      "traffic": 1.0
+    },
+    {
+      "id": 138,
+      "true_pci": 86.284,
+      "observed_pci": 89.372,
+      "robust_pci": 89.372,
+      "cost": 62728.89,
+      "traffic": 1.0
+    },
+    {
+      "id": 139,
+      "true_pci": 65.367,
+      "observed_pci": 74.931,
+      "robust_pci": 70.262,
+      "cost": 104329.58,
+      "traffic": 1.0
+    },
+    {
+      "id": 140,
+      "true_pci": 69.945,
+      "observed_pci": 78.956,
+      "robust_pci": 73.828,
+      "cost": 87044.18,
+      "traffic": 1.0
+    },
+    {
+      "id": 141,
+      "true_pci": 57.485,
+      "observed_pci": 67.632,
+      "robust_pci": 61.332,
+      "cost": 121881.07,
+      "traffic": 1.0
+    },
+    {
+      "id": 142,
+      "true_pci": 73.601,
+      "observed_pci": 83.814,
+      "robust_pci": 80.493,
+      "cost": 86796.74,
+      "traffic": 1.0
+    },
+    {
+      "id": 143,
+      "true_pci": 55.441,
+      "observed_pci": 65.667,
+      "robust_pci": 59.414,
+      "cost": 137458.67,
+      "traffic": 1.0
+    },
+    {
+      "id": 144,
+      "true_pci": 57.818,
+      "observed_pci": 68.947,
+      "robust_pci": 63.344,
+      "cost": 118607.45,
+      "traffic": 1.0
+    },
+    {
+      "id": 145,
+      "true_pci": 67.835,
+      "observed_pci": 74.164,
+      "robust_pci": 67.209,
+      "cost": 82276.7,
+      "traffic": 1.0
+    },
+    {
+      "id": 146,
+      "true_pci": 72.301,
+      "observed_pci": 84.347,
+      "robust_pci": 80.75,
+      "cost": 93296.9,
+      "traffic": 1.0
+    },
+    {
+      "id": 147,
+      "true_pci": 72.156,
+      "observed_pci": 78.181,
+      "robust_pci": 75.102,
+      "cost": 92894.0,
+      "traffic": 1.0
+    },
+    {
+      "id": 148,
+      "true_pci": 74.084,
+      "observed_pci": 76.217,
+      "robust_pci": 72.898,
+      "cost": 87501.05,
+      "traffic": 1.0
+    },
+    {
+      "id": 149,
+      "true_pci": 44.351,
+      "observed_pci": 59.708,
+      "robust_pci": 53.259,
+      "cost": 182200.38,
+      "traffic": 1.0
+    },
+    {
+      "id": 150,
+      "true_pci": 56.877,
+      "observed_pci": 66.719,
+      "robust_pci": 61.052,
+      "cost": 136617.86,
+      "traffic": 1.0
+    },
+    {
+      "id": 151,
+      "true_pci": 84.796,
+      "observed_pci": 94.512,
+      "robust_pci": 90.924,
+      "cost": 60846.98,
+      "traffic": 1.0
+    },
+    {
+      "id": 152,
+      "true_pci": 87.287,
+      "observed_pci": 95.731,
+      "robust_pci": 95.731,
+      "cost": 65420.18,
+      "traffic": 1.0
+    },
+    {
+      "id": 153,
+      "true_pci": 60.132,
+      "observed_pci": 68.831,
+      "robust_pci": 63.455,
+      "cost": 125515.63,
+      "traffic": 1.0
+    },
+    {
+      "id": 154,
+      "true_pci": 84.079,
+      "observed_pci": 88.129,
+      "robust_pci": 87.032,
+      "cost": 68378.48,
+      "traffic": 1.0
+    },
+    {
+      "id": 155,
+      "true_pci": 59.743,
+      "observed_pci": 74.523,
+      "robust_pci": 69.802,
+      "cost": 117770.68,
+      "traffic": 1.0
+    },
+    {
+      "id": 156,
+      "true_pci": 64.749,
+      "observed_pci": 73.007,
+      "robust_pci": 68.521,
+      "cost": 100897.63,
+      "traffic": 1.0
+    },
+    {
+      "id": 157,
+      "true_pci": 67.216,
+      "observed_pci": 80.008,
+      "robust_pci": 75.515,
+      "cost": 89010.98,
+      "traffic": 1.0
+    },
+    {
+      "id": 158,
+      "true_pci": 58.897,
+      "observed_pci": 68.858,
+      "robust_pci": 62.593,
+      "cost": 108615.14,
+      "traffic": 1.0
+    },
+    {
+      "id": 159,
+      "true_pci": 61.313,
+      "observed_pci": 74.628,
+      "robust_pci": 68.397,
+      "cost": 101746.4,
+      "traffic": 1.0
+    },
+    {
+      "id": 160,
+      "true_pci": 64.728,
+      "observed_pci": 81.83,
+      "robust_pci": 80.659,
+      "cost": 104898.16,
+      "traffic": 1.0
+    },
+    {
+      "id": 161,
+      "true_pci": 65.719,
+      "observed_pci": 80.858,
+      "robust_pci": 77.25,
+      "cost": 101899.39,
+      "traffic": 1.0
+    },
+    {
+      "id": 162,
+      "true_pci": 43.77,
+      "observed_pci": 53.523,
+      "robust_pci": 46.222,
+      "cost": 201016.35,
+      "traffic": 1.0
+    },
+    {
+      "id": 163,
+      "true_pci": 89.087,
+      "observed_pci": 89.661,
+      "robust_pci": 84.227,
+      "cost": 56567.03,
+      "traffic": 1.0
+    },
+    {
+      "id": 164,
+      "true_pci": 44.134,
+      "observed_pci": 63.135,
+      "robust_pci": 55.944,
+      "cost": 171365.64,
+      "traffic": 1.0
+    },
+    {
+      "id": 165,
+      "true_pci": 91.472,
+      "observed_pci": 93.986,
+      "robust_pci": 90.589,
+      "cost": 61003.38,
+      "traffic": 1.0
+    },
+    {
+      "id": 166,
+      "true_pci": 58.968,
+      "observed_pci": 75.708,
+      "robust_pci": 71.634,
+      "cost": 110433.22,
+      "traffic": 1.0
+    },
+    {
+      "id": 167,
+      "true_pci": 61.667,
+      "observed_pci": 77.781,
+      "robust_pci": 73.113,
+      "cost": 120504.16,
+      "traffic": 1.0
+    },
+    {
+      "id": 168,
+      "true_pci": 57.458,
+      "observed_pci": 70.616,
+      "robust_pci": 64.795,
+      "cost": 115507.67,
+      "traffic": 1.0
+    },
+    {
+      "id": 169,
+      "true_pci": 40.902,
+      "observed_pci": 53.083,
+      "robust_pci": 46.311,
+      "cost": 243007.29,
+      "traffic": 1.0
+    },
+    {
+      "id": 170,
+      "true_pci": 67.938,
+      "observed_pci": 96.188,
+      "robust_pci": 93.812,
+      "cost": 88177.31,
+      "traffic": 1.0
+    },
+    {
+      "id": 171,
+      "true_pci": 64.083,
+      "observed_pci": 68.731,
+      "robust_pci": 63.486,
+      "cost": 114196.82,
+      "traffic": 1.0
+    },
+    {
+      "id": 172,
+      "true_pci": 70.389,
+      "observed_pci": 88.087,
+      "robust_pci": 82.702,
+      "cost": 81362.67,
+      "traffic": 1.0
+    },
+    {
+      "id": 173,
+      "true_pci": 56.031,
+      "observed_pci": 69.504,
+      "robust_pci": 63.289,
+      "cost": 128473.49,
+      "traffic": 1.0
+    },
+    {
+      "id": 174,
+      "true_pci": 38.029,
+      "observed_pci": 53.773,
+      "robust_pci": 46.659,
+      "cost": 249895.36,
+      "traffic": 1.0
+    },
+    {
+      "id": 175,
+      "true_pci": 68.689,
+      "observed_pci": 78.618,
+      "robust_pci": 74.366,
+      "cost": 90955.1,
+      "traffic": 1.0
+    },
+    {
+      "id": 176,
+      "true_pci": 91.361,
+      "observed_pci": 91.851,
+      "robust_pci": 91.851,
+      "cost": 58637.06,
+      "traffic": 1.0
+    },
+    {
+      "id": 177,
+      "true_pci": 92.368,
+      "observed_pci": 96.058,
+      "robust_pci": 93.376,
+      "cost": 58341.42,
+      "traffic": 1.0
+    },
+    {
+      "id": 178,
+      "true_pci": 50.563,
+      "observed_pci": 63.649,
+      "robust_pci": 57.017,
+      "cost": 135911.48,
+      "traffic": 1.0
+    },
+    {
+      "id": 179,
+      "true_pci": 90.13,
+      "observed_pci": 93.805,
+      "robust_pci": 90.088,
+      "cost": 58345.9,
+      "traffic": 1.0
+    },
+    {
+      "id": 180,
+      "true_pci": 48.001,
+      "observed_pci": 65.964,
+      "robust_pci": 60.982,
+      "cost": 179864.49,
+      "traffic": 1.0
+    },
+    {
+      "id": 181,
+      "true_pci": 89.374,
+      "observed_pci": 91.881,
+      "robust_pci": 87.485,
+      "cost": 59323.93,
+      "traffic": 1.0
+    },
+    {
+      "id": 182,
+      "true_pci": 54.304,
+      "observed_pci": 69.71,
+      "robust_pci": 65.354,
+      "cost": 153315.84,
+      "traffic": 1.0
+    },
+    {
+      "id": 183,
+      "true_pci": 60.626,
+      "observed_pci": 69.214,
+      "robust_pci": 63.13,
+      "cost": 112582.05,
+      "traffic": 1.0
+    },
+    {
+      "id": 184,
+      "true_pci": 96.659,
+      "observed_pci": 100.0,
+      "robust_pci": 100.0,
+      "cost": 51834.51,
+      "traffic": 1.0
+    },
+    {
+      "id": 185,
+      "true_pci": 84.784,
+      "observed_pci": 92.862,
+      "robust_pci": 89.186,
+      "cost": 65531.07,
+      "traffic": 1.0
+    },
+    {
+      "id": 186,
+      "true_pci": 72.081,
+      "observed_pci": 73.951,
+      "robust_pci": 68.522,
+      "cost": 81271.32,
+      "traffic": 1.0
+    },
+    {
+      "id": 187,
+      "true_pci": 75.311,
+      "observed_pci": 82.861,
+      "robust_pci": 79.811,
+      "cost": 72838.27,
+      "traffic": 1.0
+    },
+    {
+      "id": 188,
+      "true_pci": 60.328,
+      "observed_pci": 66.858,
+      "robust_pci": 60.575,
+      "cost": 111866.63,
+      "traffic": 1.0
+    },
+    {
+      "id": 189,
+      "true_pci": 78.577,
+      "observed_pci": 85.646,
+      "robust_pci": 85.646,
+      "cost": 87702.73,
+      "traffic": 1.0
+    },
+    {
+      "id": 190,
+      "true_pci": 90.131,
+      "observed_pci": 94.526,
+      "robust_pci": 91.792,
+      "cost": 66238.65,
+      "traffic": 1.0
+    },
+    {
+      "id": 191,
+      "true_pci": 62.254,
+      "observed_pci": 73.986,
+      "robust_pci": 71.079,
+      "cost": 127474.99,
+      "traffic": 1.0
+    },
+    {
+      "id": 192,
+      "true_pci": 96.261,
+      "observed_pci": 99.586,
+      "robust_pci": 99.586,
+      "cost": 52593.92,
+      "traffic": 1.0
+    },
+    {
+      "id": 193,
+      "true_pci": 66.929,
+      "observed_pci": 79.317,
+      "robust_pci": 73.797,
+      "cost": 94790.38,
+      "traffic": 1.0
+    },
+    {
+      "id": 194,
+      "true_pci": 64.693,
+      "observed_pci": 75.417,
+      "robust_pci": 69.236,
+      "cost": 91112.85,
+      "traffic": 1.0
+    },
+    {
+      "id": 195,
+      "true_pci": 57.689,
+      "observed_pci": 65.531,
+      "robust_pci": 58.791,
+      "cost": 117199.16,
+      "traffic": 1.0
+    },
+    {
+      "id": 196,
+      "true_pci": 45.028,
+      "observed_pci": 58.719,
+      "robust_pci": 51.231,
+      "cost": 177659.6,
+      "traffic": 1.0
+    },
+    {
+      "id": 197,
+      "true_pci": 64.614,
+      "observed_pci": 70.921,
+      "robust_pci": 64.253,
+      "cost": 98238.81,
+      "traffic": 1.0
+    },
+    {
+      "id": 198,
+      "true_pci": 46.62,
+      "observed_pci": 61.463,
+      "robust_pci": 55.595,
+      "cost": 177404.83,
+      "traffic": 1.0
+    },
+    {
+      "id": 199,
+      "true_pci": 91.664,
+      "observed_pci": 96.097,
+      "robust_pci": 93.987,
+      "cost": 60268.8,
+      "traffic": 1.0
+    }
+  ]
+}

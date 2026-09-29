@@ -263,9 +263,49 @@ def check_generator() -> None:
         print(f"  {name:<13} {counts.get(name, 0) / len(vals):6.1%}")
 
 
+DEMO_SEED = 0  # fixed before the network was looked at; not a chosen example
+
+
+def export_demo() -> None:
+    """Write one T12 network, truth included, for the dashboard to read (T16).
+
+    The dashboard runs the optimiser live but must not re-implement the generator,
+    so it reads this file. Uniform traffic, because that is where D079 found the
+    two objectives furthest apart. Detection uses Model B's per-class recall for
+    every class, pothole included — exactly as T12 ran — and the file says so.
+    """
+    head = next(p for p in operating_points() if p["role"] == "headline")
+    recall = per_class_recall([head["tau"]])[head["tau"]]
+    truth = draw_truth(np.random.default_rng(DEMO_SEED), False)
+    nominal, robust = observe(truth, recall, head["alpha"])
+    out = {
+        "source": "scripts/exp_allocation.py --export-demo",
+        "seed": DEMO_SEED, "regime": "uniform_traffic",
+        "note": "One network of T12's 1,000, seed fixed in advance. Averages over all "
+                "1,000 are in results/T12/allocation.json.",
+        "alpha": head["alpha"], "tau": head["tau"], "recall": recall,
+        "detector": "Model B's per-class recall at tau-hat for every class, pothole "
+                    "included, as in T12. Under D082 the survey takes potholes from "
+                    "Model P; P's recall is not used in this simulation.",
+        "segments": [{"id": i, "true_pci": round(float(truth["true_pci"][i]), 3),
+                      "observed_pci": round(float(nominal[i]), 3),
+                      "robust_pci": round(float(robust[i]), 3),
+                      "cost": round(float(truth["cost"][i]), 2),
+                      "traffic": round(float(truth["traffic"][i]), 4)}
+                     for i in range(A["n_segments"])],
+    }
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "demo_network.json").write_text(json.dumps(out, indent=2))
+    print(f"wrote {OUT / 'demo_network.json'} ({A['n_segments']} segments, "
+          f"alpha {head['alpha']}, tau {head['tau']})")
+
+
 def main() -> int:
     if "--check-generator" in sys.argv:
         check_generator()
+        return 0
+    if "--export-demo" in sys.argv:
+        export_demo()
         return 0
 
     if "--trials" in sys.argv:  # smoke runs only; overwrites the outputs, so rerun in full
