@@ -19,8 +19,6 @@ from certain_road.survey.allocation import (
     allocate_optimal,
 )
 
-DEFAULT_WORST_K = 20
-
 
 def _segments(net: dict, field: str) -> list[Segment]:
     return [Segment(segment_id=s["id"], vision_estimated_pci=float(s[field]),
@@ -29,7 +27,7 @@ def _segments(net: dict, field: str) -> list[Segment]:
 
 
 def two_plans(net: dict, budget_fraction: float, *, condition: str = "observed_pci",
-              worst_k: int = DEFAULT_WORST_K) -> dict:
+              worst_k: int) -> dict:
     """The optimiser's plan and the worst-first plan at `budget_fraction` of total cost.
 
     `condition` is the observed field the plans rank on ("observed_pci" or the

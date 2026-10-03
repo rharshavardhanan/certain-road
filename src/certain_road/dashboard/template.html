@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>certain-road results</title>
+<style>
+:root {
+  --surface: #fcfcfb; --plane: #f4f3ef; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --zone: #efeee9;
+  --opt: #eb6834; --opt-robust: #1baf7a; --wf: #eda100;
+  --good: #006300; --critical: #d03b3b;
+  --cell-on: #0b0b0b; --cell-off: #d6d5ce;
+  --radius: 12px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+/* Light only, by the use scene: a projector or laptop in a lit viva room, and every
+   embedded figure is a light plate that would glare on a dark page. */
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--surface); color: var(--ink); font: 16px/1.5 var(--font);
+  font-feature-settings: "kern"; }
+code { font: 0.875em ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink-2); }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.bar { position: sticky; top: 0; z-index: 5; background: var(--plane); border-bottom: 1px solid var(--grid); }
+.bar-in { max-width: 72rem; margin: 0 auto; padding: 0.625rem 1rem; display: flex; gap: 1.5rem;
+  align-items: baseline; flex-wrap: wrap; }
+.brand { font-weight: 650; letter-spacing: -0.01em; white-space: nowrap; flex: none; }
+.bar nav { display: flex; gap: 1.25rem; flex-wrap: wrap; font-size: 0.9375rem; }
+.bar nav a { text-decoration: none; color: var(--ink-2); padding: 0.25rem 0; }
+.bar nav a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+
+main { max-width: 72rem; margin: 0 auto; padding: 0 1rem 5rem; }
+header.lead { padding: 2.25rem 0 1.5rem; }
+h1 { scroll-margin-top: 4rem; font-size: 1.75rem; line-height: 1.2; letter-spacing: -0.02em; margin: 0 0 0.5rem; font-weight: 680;
+  text-wrap: balance; max-width: 34ch; }
+h2 { font-size: 1.3125rem; letter-spacing: -0.015em; margin: 3.5rem 0 0.75rem; font-weight: 650;
+  scroll-margin-top: 4rem; padding-top: 1.25rem; border-top: 1px solid var(--grid); }
+h3 { font-size: 1.0625rem; margin: 2.25rem 0 0.5rem; font-weight: 640; }
+p { margin: 0 0 0.75rem; }
+.lede { color: var(--ink-2); max-width: 68ch; }
+.lede.after-src { margin-top: 1.25rem; }
+.muted { color: var(--ink-2); font-weight: 400; }
+.src { color: var(--ink-2); font-size: 0.8125rem; margin: 0.375rem 0 0; }
+.note { color: var(--ink-2); font-size: 0.9375rem; margin-top: 0.5rem; }
+.attribution { font-size: 0.9375rem; color: var(--ink); max-width: 68ch; }
+.stamp { font-size: 0.8125rem; color: var(--ink-2); }
+
+.controls { display: flex; gap: 2rem 3rem; flex-wrap: wrap; align-items: end; margin: 0.5rem 0 1.25rem;
+  max-width: 52rem; }
+.slider { flex: 1 1 22rem; min-width: 16rem; }
+.slider label { display: block; font-size: 0.9375rem; margin-bottom: 0.375rem; }
+.slider output { font-weight: 680; font-size: 1.25rem; font-variant-numeric: tabular-nums; margin-right: 0.25rem; }
+input[type=range] { width: 100%; accent-color: var(--ink); height: 1.75rem; margin: 0; }
+.seg { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0; }
+.seg legend { font-size: 0.9375rem; padding: 0; margin-bottom: 0.375rem; width: 100%; }
+.seg-opt { position: relative; }
+.seg-opt input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.seg-opt span { display: block; padding: 0.4375rem 0.875rem; border: 1px solid var(--axis);
+  font-size: 0.875rem; color: var(--ink-2); transition: background-color 150ms ease-out, color 150ms ease-out; }
+.seg-opt:first-of-type span { border-radius: 8px 0 0 8px; }
+.seg-opt:last-of-type span { border-radius: 0 8px 8px 0; border-left: 0; }
+.seg-opt input:checked + span { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.seg-opt input:focus-visible + span { outline: 2px solid var(--ink); outline-offset: 2px; }
+.seg-opt:hover span { color: var(--ink); }
+
+.table-wrap { overflow-x: auto; margin: 0.25rem 0 0; }
+table { border-collapse: collapse; width: 100%; max-width: 56rem; font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 0.5rem 0.75rem 0.5rem 0; border-bottom: 1px solid var(--grid); vertical-align: top; }
+thead th { font-weight: 600; font-size: 0.8125rem; color: var(--ink-2); border-bottom-color: var(--axis); }
+tbody th { font-weight: 450; }
+.num { text-align: right; }
+th.num, td.num { padding-right: 0; padding-left: 1.25rem; }
+
+.compare { font-size: 1rem; max-width: 52rem; }
+.compare thead th { font-size: 1rem; color: var(--ink); font-weight: 650; padding-bottom: 0.625rem;
+  white-space: nowrap; }
+.compare .how { display: block; font-size: 0.8125rem; font-weight: 400; color: var(--ink-2);
+  white-space: normal; }
+.compare caption { caption-side: top; text-align: left; font-size: 0.8125rem; color: var(--ink-2);
+  padding-bottom: 0.625rem; }
+.verdict { font-size: 1.0625rem; max-width: 52rem; margin: 0 0 1rem; min-height: 1.6em; }
+.compare tr.key td { font-size: 1.5rem; font-weight: 650; letter-spacing: -0.01em; }
+.compare tr.key th { padding-top: 0.875rem; }
+.compare td .of { font-size: 0.9375rem; font-weight: 400; color: var(--ink-2); }
+.swatch { display: inline-block; width: 0.625rem; height: 0.625rem; border-radius: 2px; margin-right: 0.4375rem;
+  vertical-align: 0.0625rem; }
+.sw-opt { background: var(--opt); }
+[data-cond="robust_pci"] .sw-opt { background: var(--opt-robust); }
+.sw-wf { background: var(--wf); }
+
+.strip { margin: 1.75rem 0 0.5rem; position: relative; }
+.strip-zone { position: relative; height: 1.25rem; }
+.strip-zone span { position: absolute; left: calc(var(--label-w) + 0px); font-size: 0.8125rem; color: var(--ink-2); bottom: 0.1875rem; }
+.strip-zone::after { content: ""; position: absolute; bottom: 0; left: var(--label-w); height: 1px;
+  width: calc((100% - var(--label-w)) * var(--k) / var(--n)); background: var(--ink-2); }
+.strip { --label-w: 7rem; }
+.strip-row { display: grid; grid-template-columns: var(--label-w) 1fr; align-items: center; margin-top: 0.5rem; }
+.strip-label { font-size: 0.875rem; color: var(--ink-2); }
+svg.cells { width: 100%; height: 1.5rem; display: block; background:
+  linear-gradient(to right, var(--zone) calc(100% * var(--k, 20) / var(--n, 200)), transparent 0); }
+svg.cells rect { fill: var(--cell-off); transition: fill 150ms ease-out; }
+svg.cells rect.on { fill: var(--cell-on); }
+.strip-axis { display: flex; justify-content: space-between; margin-left: var(--label-w); font-size: 0.8125rem;
+  color: var(--ink-2); margin-top: 0.375rem; }
+.strip figcaption { font-size: 0.875rem; color: var(--ink-2); max-width: 68ch; margin-top: 0.75rem; }
+.tip { position: absolute; z-index: 3; pointer-events: none; background: var(--ink); color: var(--surface);
+  font-size: 0.8125rem; line-height: 1.4; padding: 0.5rem 0.625rem; border-radius: 8px; white-space: nowrap;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.18); font-variant-numeric: tabular-nums; }
+.provenance { font-size: 0.9375rem; color: var(--ink-2); max-width: 72ch; margin-top: 1rem;
+  padding-top: 0.75rem; border-top: 1px solid var(--grid); }
+.provenance strong { color: var(--ink); font-weight: 600; }
+
+.status { display: inline-flex; align-items: center; gap: 0.375rem; white-space: nowrap; }
+.status svg { width: 0.9375rem; height: 0.9375rem; flex: none; }
+.status.done svg { color: var(--good); }
+.status.defer svg { color: var(--critical); }
+#worst-table td:nth-child(2), #worst-table td:nth-child(3) { font-size: 0.875rem; padding-right: 1.25rem; }
+
+.not-run { border: 1px dashed var(--axis); border-radius: var(--radius); padding: 0.875rem 1rem; margin: 0.75rem 0;
+  color: var(--ink-2); max-width: 68ch; }
+.not-run strong { color: var(--ink); }
+.not-run .src { display: block; margin-top: 0.25rem; }
+
+.fig { margin: 1.5rem 0; }
+.fig img { width: 100%; height: auto; display: block; }
+.fig figcaption { font-size: 0.8125rem; color: var(--ink-2); margin-top: 0.375rem; }
+
+footer { max-width: 72rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; border-top: 1px solid var(--grid);
+  font-size: 0.8125rem; color: var(--ink-2); }
+
+@media (max-width: 40rem) {
+  h1 { font-size: 1.5rem; }
+  .strip { --label-w: 0rem; }
+  .strip-row { grid-template-columns: 1fr; }
+  .strip-label { margin-bottom: 0.25rem; }
+  .compare tr.key td { font-size: 1.25rem; }
+  th, td { padding-right: 0.5rem; }
+  th.num, td.num { padding-left: 0.75rem; }
+  #worst-table { font-size: 0.875rem; }
+  .bar-in { flex-wrap: nowrap; gap: 1rem; }
+  .bar nav { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+  .seg { flex-wrap: nowrap; width: 100%; }
+  .seg-opt { flex: 1 1 0; }
+  .seg-opt span { height: 100%; text-align: center; }
+}
+@media print {
+  .bar, .controls, .tip { display: none !important; }
+  body { font-size: 11pt; }
+  :root { color-scheme: light; }
+  h2 { break-before: page; border-top: 0; }
+  .fig, table, .strip { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<!--
+THESIS: the budget view never shows one plan; the optimiser and worst-first stand side by side with true-worst-20 coverage, refusing the single-answer slider.
+OWN-WORLD: the result figures' world — #fcfcfb surface, ink #0b0b0b/#52514e, hairline #e1e0d9, validated palette slots (orange optimiser, yellow worst-first), system sans, tabular numbers, no cards.
+STORY: a panel member moves the budget and sees the optimiser defer the worst roads while worst-first repairs them, then checks which model each number came from.
+FIRST VIEWPORT: the product's question as H1, attribution line, slider and ranking toggle, then the two-column comparison with worst-20 coverage first.
+FORM: established-world extension (D020 offline HTML); no seed roll — structure pinned by the brief.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+-->
+<div class="bar"><div class="bar-in">
+  <span class="brand">certain-road</span>
+  <nav aria-label="Sections"><a href="#allocation">Allocation</a><a href="#map">Map</a><a href="#models">Models</a><a href="#conformal">Conformal</a><a href="#drift">Drift</a><a href="#simulation">Simulation</a></nav>
+</div></div>
+<main>
+<header class="lead">
+  <h1 id="allocation">Which evaluation segments to repair first, under a fixed budget</h1>
+  <p class="attribution">@@ATTRIBUTION@@</p>
+  <p class="stamp">@@STAMP@@ Offline file: it reads results and runs the T12 optimiser's saved plans; nothing here trains or runs a model.</p>
+</header>
+<section aria-labelledby="allocation">
+@@ALLOCATION@@
+</section>
+<section aria-labelledby="map-h">
+<h2 id="map"><span id="map-h">Map</span></h2>
+@@MAP@@
+</section>
+<section aria-labelledby="models-h">
+<h2 id="models"><span id="models-h">Models</span></h2>
+@@MODELS@@
+</section>
+<section aria-labelledby="sim-h">
+<h2 id="simulation"><span id="sim-h">Simulation</span></h2>
+@@SIMULATION@@
+</section>
+</main>
+<footer>Generated by <code>scripts/build_dashboard.py</code>. Every table names the file it was read from; anything missing reads "not run".</footer>
+<script id="plan-data" type="application/json">@@PLAN_DATA@@</script>
+<script>
+(() => {
+  const data = JSON.parse(document.getElementById("plan-data").textContent);
+  if (!data) return;
+  const $ = (id) => document.getElementById(id);
+  const slider = $("budget");
+  const segs = data.segments;
+  const pos = new Map(segs.map((s, i) => [s.id, i]));
+  const bySeg = new Map(segs.map((s) => [s.id, s]));
+  const fmt = new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 2 });
+  const pc = (x) => Math.round(x * 100) + "%";
+  const ICON = {
+    done: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg>',
+    defer: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="5.75"/><path d="M4 12L12 4"/></svg>',
+  };
+  const status = (on) => on
+    ? `<span class="status done">${ICON.done}repaired</span>`
+    : `<span class="status defer">${ICON.defer}deferred</span>`;
+
+  const rows = {};
+  for (const [key, svgId] of [["optimiser", "strip-opt"], ["worst_first", "strip-wf"]]) {
+    const svg = $(svgId);
+    svg.style.setProperty("--k", data.worst_k);
+    svg.style.setProperty("--n", segs.length);
+    const w = 1000 / segs.length;
+    svg.innerHTML = segs.map((s, i) =>
+      `<rect x="${(i * w).toFixed(3)}" y="0" width="${(w * 0.72).toFixed(3)}" height="1"></rect>`).join("");
+    rows[key] = svg.querySelectorAll("rect");
+  }
+
+  const tip = $("tip");
+  const strip = document.querySelector(".strip");
+  let current = null;
+  function showTip(evt, key) {
+    const svg = evt.currentTarget;
+    const r = svg.getBoundingClientRect();
+    const i = Math.min(segs.length - 1, Math.max(0, Math.floor((evt.clientX - r.left) / r.width * segs.length)));
+    const s = segs[i];
+    const on = current[key].chosen.includes(s.id);
+    tip.innerHTML = `Segment ${s.id} &middot; ${s.band}<br>true PCI ${s.true.toFixed(1)} &middot; observed ${s.obs.toFixed(1)}<br>cost ${fmt.format(s.cost)} &middot; ${on ? "repaired" : "deferred"}`;
+    tip.hidden = false;
+    const sr = strip.getBoundingClientRect();
+    const x = Math.min(evt.clientX - sr.left + 12, sr.width - tip.offsetWidth);
+    tip.style.left = Math.max(0, x) + "px";
+    tip.style.top = (r.top - sr.top - tip.offsetHeight - 8) + "px";
+  }
+  for (const [key, svgId] of [["optimiser", "strip-opt"], ["worst_first", "strip-wf"]]) {
+    $(svgId).addEventListener("pointermove", (e) => showTip(e, key));
+    $(svgId).addEventListener("pointerleave", () => { tip.hidden = true; });
+  }
+
+  function render() {
+    const cond = document.querySelector('input[name="cond"]:checked').value;
+    document.documentElement.dataset.cond = cond;
+    const f = slider.value;
+    const p = data.positions[cond][f];
+    current = p;
+    $("verdict").textContent = `At ${f}% of total repair cost${cond === "robust_pci" ? ", ranking on conformal robust condition," : ""} the optimiser repairs ${p.optimiser.worst} of the true worst ${data.worst_k}; worst-first repairs ${p.worst_first.worst}.`;
+    $("budget-out").value = f + "%";
+    $("budget-out").textContent = f + "%";
+    $("budget-abs").textContent = fmt.format(p.budget) + " cost units";
+    for (const [key, id] of [["optimiser", "opt"], ["worst_first", "wf"]]) {
+      const plan = p[key];
+      $(id + "-worst").innerHTML = `${plan.worst} <span class="of">of ${data.worst_k}</span>`;
+      $(id + "-share").textContent = pc(plan.share);
+      $(id + "-n").textContent = plan.chosen.length;
+      $(id + "-cost").textContent = fmt.format(plan.cost);
+      const chosen = new Set(plan.chosen);
+      rows[key].forEach((rect, i) => rect.classList.toggle("on", chosen.has(segs[i].id)));
+    }
+    const opt = new Set(p.optimiser.chosen), wf = new Set(p.worst_first.chosen);
+    document.querySelector("#worst-table tbody").innerHTML = data.worst.map((id) => {
+      const s = bySeg.get(id);
+      return `<tr><th scope="row">${id}</th><td>${status(opt.has(id))}</td><td>${status(wf.has(id))}</td><td class="num">${s.true.toFixed(1)}</td><td class="num">${s.obs.toFixed(1)}</td><td class="num">${fmt.format(s.cost)}</td></tr>`;
+    }).join("");
+  }
+  slider.addEventListener("input", render);
+  document.querySelectorAll('input[name="cond"]').forEach((r) => r.addEventListener("change", render));
+  render();
+})();
+</script>
+</body>
+</html>

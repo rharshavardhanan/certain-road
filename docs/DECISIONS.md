@@ -99,6 +99,7 @@ Current design spec: [`design.md`](design.md)
 | D077 | T10 complete: Model B's certificate holds over 200 group-aware re-partitions, non-India calibration fails in every one, and every tight certificate costs a flood of false alarms | Accepted |
 | D078 | T11: the spec's plain martingale is blind to a shift after 500 in-domain frames; a CUSUM reset at matched null false-alarm rate detects 197/200 with median delay 77 frames | Accepted |
 | D079 | T12: conformal robustness changes repair decisions and helps modestly; maximising benefit defers the worst roads, so the dashboard must report both objectives | Accepted |
+| D083 | T16: the dashboard stays one offline HTML file (D020 over the spec); the optimiser's and worst-first's plans always side by side; T12 numbers carry the Model B recall caveat | Accepted |
 
 ---
 
@@ -2916,3 +2917,65 @@ budget, silently.
   with the value.
 - Scoring remains a monotone proxy after Ibragimov et al. (Sensors 2024); ASTM
   D6433 deduct curves are not used.
+
+## D083 — T16: the dashboard stays one offline HTML file; both plans, always
+
+**2026-10-03 · Accepted · reaffirms D020 over the RoadSight T16 spec · applies D079 and D082 on the page**
+
+### The spec and the log disagreed
+
+RoadSight's T16 specified a Streamlit app. **D020 (Accepted) makes the dashboard one
+self-contained offline HTML file and rejects Streamlit by name** ("looks like a
+research notebook, needs a process running"). D055–D058 amended other spec items
+but never this one. Asked directly, the user kept D020.
+
+### What was built
+
+`scripts/build_dashboard.py` writes `results/dashboard/index.html`: one file,
+~1.2 MB, figures embedded, no external URL, no server. Rendering lives in
+`certain_road.dashboard` (`results`, `plans`, `render`, `template.html`), so
+import-linter governs it; the only cross-package import is `survey` (allowed).
+
+- **The slider never shows one plan (D079).** It selects among plans the real T12
+  optimiser computed at every 1% from 5% to 60%, for observed and conformal robust
+  ranking. At every position the optimiser and worst-first sit side by side with
+  true-worst-20 coverage and share of oracle benefit, a 200-segment strip ordered
+  by true condition, a road-by-road table of the worst 20, and a live sentence the
+  slider rewrites. On the demo network at 10%: optimiser 95% of oracle and 0 of
+  the worst 20; worst-first 65% and 7.
+- **"True worst 20" needs truth**, which only a synthetic network has. The view
+  reads one T12 network (`exp_allocation.py --export-demo`, seed 0 fixed in
+  advance, uniform traffic); the dashboard never re-implements the generator.
+- **Attribution (D082).** The header states that potholes come from Model P and
+  cracks from Model B, never summed. Every number from T12 says, where it
+  appears, that the simulation detected every class — potholes included — at
+  Model B's recall, not P's.
+- **Not run is visible.** Map (T14 produced no edge database) and Simulation (T13
+  has no results) render "not run" naming the path looked for. Paths print
+  relative; an absolute path would leak a home directory into a shared file.
+- **Light only**, from the use scene: a projector in a lit room, and every
+  embedded figure is a light plate. A departure from the chart guidance's
+  dark-mode default, made on purpose.
+- **Figure alt text is generated from the result files.** Hand-written alt text
+  once overstated T11 ("every shifted stream alarms within a few hundred India
+  frames" counted the 3 streams that alarmed before India began); a test pins the
+  generated text to `drift.json`.
+
+### Departures from the spec, stated
+
+- No folium map and no edge-database picker: there is no database to pick or
+  draw. When T14 produces one, Leaflet is vendored inline per D020, never loaded
+  from a CDN.
+- No `DESIGN.md`/`PRODUCT.md`: the user did not ask for new root files, and
+  `docs/design.md` is this project's design spec, which a generated DESIGN.md
+  would collide with.
+
+### Review
+
+An independent fresh-context design review (impeccable finish review) returned
+**fix** twice. Round one: the T12 caveat sat below the projector fold, the
+worst-first column vanished at 390 px, the T12 figure sat 7,000 px from its
+table, and dark mode would glare. Round two: two hand-written alt texts
+contradicted `drift.json`, the brand broke at 390 px, and one lede ran into a
+Source line. All were fixed; the last three were verified by screenshot and test
+rather than re-scored by the reviewer.
