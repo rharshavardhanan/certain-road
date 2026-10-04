@@ -1,0 +1,670 @@
+{
+  "video": {
+    "path": "data/video/2DV-cYmIvT4.mp4",
+    "sha256": "0608fcb899103b5754f2819f857d18a1571fa1258ddf2dfc43de60bdea29536f",
+    "frames": 5400,
+    "fps": 30.0,
+    "width": 1280,
+    "height": 720,
+    "duration_s": 180.0,
+    "source": {
+      "webpage_url": "https://www.youtube.com/watch?v=2DV-cYmIvT4",
+      "id": "2DV-cYmIvT4",
+      "title": "Shocking Road Condition | Kadugodi to Chrysalis High Road Is a Complete Disaster ! Daily Struggle",
+      "channel": "RT Dashcam ",
+      "channel_url": "https://www.youtube.com/channel/UCY2Xq30UEM59C61HyhaaqdA",
+      "license": "Creative Commons Attribution license (reuse allowed)",
+      "upload_date": "20250723",
+      "duration": 291,
+      "section_start": 0,
+      "section_end": 180
+    }
+  },
+  "model": {
+    "name": "Model P",
+    "weights": "runs/kaggle/roadsight-train-p/export/model_p/best.pt",
+    "class": "pothole",
+    "class_id": 0
+  },
+  "settings": {
+    "conf": 0.25,
+    "tracker": "bytetrack.yaml",
+    "persist": true,
+    "imgsz": 640,
+    "device": "mps",
+    "confirm": {
+      "required": 3,
+      "window": 5
+    },
+    "horizon_frac": 0.66,
+    "horizon_y_px": 475.20000000000005
+  },
+  "result": {
+    "unique_confirmed_tracks": 100,
+    "count_is": "tracks, not potholes (D075)",
+    "tracks_seen_below_horizon": 133,
+    "raw_detections": 2191,
+    "raw_detections_gated_above_horizon": 36,
+    "confirmed_tracks": {
+      "3": {
+        "frames_detected": 3,
+        "first_frame": 10,
+        "last_frame": 12,
+        "confirmed_at": 12
+      },
+      "8": {
+        "frames_detected": 3,
+        "first_frame": 37,
+        "last_frame": 39,
+        "confirmed_at": 39
+      },
+      "36": {
+        "frames_detected": 5,
+        "first_frame": 1426,
+        "last_frame": 1430,
+        "confirmed_at": 1428
+      },
+      "38": {
+        "frames_detected": 3,
+        "first_frame": 1512,
+        "last_frame": 1514,
+        "confirmed_at": 1514
+      },
+      "39": {
+        "frames_detected": 12,
+        "first_frame": 1539,
+        "last_frame": 1552,
+        "confirmed_at": 1541
+      },
+      "43": {
+        "frames_detected": 3,
+        "first_frame": 1636,
+        "last_frame": 1638,
+        "confirmed_at": 1638
+      },
+      "49": {
+        "frames_detected": 3,
+        "first_frame": 1746,
+        "last_frame": 1748,
+        "confirmed_at": 1748
+      },
+      "54": {
+        "frames_detected": 15,
+        "first_frame": 1754,
+        "last_frame": 1769,
+        "confirmed_at": 1756
+      },
+      "55": {
+        "frames_detected": 7,
+        "first_frame": 1760,
+        "last_frame": 1767,
+        "confirmed_at": 1763
+      },
+      "81": {
+        "frames_detected": 11,
+        "first_frame": 1838,
+        "last_frame": 1856,
+        "confirmed_at": 1840
+      },
+      "97": {
+        "frames_detected": 14,
+        "first_frame": 1942,
+        "last_frame": 1955,
+        "confirmed_at": 1944
+      },
+      "103": {
+        "frames_detected": 8,
+        "first_frame": 1955,
+        "last_frame": 1962,
+        "confirmed_at": 1957
+      },
+      "117": {
+        "frames_detected": 17,
+        "first_frame": 1966,
+        "last_frame": 1982,
+        "confirmed_at": 1968
+      },
+      "129": {
+        "frames_detected": 15,
+        "first_frame": 1976,
+        "last_frame": 1993,
+        "confirmed_at": 1978
+      },
+      "143": {
+        "frames_detected": 14,
+        "first_frame": 1996,
+        "last_frame": 2010,
+        "confirmed_at": 1998
+      },
+      "152": {
+        "frames_detected": 7,
+        "first_frame": 2040,
+        "last_frame": 2047,
+        "confirmed_at": 2043
+      },
+      "161": {
+        "frames_detected": 12,
+        "first_frame": 2048,
+        "last_frame": 2061,
+        "confirmed_at": 2051
+      },
+      "186": {
+        "frames_detected": 13,
+        "first_frame": 2095,
+        "last_frame": 2107,
+        "confirmed_at": 2097
+      },
+      "192": {
+        "frames_detected": 8,
+        "first_frame": 2134,
+        "last_frame": 2141,
+        "confirmed_at": 2136
+      },
+      "195": {
+        "frames_detected": 9,
+        "first_frame": 2141,
+        "last_frame": 2149,
+        "confirmed_at": 2143
+      },
+      "198": {
+        "frames_detected": 5,
+        "first_frame": 2145,
+        "last_frame": 2152,
+        "confirmed_at": 2152
+      },
+      "205": {
+        "frames_detected": 15,
+        "first_frame": 2167,
+        "last_frame": 2186,
+        "confirmed_at": 2169
+      },
+      "217": {
+        "frames_detected": 4,
+        "first_frame": 2193,
+        "last_frame": 2196,
+        "confirmed_at": 2195
+      },
+      "219": {
+        "frames_detected": 3,
+        "first_frame": 2195,
+        "last_frame": 2198,
+        "confirmed_at": 2198
+      },
+      "220": {
+        "frames_detected": 29,
+        "first_frame": 2199,
+        "last_frame": 2234,
+        "confirmed_at": 2201
+      },
+      "223": {
+        "frames_detected": 28,
+        "first_frame": 2208,
+        "last_frame": 2245,
+        "confirmed_at": 2210
+      },
+      "232": {
+        "frames_detected": 8,
+        "first_frame": 2259,
+        "last_frame": 2290,
+        "confirmed_at": 2275
+      },
+      "240": {
+        "frames_detected": 34,
+        "first_frame": 2269,
+        "last_frame": 2309,
+        "confirmed_at": 2279
+      },
+      "249": {
+        "frames_detected": 6,
+        "first_frame": 2308,
+        "last_frame": 2314,
+        "confirmed_at": 2311
+      },
+      "254": {
+        "frames_detected": 13,
+        "first_frame": 2325,
+        "last_frame": 2337,
+        "confirmed_at": 2327
+      },
+      "255": {
+        "frames_detected": 13,
+        "first_frame": 2332,
+        "last_frame": 2345,
+        "confirmed_at": 2334
+      },
+      "263": {
+        "frames_detected": 6,
+        "first_frame": 2345,
+        "last_frame": 2350,
+        "confirmed_at": 2347
+      },
+      "264": {
+        "frames_detected": 12,
+        "first_frame": 2348,
+        "last_frame": 2366,
+        "confirmed_at": 2350
+      },
+      "270": {
+        "frames_detected": 15,
+        "first_frame": 2357,
+        "last_frame": 2371,
+        "confirmed_at": 2359
+      },
+      "278": {
+        "frames_detected": 8,
+        "first_frame": 2382,
+        "last_frame": 2389,
+        "confirmed_at": 2384
+      },
+      "279": {
+        "frames_detected": 39,
+        "first_frame": 2384,
+        "last_frame": 2467,
+        "confirmed_at": 2386
+      },
+      "280": {
+        "frames_detected": 4,
+        "first_frame": 2389,
+        "last_frame": 2392,
+        "confirmed_at": 2391
+      },
+      "289": {
+        "frames_detected": 10,
+        "first_frame": 2461,
+        "last_frame": 2473,
+        "confirmed_at": 2463
+      },
+      "292": {
+        "frames_detected": 8,
+        "first_frame": 2473,
+        "last_frame": 2480,
+        "confirmed_at": 2475
+      },
+      "299": {
+        "frames_detected": 3,
+        "first_frame": 2504,
+        "last_frame": 2506,
+        "confirmed_at": 2506
+      },
+      "309": {
+        "frames_detected": 12,
+        "first_frame": 2515,
+        "last_frame": 2526,
+        "confirmed_at": 2517
+      },
+      "310": {
+        "frames_detected": 9,
+        "first_frame": 2518,
+        "last_frame": 2528,
+        "confirmed_at": 2521
+      },
+      "311": {
+        "frames_detected": 13,
+        "first_frame": 2526,
+        "last_frame": 2540,
+        "confirmed_at": 2530
+      },
+      "318": {
+        "frames_detected": 3,
+        "first_frame": 2578,
+        "last_frame": 2581,
+        "confirmed_at": 2581
+      },
+      "335": {
+        "frames_detected": 4,
+        "first_frame": 2795,
+        "last_frame": 2798,
+        "confirmed_at": 2797
+      },
+      "342": {
+        "frames_detected": 13,
+        "first_frame": 2849,
+        "last_frame": 2861,
+        "confirmed_at": 2851
+      },
+      "351": {
+        "frames_detected": 14,
+        "first_frame": 2863,
+        "last_frame": 2876,
+        "confirmed_at": 2865
+      },
+      "361": {
+        "frames_detected": 3,
+        "first_frame": 2895,
+        "last_frame": 2897,
+        "confirmed_at": 2897
+      },
+      "370": {
+        "frames_detected": 5,
+        "first_frame": 2911,
+        "last_frame": 2915,
+        "confirmed_at": 2913
+      },
+      "379": {
+        "frames_detected": 20,
+        "first_frame": 2940,
+        "last_frame": 2963,
+        "confirmed_at": 2942
+      },
+      "386": {
+        "frames_detected": 4,
+        "first_frame": 2964,
+        "last_frame": 2967,
+        "confirmed_at": 2966
+      },
+      "392": {
+        "frames_detected": 5,
+        "first_frame": 3062,
+        "last_frame": 3066,
+        "confirmed_at": 3064
+      },
+      "400": {
+        "frames_detected": 3,
+        "first_frame": 3159,
+        "last_frame": 3161,
+        "confirmed_at": 3161
+      },
+      "407": {
+        "frames_detected": 5,
+        "first_frame": 3171,
+        "last_frame": 3175,
+        "confirmed_at": 3173
+      },
+      "424": {
+        "frames_detected": 4,
+        "first_frame": 3326,
+        "last_frame": 3329,
+        "confirmed_at": 3328
+      },
+      "427": {
+        "frames_detected": 32,
+        "first_frame": 3343,
+        "last_frame": 3380,
+        "confirmed_at": 3345
+      },
+      "429": {
+        "frames_detected": 12,
+        "first_frame": 3361,
+        "last_frame": 3379,
+        "confirmed_at": 3363
+      },
+      "431": {
+        "frames_detected": 11,
+        "first_frame": 3399,
+        "last_frame": 3410,
+        "confirmed_at": 3401
+      },
+      "437": {
+        "frames_detected": 6,
+        "first_frame": 3423,
+        "last_frame": 3428,
+        "confirmed_at": 3425
+      },
+      "455": {
+        "frames_detected": 27,
+        "first_frame": 3490,
+        "last_frame": 3516,
+        "confirmed_at": 3492
+      },
+      "467": {
+        "frames_detected": 54,
+        "first_frame": 3530,
+        "last_frame": 3586,
+        "confirmed_at": 3532
+      },
+      "468": {
+        "frames_detected": 7,
+        "first_frame": 3538,
+        "last_frame": 3546,
+        "confirmed_at": 3540
+      },
+      "478": {
+        "frames_detected": 5,
+        "first_frame": 3563,
+        "last_frame": 3567,
+        "confirmed_at": 3565
+      },
+      "517": {
+        "frames_detected": 13,
+        "first_frame": 3739,
+        "last_frame": 3751,
+        "confirmed_at": 3741
+      },
+      "528": {
+        "frames_detected": 9,
+        "first_frame": 3978,
+        "last_frame": 3986,
+        "confirmed_at": 3980
+      },
+      "532": {
+        "frames_detected": 28,
+        "first_frame": 4005,
+        "last_frame": 4047,
+        "confirmed_at": 4015
+      },
+      "538": {
+        "frames_detected": 4,
+        "first_frame": 4018,
+        "last_frame": 4021,
+        "confirmed_at": 4020
+      },
+      "542": {
+        "frames_detected": 5,
+        "first_frame": 4039,
+        "last_frame": 4043,
+        "confirmed_at": 4041
+      },
+      "545": {
+        "frames_detected": 12,
+        "first_frame": 4045,
+        "last_frame": 4065,
+        "confirmed_at": 4047
+      },
+      "561": {
+        "frames_detected": 10,
+        "first_frame": 4110,
+        "last_frame": 4119,
+        "confirmed_at": 4112
+      },
+      "606": {
+        "frames_detected": 4,
+        "first_frame": 4368,
+        "last_frame": 4371,
+        "confirmed_at": 4370
+      },
+      "607": {
+        "frames_detected": 4,
+        "first_frame": 4370,
+        "last_frame": 4373,
+        "confirmed_at": 4372
+      },
+      "617": {
+        "frames_detected": 4,
+        "first_frame": 4388,
+        "last_frame": 4391,
+        "confirmed_at": 4390
+      },
+      "623": {
+        "frames_detected": 8,
+        "first_frame": 4403,
+        "last_frame": 4411,
+        "confirmed_at": 4405
+      },
+      "625": {
+        "frames_detected": 12,
+        "first_frame": 4414,
+        "last_frame": 4439,
+        "confirmed_at": 4416
+      },
+      "633": {
+        "frames_detected": 9,
+        "first_frame": 4428,
+        "last_frame": 4437,
+        "confirmed_at": 4430
+      },
+      "647": {
+        "frames_detected": 17,
+        "first_frame": 4475,
+        "last_frame": 4493,
+        "confirmed_at": 4477
+      },
+      "662": {
+        "frames_detected": 6,
+        "first_frame": 4606,
+        "last_frame": 4611,
+        "confirmed_at": 4608
+      },
+      "670": {
+        "frames_detected": 23,
+        "first_frame": 4720,
+        "last_frame": 4742,
+        "confirmed_at": 4722
+      },
+      "675": {
+        "frames_detected": 9,
+        "first_frame": 4725,
+        "last_frame": 4734,
+        "confirmed_at": 4727
+      },
+      "679": {
+        "frames_detected": 11,
+        "first_frame": 4743,
+        "last_frame": 4753,
+        "confirmed_at": 4745
+      },
+      "688": {
+        "frames_detected": 61,
+        "first_frame": 4790,
+        "last_frame": 4862,
+        "confirmed_at": 4792
+      },
+      "694": {
+        "frames_detected": 11,
+        "first_frame": 4807,
+        "last_frame": 4817,
+        "confirmed_at": 4809
+      },
+      "705": {
+        "frames_detected": 15,
+        "first_frame": 4824,
+        "last_frame": 4840,
+        "confirmed_at": 4826
+      },
+      "707": {
+        "frames_detected": 22,
+        "first_frame": 4826,
+        "last_frame": 4847,
+        "confirmed_at": 4828
+      },
+      "713": {
+        "frames_detected": 33,
+        "first_frame": 4842,
+        "last_frame": 4874,
+        "confirmed_at": 4844
+      },
+      "729": {
+        "frames_detected": 16,
+        "first_frame": 4870,
+        "last_frame": 4888,
+        "confirmed_at": 4872
+      },
+      "741": {
+        "frames_detected": 15,
+        "first_frame": 4908,
+        "last_frame": 4924,
+        "confirmed_at": 4910
+      },
+      "746": {
+        "frames_detected": 20,
+        "first_frame": 5006,
+        "last_frame": 5026,
+        "confirmed_at": 5008
+      },
+      "756": {
+        "frames_detected": 23,
+        "first_frame": 5108,
+        "last_frame": 5130,
+        "confirmed_at": 5110
+      },
+      "768": {
+        "frames_detected": 27,
+        "first_frame": 5140,
+        "last_frame": 5171,
+        "confirmed_at": 5142
+      },
+      "774": {
+        "frames_detected": 6,
+        "first_frame": 5178,
+        "last_frame": 5184,
+        "confirmed_at": 5181
+      },
+      "777": {
+        "frames_detected": 15,
+        "first_frame": 5188,
+        "last_frame": 5202,
+        "confirmed_at": 5190
+      },
+      "785": {
+        "frames_detected": 14,
+        "first_frame": 5195,
+        "last_frame": 5210,
+        "confirmed_at": 5197
+      },
+      "790": {
+        "frames_detected": 11,
+        "first_frame": 5229,
+        "last_frame": 5239,
+        "confirmed_at": 5231
+      },
+      "791": {
+        "frames_detected": 26,
+        "first_frame": 5245,
+        "last_frame": 5298,
+        "confirmed_at": 5247
+      },
+      "794": {
+        "frames_detected": 25,
+        "first_frame": 5262,
+        "last_frame": 5301,
+        "confirmed_at": 5269
+      },
+      "797": {
+        "frames_detected": 24,
+        "first_frame": 5284,
+        "last_frame": 5307,
+        "confirmed_at": 5286
+      },
+      "801": {
+        "frames_detected": 20,
+        "first_frame": 5323,
+        "last_frame": 5366,
+        "confirmed_at": 5325
+      },
+      "802": {
+        "frames_detected": 9,
+        "first_frame": 5325,
+        "last_frame": 5352,
+        "confirmed_at": 5328
+      }
+    }
+  },
+  "performance": {
+    "video_fps": 30.0,
+    "processing_fps": 77.82689521380908,
+    "end_to_end_fps": 72.95085908624631,
+    "latency_ms": {
+      "p50": 12.23187500727363,
+      "p95": 15.099966916022822,
+      "n": 5395,
+      "warmup_excluded": 5
+    }
+  },
+  "annotated_mp4": "runs/video/2DV-cYmIvT4/P/annotated.mp4",
+  "caveats": [
+    "No ground truth. Nothing here is precision, recall or a miss rate; the count is unscored.",
+    "Tracks, not potholes (D075). ID switches bias the count up (a pothole re-acquired under a new ID counts twice); merges bias it down (two potholes held by one ID count once). Without ground truth neither bias is measured. At conf 0.25 ByteTrack's low-score recovery stage receives no boxes, which favours ID switches.",
+    "Unknown camera geometry: no intrinsics, mounting height or pitch, so no distances, sizes or ground positions. The horizon is a hand-set fraction of frame height (settings.horizon_frac), not a calibrated line.",
+    "Latency is this Mac (Apple Silicon, MPS), not the Jetson target, and covers model.track() only: letterbox, inference, NMS and the ByteTrack update. Decode, drawing and encoding are excluded from it and included in end_to_end_fps.",
+    "Training contamination, for Model P specifically: P is Model B fine-tuned, pothole-only, on india_train plus BharatPotHole train (D074). BharatPotHole is Indian dashcam footage, the closest domain to this video any model here has seen. Its 162 source IDs are its authors' dashcam timestamps, not YouTube IDs, so this video is unlikely to be in it; that is inferred from filenames, not checked frame by frame."
+  ]
+}

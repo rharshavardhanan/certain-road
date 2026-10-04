@@ -49,9 +49,9 @@ yt-dlp (Homebrew), pytest.
 - **Files:** create `scripts/eval_video.py` (function only), `tests/test_eval_video.py`,
   `configs/eval/video.yaml`; modify `docs/DECISIONS.md` (index row + section between D074 and D076).
 - **Steps:**
-  - [ ] Write tests: 3 hits spread over 5 frames confirms on the 3rd hit and not before · a one-frame flash never confirms · 2-of-5 never confirms · a box above the horizon never confirms even at 5/5 · hits split over three IDs do not pool (the old D051 condition-confirmer would have fired) · one pothole re-acquired under a new ID confirms twice (the D075 upward bias, pinned).
-  - [ ] Run `uv run pytest tests/test_eval_video.py` -> fails on import.
-  - [ ] Implement:
+  - [x] Write tests: 3 hits spread over 5 frames confirms on the 3rd hit and not before · a one-frame flash never confirms · 2-of-5 never confirms · a box above the horizon never confirms even at 5/5 · hits split over three IDs do not pool (the old D051 condition-confirmer would have fired) · one pothole re-acquired under a new ID confirms twice (the D075 upward bias, pinned).
+  - [x] Run `uv run pytest tests/test_eval_video.py` -> fails on import.
+  - [x] Implement:
     ```python
     def confirm_step(confirmers, tracks, horizon_y, required, window) -> set[int]:
         present = {tid for tid, y2 in tracks if y2 >= horizon_y}
@@ -59,7 +59,7 @@ yt-dlp (Homebrew), pytest.
             confirmers[tid] = Confirmer(required, window)
         return {tid for tid, c in confirmers.items() if c.update(tid in present)}
     ```
-  - [ ] Write `configs/eval/video.yaml` and the D075 entry (re-read DECISIONS.md immediately before editing; another session writes to it).
+  - [x] Write `configs/eval/video.yaml` and the D075 entry (re-read DECISIONS.md immediately before editing; another session writes to it).
 - **Done when:** `uv run pytest tests/test_eval_video.py -q` -> `6 passed`, and
   `grep -c "^## D075" docs/DECISIONS.md` -> `1` and `grep -c "^| D075" docs/DECISIONS.md` -> `1`.
 
@@ -71,9 +71,9 @@ yt-dlp (Homebrew), pytest.
   cannot be redistributed even as an annotated derivative.
 - **Files:** `data/video/` (gitignored).
 - **Steps:**
-  - [ ] Search YouTube's Creative-Commons filter via yt-dlp; print id, duration, licence, channel.
-  - [ ] Download best candidate at <= 720p with `--write-info-json`.
-  - [ ] Extract 3 frames, view them: forward-facing? potholes? where is the horizon?
+  - [x] Search YouTube's Creative-Commons filter via yt-dlp; print id, duration, licence, channel.
+  - [x] Download best candidate at <= 720p with `--write-info-json`.
+  - [x] Extract 3 frames, view them: forward-facing? potholes? where is the horizon?
 - **Done when:** `ffprobe` duration is 60-180 s and
   `jq '.license,.channel,.webpage_url' data/video/<id>.info.json` prints all three
   non-null (or the licence gap is reported, not hidden).
@@ -87,11 +87,11 @@ yt-dlp (Homebrew), pytest.
 - **Files:** modify `scripts/eval_video.py`; modify `pyproject.toml`, `uv.lock`,
   `requirements.txt` (`uv add lap`).
 - **Steps:**
-  - [ ] `uv add lap`; regenerate `requirements.txt`; `import ultralytics.trackers` succeeds.
-  - [ ] Raw boxes: `model.add_callback("on_predict_postprocess_end", grab)` **before** the first `track()` call, so it runs ahead of the tracker's callback that replaces `result.boxes`.
-  - [ ] Per frame: time `model.track(...)` with `perf_counter`; gate + confirm; draw raw thin (yellow below horizon, grey above), horizon line, confirmed tracks green thick with `#id`, running "unique confirmed tracks: N"; pipe to `ffmpeg -c:v libx264 -pix_fmt yuv420p`.
-  - [ ] Summary: video + source provenance + sha256; model; settings; `unique_confirmed_tracks`, `tracks_seen`, per-confirmed-track `{frames_detected, first_frame, last_frame, confirmed_at}`; video/processing/end-to-end FPS; latency p50/p95 excluding `latency_warmup` frames; caveats.
-  - [ ] Run on the Task 2 video; open the MP4; spot-check annotated frames by eye.
+  - [x] `uv add lap`; regenerate `requirements.txt`; `import ultralytics.trackers` succeeds.
+  - [x] Raw boxes: `model.add_callback("on_predict_postprocess_end", grab)` **before** the first `track()` call, so it runs ahead of the tracker's callback that replaces `result.boxes`.
+  - [x] Per frame: time `model.track(...)` with `perf_counter`; gate + confirm; draw raw thin (yellow below horizon, grey above), horizon line, confirmed tracks green thick with `#id`, running "unique confirmed tracks: N"; pipe to `ffmpeg -c:v libx264 -pix_fmt yuv420p`.
+  - [x] Summary: video + source provenance + sha256; model; settings; `unique_confirmed_tracks`, `tracks_seen`, per-confirmed-track `{frames_detected, first_frame, last_frame, confirmed_at}`; video/processing/end-to-end FPS; latency p50/p95 excluding `latency_warmup` frames; caveats.
+  - [x] Run on the Task 2 video; open the MP4; spot-check annotated frames by eye.
 - **Done when:** `ffprobe -show_entries stream=codec_name` on the MP4 -> `h264`, frame
   count equals the source's; `jq '.result.unique_confirmed_tracks, .performance.latency_ms'`
   prints an integer and `{p50, p95}`; `uv run ruff check scripts/eval_video.py tests/test_eval_video.py` clean;

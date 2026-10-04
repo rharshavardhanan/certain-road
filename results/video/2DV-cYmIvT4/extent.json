@@ -1,0 +1,610 @@
+{
+  "video": "data/video/2DV-cYmIvT4.mp4",
+  "model": "B",
+  "weights": "runs/kaggle/roadsight-train-b/export/model_b/best.pt",
+  "scale": {
+    "conf": 0.05,
+    "times_s": [
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109
+    ],
+    "by_factor": {
+      "pad 1x": {
+        "frames": 10,
+        "frames_with_any_box": 2,
+        "frames_with_pothole_box": 0,
+        "boxes": 4,
+        "pothole_boxes": 0,
+        "max_conf": 0.2822
+      },
+      "pad 1.5x": {
+        "frames": 10,
+        "frames_with_any_box": 3,
+        "frames_with_pothole_box": 0,
+        "boxes": 10,
+        "pothole_boxes": 0,
+        "max_conf": 0.2204
+      },
+      "pad 2x": {
+        "frames": 10,
+        "frames_with_any_box": 1,
+        "frames_with_pothole_box": 0,
+        "boxes": 1,
+        "pothole_boxes": 0,
+        "max_conf": 0.11
+      },
+      "pad 3x": {
+        "frames": 10,
+        "frames_with_any_box": 0,
+        "frames_with_pothole_box": 0,
+        "boxes": 0,
+        "pothole_boxes": 0,
+        "max_conf": null
+      },
+      "zoom 2x": {
+        "frames": 10,
+        "frames_with_any_box": 3,
+        "frames_with_pothole_box": 0,
+        "boxes": 6,
+        "pothole_boxes": 0,
+        "max_conf": 0.2901
+      }
+    },
+    "per_frame": {
+      "pad 1x": [
+        {
+          "t_s": 100,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 101,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 102,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 103,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 104,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 105,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 106,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 107,
+          "boxes": 2,
+          "pothole_boxes": 0,
+          "max_conf": 0.1401,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 108,
+          "boxes": 2,
+          "pothole_boxes": 0,
+          "max_conf": 0.2822,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 109,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        }
+      ],
+      "pad 1.5x": [
+        {
+          "t_s": 100,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 101,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 102,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 103,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 104,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 105,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 106,
+          "boxes": 5,
+          "pothole_boxes": 0,
+          "max_conf": 0.2204,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 107,
+          "boxes": 3,
+          "pothole_boxes": 0,
+          "max_conf": 0.1267,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 108,
+          "boxes": 2,
+          "pothole_boxes": 0,
+          "max_conf": 0.0686,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 109,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        }
+      ],
+      "pad 2x": [
+        {
+          "t_s": 100,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 101,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 102,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 103,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 104,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 105,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 106,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 107,
+          "boxes": 1,
+          "pothole_boxes": 0,
+          "max_conf": 0.11,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 108,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 109,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        }
+      ],
+      "pad 3x": [
+        {
+          "t_s": 100,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 101,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 102,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 103,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 104,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 105,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 106,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 107,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 108,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 109,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        }
+      ],
+      "zoom 2x": [
+        {
+          "t_s": 100,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 101,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 102,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 103,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 104,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 105,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 106,
+          "boxes": 3,
+          "pothole_boxes": 0,
+          "max_conf": 0.1197,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 107,
+          "boxes": 2,
+          "pothole_boxes": 0,
+          "max_conf": 0.2901,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 108,
+          "boxes": 1,
+          "pothole_boxes": 0,
+          "max_conf": 0.2504,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 109,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        }
+      ]
+    },
+    "model_p_control": {
+      "frames": 10,
+      "frames_with_any_box": 6,
+      "frames_with_pothole_box": 6,
+      "boxes": 11,
+      "pothole_boxes": 11,
+      "max_conf": 0.3745,
+      "per_frame": [
+        {
+          "t_s": 100,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 101,
+          "boxes": 1,
+          "pothole_boxes": 1,
+          "max_conf": 0.0777,
+          "max_pothole_conf": 0.0777
+        },
+        {
+          "t_s": 102,
+          "boxes": 2,
+          "pothole_boxes": 2,
+          "max_conf": 0.3745,
+          "max_pothole_conf": 0.3745
+        },
+        {
+          "t_s": 103,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 104,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 105,
+          "boxes": 3,
+          "pothole_boxes": 3,
+          "max_conf": 0.1256,
+          "max_pothole_conf": 0.1256
+        },
+        {
+          "t_s": 106,
+          "boxes": 2,
+          "pothole_boxes": 2,
+          "max_conf": 0.196,
+          "max_pothole_conf": 0.196
+        },
+        {
+          "t_s": 107,
+          "boxes": 0,
+          "pothole_boxes": 0,
+          "max_conf": null,
+          "max_pothole_conf": null
+        },
+        {
+          "t_s": 108,
+          "boxes": 1,
+          "pothole_boxes": 1,
+          "max_conf": 0.0517,
+          "max_pothole_conf": 0.0517
+        },
+        {
+          "t_s": 109,
+          "boxes": 2,
+          "pothole_boxes": 2,
+          "max_conf": 0.0706,
+          "max_pothole_conf": 0.0706
+        }
+      ]
+    }
+  },
+  "gt_area": {
+    "split": "india_train",
+    "all_classes": {
+      "n": 4340,
+      "median": 0.02078129375,
+      "q25": 0.00704662797075,
+      "q75": 0.0686644949075,
+      "max": 0.668147974074
+    },
+    "pothole": {
+      "n": 2025,
+      "median": 0.008472200000000001,
+      "q25": 0.003636217284,
+      "q75": 0.020956815432000002,
+      "max": 0.307006032716
+    },
+    "hand_boxes": {
+      "degraded_stretch": {
+        "box": [
+          0.45,
+          0.77,
+          1.0,
+          1.0
+        ],
+        "relative_area": 0.1265,
+        "percentile_all_classes": 86.11,
+        "percentile_pothole": 97.04
+      },
+      "single_pothole": {
+        "box": [
+          0.66,
+          0.865,
+          0.76,
+          0.91
+        ],
+        "relative_area": 0.0045,
+        "percentile_all_classes": 16.5,
+        "percentile_pothole": 30.96
+      }
+    }
+  },
+  "drift": {
+    "model": "B",
+    "reference": "B on india_val (772 frames)",
+    "reference_median_by_gt": {
+      "with_gt": {
+        "n": 304,
+        "median": 0.7453766666666667
+      },
+      "without_gt": {
+        "n": 468,
+        "median": 0.987815
+      }
+    },
+    "equivalence_max_delta": 3.3333333333551707e-06,
+    "median_score": {
+      "video": 0.9961958333333334,
+      "india_val": 0.952325
+    },
+    "frames": 5400,
+    "frames_no_box_at_count_conf": 4283,
+    "frames_no_pothole_at_count_conf": 4710,
+    "count_conf": 0.05,
+    "runs": {
+      "cusum_every_1": {
+        "statistic": "cusum",
+        "stride_frames": 1,
+        "stream_len": 5400,
+        "threshold": 10000,
+        "alarm_frame": 31,
+        "alarm_s": 1.03,
+        "max_log_m": 292.81,
+        "final_log_m": 7.082
+      },
+      "plain_every_1": {
+        "statistic": "plain",
+        "stride_frames": 1,
+        "stream_len": 5400,
+        "threshold": 100,
+        "alarm_frame": 26,
+        "alarm_s": 0.87,
+        "max_log_m": 290.864,
+        "final_log_m": -1002.271
+      },
+      "cusum_every_30": {
+        "statistic": "cusum",
+        "stride_frames": 30,
+        "stream_len": 180,
+        "threshold": 10000,
+        "alarm_frame": 450,
+        "alarm_s": 15.0,
+        "max_log_m": 46.05,
+        "final_log_m": 39.082
+      },
+      "plain_every_30": {
+        "statistic": "plain",
+        "stride_frames": 30,
+        "stream_len": 180,
+        "threshold": 100,
+        "alarm_frame": 180,
+        "alarm_s": 6.0,
+        "max_log_m": 45.91,
+        "final_log_m": 38.942
+      }
+    }
+  }
+}

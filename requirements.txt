@@ -103,6 +103,8 @@ kagglesdk==0.1.37
     # via kaggle
 kiwisolver==1.5.0
     # via matplotlib
+lap==0.5.13
+    # via certain-road
 markdown-it-py==4.2.0
     # via
     #   jupytext
@@ -130,6 +132,7 @@ numpy==2.5.1
     # via
     #   contourpy
     #   folium
+    #   lap
     #   matplotlib
     #   opencv-python
     #   pandas

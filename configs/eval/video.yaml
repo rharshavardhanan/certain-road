@@ -1,0 +1,40 @@
+# D075 — per-pothole confirmation on road video (scripts/eval_video.py).
+
+models:                    # pothole index is read from each model's own names
+  B: runs/kaggle/roadsight-train-b/export/model_b/best.pt   # 3-class, pothole 2
+  P: runs/kaggle/roadsight-train-p/export/model_p/best.pt   # 1-class, pothole 0 (D074)
+conf: 0.25                 # = eval.report_conf; model.track would otherwise default to 0.1
+tracker: bytetrack.yaml    # ultralytics' shipped config, unmodified
+device: mps                # latency is measured where it runs; eval.device=cpu is for bit-reproducible mAP
+
+# D075: the same track ID must be present in `required` of the last `window` frames.
+confirm: {required: 3, window: 5}
+
+# ROI gate. No camera model exists for downloaded video, so the horizon is a
+# fraction of frame height, set by eye per video with --horizon and recorded in
+# the summary. This default is the driving corridor's top_y.
+horizon_frac: 0.45
+
+# Why Model B is silent on the degraded stretch (scripts/exp_video_extent.py).
+# Times and hand-drawn boxes belong to the 2DV-cYmIvT4 clip only.
+extent:
+  times_s: [100, 101, 102, 103, 104, 105, 106, 107, 108, 109]
+  conf: 0.05
+  pad_factors: [1.0, 1.5, 2.0, 3.0]    # grey (114) canvas, frame centred: damage shrinks
+  zoom_window: [0.25, 0.5, 0.75, 1.0]  # x1 y1 x2 y2: lower-centre half-frame, ~2x magnified
+  figure_time_s: 105
+  # Drawn by eye on the t=105 s frame, fractions of width/height. For scale only.
+  hand_boxes:
+    degraded_stretch: [0.45, 0.77, 1.0, 1.0]
+    single_pothole: [0.66, 0.865, 0.76, 0.91]
+
+# D078's monitor over this clip. Model B's scores against B's own india_val bag
+# (user's choice, 2026-09-28): the bag must come from the model that made the stream.
+drift:
+  reference_predictions: results/T9/B_india_val_run/val/predictions.json
+  reference_split: india_val
+  cusum_threshold: 10000   # D078's rule-selected CUSUM threshold
+  strides: [1, 30]         # every frame (30 fps), and ~1 fps, closer to survey sampling (D006)
+  count_conf: 0.05         # "no detection" in the figure means nothing at or above this
+  equivalence_images: 20   # india_val images re-scored through the video path
+  equivalence_tol: 0.001   # max |delta frame_score| allowed before the stream is trusted

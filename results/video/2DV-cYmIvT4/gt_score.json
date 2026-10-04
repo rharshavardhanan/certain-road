@@ -1,0 +1,280 @@
+{
+  "gt": {
+    "path": "configs/eval/gt/2DV-cYmIvT4_claude.csv",
+    "sha256": "4faa4673d0b69b68e825dfabeda2a02739cd6b6f3c999373e04b8e8b9411025c",
+    "potholes": 17
+  },
+  "window_s": [
+    120.0,
+    180.0
+  ],
+  "models": {
+    "B": {
+      "potholes": 17,
+      "hit": 4,
+      "tracks_in_window": 5,
+      "duplicates": 0,
+      "false_alarms": 1,
+      "false_alarms_per_min": 1.0,
+      "median_frames_per_hit": 11.0,
+      "intervals": [
+        {
+          "start_s": 124.4,
+          "end_s": 125.3,
+          "hit_by": null,
+          "note": "small water-filled pothole, left of centre"
+        },
+        {
+          "start_s": 140.0,
+          "end_s": 141.8,
+          "hit_by": null,
+          "note": "pothole centre-left, dry, in a patch of small pits"
+        },
+        {
+          "start_s": 149.8,
+          "end_s": 151.8,
+          "hit_by": null,
+          "note": "long rutted pothole, centre then right"
+        },
+        {
+          "start_s": 154.0,
+          "end_s": 155.8,
+          "hit_by": "63",
+          "note": "water-filled pothole on the right (possibly two)"
+        },
+        {
+          "start_s": 156.5,
+          "end_s": 157.8,
+          "hit_by": null,
+          "note": "large water-filled pothole, right of centre"
+        },
+        {
+          "start_s": 157.4,
+          "end_s": 158.7,
+          "hit_by": null,
+          "note": "water-filled pothole, centre-right"
+        },
+        {
+          "start_s": 158.8,
+          "end_s": 160.8,
+          "hit_by": "70",
+          "note": "water-filled pothole on the right"
+        },
+        {
+          "start_s": 159.4,
+          "end_s": 160.8,
+          "hit_by": null,
+          "note": "round shallow pothole, centre"
+        },
+        {
+          "start_s": 159.0,
+          "end_s": 161.8,
+          "hit_by": "73",
+          "note": "round pothole, centre-left, far to near"
+        },
+        {
+          "start_s": 164.8,
+          "end_s": 165.8,
+          "hit_by": null,
+          "note": "pothole, centre-right"
+        },
+        {
+          "start_s": 169.8,
+          "end_s": 170.8,
+          "hit_by": null,
+          "note": "round shallow pothole, centre"
+        },
+        {
+          "start_s": 169.8,
+          "end_s": 170.6,
+          "hit_by": null,
+          "note": "elongated dark pothole right of centre, partly occluded"
+        },
+        {
+          "start_s": 170.9,
+          "end_s": 172.4,
+          "hit_by": "82",
+          "note": "dark pothole, centre-left"
+        },
+        {
+          "start_s": 173.9,
+          "end_s": 176.8,
+          "hit_by": null,
+          "note": "large water-filled pothole, centre-right to right"
+        },
+        {
+          "start_s": 176.9,
+          "end_s": 177.7,
+          "hit_by": null,
+          "note": "pothole centre, beside an auto-rickshaw"
+        },
+        {
+          "start_s": 177.9,
+          "end_s": 178.8,
+          "hit_by": null,
+          "note": "water-filled pothole, centre"
+        },
+        {
+          "start_s": 178.9,
+          "end_s": 180.0,
+          "hit_by": null,
+          "note": "water-filled pothole, centre-left"
+        }
+      ],
+      "duplicate_tracks": [],
+      "false_alarm_tracks": [
+        "42"
+      ]
+    },
+    "P": {
+      "potholes": 17,
+      "hit": 10,
+      "tracks_in_window": 37,
+      "duplicates": 7,
+      "false_alarms": 20,
+      "false_alarms_per_min": 20.0,
+      "median_frames_per_hit": 21.5,
+      "intervals": [
+        {
+          "start_s": 124.4,
+          "end_s": 125.3,
+          "hit_by": "517",
+          "note": "small water-filled pothole, left of centre"
+        },
+        {
+          "start_s": 140.0,
+          "end_s": 141.8,
+          "hit_by": null,
+          "note": "pothole centre-left, dry, in a patch of small pits"
+        },
+        {
+          "start_s": 149.8,
+          "end_s": 151.8,
+          "hit_by": null,
+          "note": "long rutted pothole, centre then right"
+        },
+        {
+          "start_s": 154.0,
+          "end_s": 155.8,
+          "hit_by": null,
+          "note": "water-filled pothole on the right (possibly two)"
+        },
+        {
+          "start_s": 156.5,
+          "end_s": 157.8,
+          "hit_by": "670",
+          "note": "large water-filled pothole, right of centre"
+        },
+        {
+          "start_s": 157.4,
+          "end_s": 158.7,
+          "hit_by": "675",
+          "note": "water-filled pothole, centre-right"
+        },
+        {
+          "start_s": 158.8,
+          "end_s": 160.8,
+          "hit_by": "688",
+          "note": "water-filled pothole on the right"
+        },
+        {
+          "start_s": 159.4,
+          "end_s": 160.8,
+          "hit_by": null,
+          "note": "round shallow pothole, centre"
+        },
+        {
+          "start_s": 159.0,
+          "end_s": 161.8,
+          "hit_by": "694",
+          "note": "round pothole, centre-left, far to near"
+        },
+        {
+          "start_s": 164.8,
+          "end_s": 165.8,
+          "hit_by": null,
+          "note": "pothole, centre-right"
+        },
+        {
+          "start_s": 169.8,
+          "end_s": 170.8,
+          "hit_by": "756",
+          "note": "round shallow pothole, centre"
+        },
+        {
+          "start_s": 169.8,
+          "end_s": 170.6,
+          "hit_by": null,
+          "note": "elongated dark pothole right of centre, partly occluded"
+        },
+        {
+          "start_s": 170.9,
+          "end_s": 172.4,
+          "hit_by": "768",
+          "note": "dark pothole, centre-left"
+        },
+        {
+          "start_s": 173.9,
+          "end_s": 176.8,
+          "hit_by": "790",
+          "note": "large water-filled pothole, centre-right to right"
+        },
+        {
+          "start_s": 176.9,
+          "end_s": 177.7,
+          "hit_by": "797",
+          "note": "pothole centre, beside an auto-rickshaw"
+        },
+        {
+          "start_s": 177.9,
+          "end_s": 178.8,
+          "hit_by": "801",
+          "note": "water-filled pothole, centre"
+        },
+        {
+          "start_s": 178.9,
+          "end_s": 180.0,
+          "hit_by": null,
+          "note": "water-filled pothole, centre-left"
+        }
+      ],
+      "duplicate_tracks": [
+        "679",
+        "705",
+        "707",
+        "713",
+        "791",
+        "794",
+        "802"
+      ],
+      "false_alarm_tracks": [
+        "528",
+        "532",
+        "538",
+        "542",
+        "545",
+        "561",
+        "606",
+        "607",
+        "617",
+        "623",
+        "625",
+        "633",
+        "647",
+        "662",
+        "729",
+        "741",
+        "746",
+        "774",
+        "777",
+        "785"
+      ]
+    }
+  },
+  "caveats": [
+    "One annotator. Nothing here measures agreement between annotators, and what counts as a pothole is that annotator's judgement.",
+    "Interval-only, no spatial matching: a track counts as a hit if it overlaps a GT interval in time, wherever its box sits in the frame. A box on something else while a pothole is in view scores as a hit, so hits are an upper bound on correct detections.",
+    "Tracks, not potholes (D075): duplicates expose ID switches and double boxes; a merge that holds two potholes in one track shows up as a miss.",
+    "One 60 s window of one video, chosen for pothole content and excluding the flooded stretch (D080). It describes discrete potholes on this road, not the drive."
+  ]
+}

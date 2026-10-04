@@ -1,0 +1,124 @@
+{
+  "video": {
+    "path": "data/video/2DV-cYmIvT4.mp4",
+    "sha256": "0608fcb899103b5754f2819f857d18a1571fa1258ddf2dfc43de60bdea29536f",
+    "frames": 5400,
+    "fps": 30.0,
+    "width": 1280,
+    "height": 720,
+    "duration_s": 180.0,
+    "source": {
+      "webpage_url": "https://www.youtube.com/watch?v=2DV-cYmIvT4",
+      "id": "2DV-cYmIvT4",
+      "title": "Shocking Road Condition | Kadugodi to Chrysalis High Road Is a Complete Disaster ! Daily Struggle",
+      "channel": "RT Dashcam ",
+      "channel_url": "https://www.youtube.com/channel/UCY2Xq30UEM59C61HyhaaqdA",
+      "license": "Creative Commons Attribution license (reuse allowed)",
+      "upload_date": "20250723",
+      "duration": 291,
+      "section_start": 0,
+      "section_end": 180
+    }
+  },
+  "model": {
+    "name": "Model B",
+    "weights": "runs/kaggle/roadsight-train-b/export/model_b/best.pt",
+    "class": "pothole",
+    "class_id": 2
+  },
+  "settings": {
+    "conf": 0.25,
+    "tracker": "bytetrack.yaml",
+    "persist": true,
+    "imgsz": 640,
+    "device": "mps",
+    "confirm": {
+      "required": 3,
+      "window": 5
+    },
+    "horizon_frac": 0.66,
+    "horizon_y_px": 475.20000000000005
+  },
+  "result": {
+    "unique_confirmed_tracks": 9,
+    "count_is": "tracks, not potholes (D075)",
+    "tracks_seen_below_horizon": 14,
+    "raw_detections": 206,
+    "raw_detections_gated_above_horizon": 0,
+    "confirmed_tracks": {
+      "12": {
+        "frames_detected": 4,
+        "first_frame": 2187,
+        "last_frame": 2193,
+        "confirmed_at": 2191
+      },
+      "14": {
+        "frames_detected": 4,
+        "first_frame": 2301,
+        "last_frame": 2304,
+        "confirmed_at": 2303
+      },
+      "15": {
+        "frames_detected": 7,
+        "first_frame": 2335,
+        "last_frame": 2342,
+        "confirmed_at": 2337
+      },
+      "22": {
+        "frames_detected": 7,
+        "first_frame": 2533,
+        "last_frame": 2539,
+        "confirmed_at": 2535
+      },
+      "42": {
+        "frames_detected": 8,
+        "first_frame": 4113,
+        "last_frame": 4120,
+        "confirmed_at": 4115
+      },
+      "63": {
+        "frames_detected": 6,
+        "first_frame": 4633,
+        "last_frame": 4639,
+        "confirmed_at": 4635
+      },
+      "70": {
+        "frames_detected": 52,
+        "first_frame": 4790,
+        "last_frame": 4853,
+        "confirmed_at": 4793
+      },
+      "73": {
+        "frames_detected": 9,
+        "first_frame": 4804,
+        "last_frame": 4813,
+        "confirmed_at": 4807
+      },
+      "82": {
+        "frames_detected": 13,
+        "first_frame": 5153,
+        "last_frame": 5170,
+        "confirmed_at": 5155
+      }
+    }
+  },
+  "performance": {
+    "video_fps": 30.0,
+    "processing_fps": 84.54436126737045,
+    "end_to_end_fps": 79.37244903163428,
+    "latency_ms": {
+      "p50": 11.31125001120381,
+      "p95": 12.975525093497708,
+      "n": 5395,
+      "warmup_excluded": 5
+    }
+  },
+  "annotated_mp4": "runs/video/2DV-cYmIvT4/B/annotated.mp4",
+  "caveats": [
+    "No ground truth. Nothing here is precision, recall or a miss rate; the count is unscored.",
+    "Tracks, not potholes (D075). ID switches bias the count up (a pothole re-acquired under a new ID counts twice); merges bias it down (two potholes held by one ID count once). Without ground truth neither bias is measured. At conf 0.25 ByteTrack's low-score recovery stage receives no boxes, which favours ID switches.",
+    "Unknown camera geometry: no intrinsics, mounting height or pitch, so no distances, sizes or ground positions. The horizon is a hand-set fraction of frame height (settings.horizon_frac), not a calibrated line.",
+    "Latency is this Mac (Apple Silicon, MPS), not the Jetson target, and covers model.track() only: letterbox, inference, NMS and the ByteTrack update. Decode, drawing and encoding are excluded from it and included in end_to_end_fps.",
+    "Training contamination, for Model B specifically: B is Model A (RDD2022, non-India) fine-tuned on RDD2022 india_train plus non-India replay. RDD2022 is not YouTube-derived, but this video has not been checked against its images. BharatPotHole (Indian dashcam footage) trained Model P, not B; its 162 source IDs are its authors' dashcam timestamps, not YouTube IDs, so this video is unlikely to be in it either."
+  ]
+}

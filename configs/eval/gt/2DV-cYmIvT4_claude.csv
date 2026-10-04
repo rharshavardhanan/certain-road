@@ -1,0 +1,50 @@
+# Potholes in 2DV-cYmIvT4 (RT Dashcam, CC BY), window 120-180 s. Score with:
+#   uv run python scripts/score_video_gt.py configs/eval/gt/2DV-cYmIvT4_claude.csv --start 120 --end 180
+# Annotator: Claude (AI), 2026-09-28, one pass. Not the user's hand count, which
+# replaces this file when it exists.
+# Method: the RAW video only, never an annotated one (no model boxes in view while
+# counting): road-region crops at 2 fps, plus full-resolution zooms of 159-162.5 s
+# and 169.5-173 s. The annotator had seen some model output for this range earlier
+# in the session, so this is not blind in the strict sense.
+# Window chosen on raw content: the 60 s with the most discrete potholes outside the
+# flooded stretch (t~100-110 s, D080). 0-45 s is paved and nearly pothole-free.
+# Counted: a distinct hole or depression in the carriageway, dry or water-filled,
+# identifiable in at least two half-second frames.
+# Not counted: water pooling along kerbs and road edges, sheet water over flat
+# surface, linear cracks, broken-surface patches (D080's degraded surface).
+# Timings are rough (+-0.5 s): first clear sighting to leaving the frame.
+# Uncertain cases, NOT scored:
+#   120.5-121.2 small dark spot mid-lane
+#   125.5 dark patch centre
+#   133.4-135.6 water pools along the left edge of the road
+#   136.0-138.0 pitting in the lane
+#   140.5-141.2 further small pits around the 140.0 pothole
+#   147.5 pit inside the water sheet on the right
+#   150.4-151.3 broken edge beside a concrete slab, left
+#   152.0-153.5 water in depressions at the right edge; cracking
+#   161.0-163.0 linear cracks, centre
+#   162.0-164.5 small holes near the cracks and on the right
+#   166.0-168.5 broken patch on the right (degraded surface)
+#   170.5-173.5 water sheet over the right half (degraded surface)
+#   173.0 dark hole, bottom centre-left
+#   174.5 small pothole, bottom centre
+#   178.0 second water-filled pothole right of centre
+# The YouTube SUBSCRIBE overlay sits on the road surface at 150-153.5 s.
+start_s,end_s,note
+124.4,125.3,"small water-filled pothole, left of centre"
+140.0,141.8,"pothole centre-left, dry, in a patch of small pits"
+149.8,151.8,"long rutted pothole, centre then right"
+154.0,155.8,"water-filled pothole on the right (possibly two)"
+156.5,157.8,"large water-filled pothole, right of centre"
+157.4,158.7,"water-filled pothole, centre-right"
+158.8,160.8,"water-filled pothole on the right"
+159.4,160.8,"round shallow pothole, centre"
+159.0,161.8,"round pothole, centre-left, far to near"
+164.8,165.8,"pothole, centre-right"
+169.8,170.8,"round shallow pothole, centre"
+169.8,170.6,"elongated dark pothole right of centre, partly occluded"
+170.9,172.4,"dark pothole, centre-left"
+173.9,176.8,"large water-filled pothole, centre-right to right"
+176.9,177.7,"pothole centre, beside an auto-rickshaw"
+177.9,178.8,"water-filled pothole, centre"
+178.9,180.0,"water-filled pothole, centre-left"
