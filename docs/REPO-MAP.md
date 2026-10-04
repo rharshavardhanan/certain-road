@@ -1,8 +1,8 @@
 # Repository map
 
-Generated 2026-10-04 12:55:48 +0530
+Generated 2026-10-04 14:51:58 +0530
 
-Commit `d231467` on `workspace-cleanup`; 26 paths differ from it in the working tree.
+Commit `3af6056` on `workspace-cleanup`; 20 paths differ from it in the working tree.
 
 Do not edit by hand — rerun scripts/repo_map.py
 
@@ -15,11 +15,16 @@ Quoted from `CLAUDE.md`:
 > A pavement management decision-support system. It answers **"which road segments
 > should be repaired first, given a fixed budget?"** — not "where is a pothole".
 >
-> Camera → YOLOv8n → vision-estimated PCI → conformal interval → RSL interval →
+> Camera → YOLOv8s detectors (Model B, three-class; Model P, pothole-only) →
+> vision-estimated PCI → conformal interval → RSL interval (designed, not built) →
 > budget optimiser → offline HTML dashboard.
 >
-> **Status: design phase. No code yet.** Nothing below about running or testing is
-> live until the week-1 skeleton lands.
+> **Status (2026-10-04, from [`docs/REPO-MAP.md`](docs/REPO-MAP.md) §6):** built and
+> tested. T1–T7, T9–T12, T16 and T17 have their outputs. T13 (simulation), T14 (edge
+> hardware) and T15 (Chennai footage) are not run; §10a says what each waits for. T0
+> and T8 have no output to check. The map is generated from evidence: rerun
+> `uv run python scripts/repo_map.py` instead of trusting this paragraph.
+> `uv run python scripts/check_repo.py` runs every check CI runs.
 
 Quoted from `docs/design.md`:
 
@@ -41,7 +46,7 @@ Quoted from `docs/design.md`:
 >
 > The novelty is the **integration and the decision**, not the detector.
 
-Evidence at build time, beside the quotes' own status lines: 107 commits from 2026-08-06 to 2026-10-04; Python files: 1 in `kaggle/`, 34 in `scripts/`, 51 in `src/`, 39 in `tests/`.
+Evidence at build time, beside the quotes' own status lines: 119 commits from 2026-08-06 to 2026-10-04; Python files: 1 in `kaggle/`, 35 in `scripts/`, 51 in `src/`, 42 in `tests/`.
 
 ## 2. Pipeline
 
@@ -91,7 +96,7 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `src/certain_road/cli.py` | 430 | 2026-08-06 | 2026-09-06 | Single entrypoint. |  |
 | `src/certain_road/core/__init__.py` | 1 | 2026-08-06 | 2026-08-06 | core stage. |  |
 | `src/certain_road/core/geometry.py` | 89 | 2026-09-22 | 2026-09-22 | T12 — ground-plane geometry: inverse perspective mapping and GPS helpers. |  |
-| `src/certain_road/core/paths.py` | 31 | 2026-08-06 | 2026-08-06 | Repository-relative path resolution. |  |
+| `src/certain_road/core/paths.py` | 27 | 2026-08-06 | 2026-10-04 | Repository-relative path resolution. |  |
 | `src/certain_road/dashboard/__init__.py` | 1 | 2026-09-05 | 2026-09-05 | The single product screen. |  |
 | `src/certain_road/dashboard/plans.py` | 75 | 2026-09-29 | 2026-10-04 | Both repair plans at one budget, side by side, scored on the truth (D079). |  |
 | `src/certain_road/dashboard/render.py` | 563 | 2026-10-03 | 2026-10-04 | The offline dashboard (D020): one self-contained HTML file built from result files. |  |
@@ -118,7 +123,7 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `src/certain_road/perception/train.py` | 104 | 2026-09-05 | 2026-09-05 | YOLOv8n training on Apple Silicon MPS. |  |
 | `src/certain_road/runtime/__init__.py` | 6 | 2026-09-06 | 2026-09-06 | On-device composition root. |  |
 | `src/certain_road/runtime/pipeline.py` | 84 | 2026-09-06 | 2026-09-06 | The loop that runs on the Jetson: frames in, CAN frames out. |  |
-| `src/certain_road/runtime/recorder.py` | 94 | 2026-09-06 | 2026-09-06 | Persist what a drive produced. |  |
+| `src/certain_road/runtime/recorder.py` | 83 | 2026-09-06 | 2026-10-04 | Persist what a drive produced. |  |
 | `src/certain_road/sim/__init__.py` | 5 | 2026-09-05 | 2026-09-05 | Simulator - a composition root like cli.py. |  |
 | `src/certain_road/sim/model.py` | 97 | 2026-09-05 | 2026-09-05 | Kinematic bicycle model for the simulated robot. |  |
 | `src/certain_road/sim/project.py` | 82 | 2026-09-05 | 2026-09-05 | Project a world-space pothole into an image-space `Detection`. |  |
@@ -143,8 +148,9 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `scripts/build_pool.py` | 251 | 2026-09-22 | 2026-10-04 | T2 — build the YOLO image pool, the split lists, and the split audit. |  |
 | `scripts/build_pothole_pool.py` | 119 | 2026-09-22 | 2026-10-04 | D072 — a pothole-only pool for Model P. |  |
 | `scripts/check_bharatpothole.py` | 91 | 2026-09-22 | 2026-10-04 | D072 — does BharatPotHole overlap the India holdout? |  |
-| `scripts/eval_locked.py` | 246 | 2026-09-22 | 2026-10-04 | T6 — locked evaluation on a held-out set. |  |
-| `scripts/eval_open.py` | 121 | 2026-09-22 | 2026-10-04 | T6 — open evaluation on a non-held-out set, under the frozen settings. |  |
+| `scripts/check_repo.py` | 101 | 2026-10-04 | 2026-10-04 | Every repository check, in order: `uv run python scripts/check_repo.py` (or `make check`). |  |
+| `scripts/eval_locked.py` | 250 | 2026-09-22 | 2026-10-04 | T6 — locked evaluation on a held-out set. |  |
+| `scripts/eval_open.py` | 125 | 2026-09-22 | 2026-10-04 | T6 — open evaluation on a non-held-out set, under the frozen settings. |  |
 | `scripts/eval_video.py` | 304 | uncommitted | uncommitted | D075 — per-pothole confirmation on real road video, one model's pothole channel. | untracked · read-only lane |
 | `scripts/exhaustive_groups.py` | 112 | 2026-09-22 | 2026-10-04 | D062 — build scene groups from an EXHAUSTIVE comparison, not a hash prefilter. |  |
 | `scripts/exhaustive_leak_check.py` | 125 | 2026-09-22 | 2026-10-04 | D062 — prove the India holdout is clean by comparing *every* pair. |  |
@@ -159,7 +165,7 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `scripts/mps_sanity.py` | 129 | 2026-09-22 | 2026-10-04 | T4 — can this Mac train, and does MPS agree with CPU? |  |
 | `scripts/plot_style.py` | 52 | 2026-09-28 | 2026-10-04 | Shared chart style for the static result figures (dataviz reference palette). |  |
 | `scripts/qa_raw.py` | 120 | 2026-09-22 | 2026-10-04 | T1 step 5 — draw ground-truth boxes on raw images so they can be eyeballed. |  |
-| `scripts/repo_map.py` | 1348 | uncommitted | uncommitted | Generate docs/REPO-MAP.md: what exists, when it was built, and what is left. | untracked |
+| `scripts/repo_map.py` | 1403 | 2026-10-04 | 2026-10-04 | Generate docs/REPO-MAP.md: what exists, when it was built, and what is left. |  |
 | `scripts/scene_groups.py` | 96 | 2026-09-22 | 2026-10-04 | D061 — group India images that show the same road scene. |  |
 | `scripts/score_video_gt.py` | 162 | uncommitted | uncommitted | Score each model's confirmed video tracks against hand-counted pothole intervals. | untracked · read-only lane |
 | `scripts/stage_upload.py` | 94 | 2026-09-22 | 2026-10-04 | T3 — stage only what Kaggle needs, and nothing it must never see. |  |
@@ -196,7 +202,7 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `configs/eval/thresholds.yaml` | 15 | 2026-08-15 | 2026-08-15 | mAP is computed over the full precision-recall curve, so it uses a minimal floor. |  |
 | `configs/eval/video.yaml` | 40 | uncommitted | uncommitted | D075 — per-pothole confirmation on road video (scripts/eval_video.py). | untracked · read-only lane |
 | `configs/project.yaml` | 115 | 2026-09-22 | 2026-09-28 | RoadSight project configuration. |  |
-| `configs/repo_map.yaml` | 95 | uncommitted | uncommitted | scripts/repo_map.py -> docs/REPO-MAP.md. | untracked |
+| `configs/repo_map.yaml` | 105 | 2026-10-04 | 2026-10-04 | scripts/repo_map.py -> docs/REPO-MAP.md. |  |
 | `configs/sim/robot.yaml` | 23 | 2026-09-05 | 2026-09-05 | Simulated robot and camera geometry. |  |
 | `configs/train/yolov8n.yaml` | 24 | 2026-08-07 | 2026-08-07 | YOLOv8n on the RDD2022 India subset (D025). |  |
 | `configs/train/yolov8s.yaml` | 36 | 2026-08-14 | 2026-08-14 | YOLOv8s on the RDD2022 multi-country corpus (D042). |  |
@@ -226,6 +232,7 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `tests/test_drift.py` | 149 | 2026-09-22 | 2026-10-04 | T11 — a drift detector that alarms on stationary data is worse than none. |  |
 | `tests/test_driving_corridor.py` | 166 | 2026-09-05 | 2026-09-05 | Tests for the driving corridor: geometry (Task A) and proximity, urgency, lateral offset (Task B). |  |
 | `tests/test_driving_decision.py` | 216 | 2026-09-05 | 2026-09-06 | The drive decision layer: temporal confirmation, confidence gating, and the state machine. |  |
+| `tests/test_driving_perceive.py` | 90 | 2026-10-04 | 2026-10-04 | `build_perception`: the rules the simulator and the runtime share. |  |
 | `tests/test_eval_video.py` | 58 | uncommitted | uncommitted | D075 — per-track 3-of-5 confirmation behind a horizon gate. | untracked · read-only lane |
 | `tests/test_fixtures.py` | 67 | 2026-08-06 | 2026-09-05 | no docstring |  |
 | `tests/test_geometry.py` | 88 | 2026-09-22 | 2026-10-04 | T12 — IPM must invert exactly, and must agree with the simulator's camera. |  |
@@ -237,14 +244,16 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `tests/test_perception_predict.py` | 201 | 2026-09-05 | 2026-09-05 | Tests for the predict.py schema/remap boundary. |  |
 | `tests/test_perception_remap.py` | 35 | 2026-09-05 | 2026-09-05 | no docstring |  |
 | `tests/test_perception_source.py` | 59 | 2026-09-06 | 2026-09-06 | Frame sources, exercised against a real video file written on the fly. |  |
+| `tests/test_pool_split.py` | 78 | 2026-10-04 | 2026-10-04 | The T2 split functions, on synthetic names: no image pool needed. |  |
 | `tests/test_repo_hygiene.py` | 97 | 2026-10-04 | 2026-10-04 | A fresh clone must not depend on one machine's home directory (D084). |  |
-| `tests/test_repo_map.py` | 209 | uncommitted | uncommitted | REPO-MAP.md is generated; these pin the extraction it stands on. | untracked |
+| `tests/test_repo_map.py` | 228 | 2026-10-04 | 2026-10-04 | REPO-MAP.md is generated; these pin the extraction it stands on. |  |
 | `tests/test_runtime_pipeline.py` | 110 | 2026-09-06 | 2026-09-06 | The on-device loop, run end to end on a laptop. |  |
 | `tests/test_runtime_recorder.py` | 97 | 2026-09-06 | 2026-09-06 | Recording a drive to artifacts. |  |
 | `tests/test_score_video_gt.py` | 85 | uncommitted | uncommitted | Per-pothole scoring of confirmed video tracks against hand-counted intervals. | untracked · read-only lane |
 | `tests/test_scoring_allocation.py` | 194 | 2026-09-22 | 2026-10-04 | T12 — scoring must stay monotone, and the ILP must actually beat greedy. |  |
 | `tests/test_sim_matrix.py` | 58 | 2026-09-05 | 2026-09-05 | The trial matrix, asserted. |  |
 | `tests/test_sim_model.py` | 117 | 2026-09-05 | 2026-09-05 | Kinematics, projection, and the integration that proves the simulator exercises the real driving code rather than paralleling it. |  |
+| `tests/test_sim_view.py` | 33 | 2026-10-04 | 2026-10-04 | `render`: the two-panel image `certain-road sim run` writes. |  |
 | `tests/test_splits.py` | 201 | 2026-09-22 | 2026-10-04 | T2 — the split lists must be leakage-proof, and these tests are the proof. |  |
 | `tests/test_survey_segment.py` | 120 | 2026-09-06 | 2026-09-06 | Grouping a drive into evaluation segments. |  |
 | `tests/test_train_config.py` | 102 | 2026-08-07 | 2026-09-05 | no docstring |  |
@@ -390,6 +399,7 @@ What is each file for, and when was it first and last committed? Purpose is the 
 |---|---|---|---|---|---|
 | `docs/DECISIONS.md` | 3362 | 2026-08-06 | 2026-10-04 | Decision log | modified |
 | `docs/MENTOR-WALKTHROUGH.md` | 1403 | 2026-09-05 | 2026-09-22 | certain-road — a walkthrough |  |
+| `docs/ONBOARDING.md` | 66 | 2026-10-04 | 2026-10-04 | Onboarding |  |
 | `docs/colab-training-guide.md` | 220 | 2026-09-07 | 2026-09-07 | Training on Colab (T4) |  |
 | `docs/datasets/multicountry-summary.md` | 228 | 2026-09-22 | 2026-09-22 | Dataset summary — RDD2022, all six non-India countries |  |
 | `docs/datasets/rdd2022-india.md` | 133 | 2026-09-22 | 2026-09-22 | Dataset card — RDD2022 India subset |  |
@@ -406,10 +416,10 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `docs/superpowers/plans/2026-09-28-video-extent.md` | 71 | uncommitted | uncommitted | Bengaluru silence — scale, Model P, drift, and the scope record | untracked |
 | `docs/superpowers/plans/2026-09-28-video-gt.md` | 56 | uncommitted | uncommitted | Video ground truth: score B and P per pothole; record D081 | untracked |
 | `docs/superpowers/plans/2026-09-29-t16-dashboard.md` | 50 | 2026-09-29 | 2026-10-03 | T16 dashboard |  |
-| `docs/superpowers/plans/2026-10-03-d082.md` | 99 | uncommitted | uncommitted | D082: record the model attribution the dashboard already cites | untracked |
+| `docs/superpowers/plans/2026-10-03-d082.md` | 99 | 2026-10-04 | 2026-10-04 | D082: record the model attribution the dashboard already cites |  |
 | `docs/superpowers/plans/2026-10-03-t17-results.md` | 35 | 2026-10-03 | 2026-10-03 | T17 results report |  |
-| `docs/superpowers/plans/2026-10-04-cleanup.md` | 156 | uncommitted | uncommitted | Release-readiness cleanup | untracked |
-| `docs/superpowers/plans/2026-10-04-repo-map.md` | 88 | uncommitted | uncommitted | Repo map: a generated onboarding document | untracked |
+| `docs/superpowers/plans/2026-10-04-cleanup.md` | 189 | 2026-10-04 | 2026-10-04 | Release-readiness cleanup |  |
+| `docs/superpowers/plans/2026-10-04-repo-map.md` | 88 | 2026-10-04 | 2026-10-04 | Repo map: a generated onboarding document |  |
 | `docs/superpowers/plans/archive/2026-08-06-week-1-foundation.md` | 2245 | 2026-09-05 | 2026-10-04 | Week 1 Foundation Implementation Plan |  |
 | `docs/superpowers/plans/archive/2026-08-15-week-2-assess.md` | 526 | 2026-09-05 | 2026-09-05 | Week 2: Assess — Vision-Estimated PCI Implementation Plan |  |
 | `docs/superpowers/plans/archive/2026-08-16-mentor-walkthrough-doc.md` | 65 | 2026-09-05 | 2026-09-05 | Plan — mentor walkthrough document |  |
@@ -463,13 +473,14 @@ What is each file for, and when was it first and last committed? Purpose is the 
 
 | Path | Lines | First commit | Last commit | Purpose | Working tree |
 |---|---|---|---|---|---|
-| `.github/workflows/ci.yml` | 16 | 2026-08-06 | 2026-08-06 | no docstring |  |
+| `.github/workflows/ci.yml` | 15 | 2026-08-06 | 2026-10-04 | no docstring |  |
 | `.gitignore` | 32 | 2026-08-06 | 2026-09-22 | Data, models, run outputs — large, regenerable, never committed Anchored to the repo root: an unanchored `data/` also matches configs/data/, which holds committed dataset YAMLs (T2). |  |
 | `.importlinter` | 93 | 2026-08-06 | 2026-09-22 | no docstring |  |
 | `.python-version` | 1 | 2026-08-06 | 2026-08-06 | no docstring |  |
-| `CLAUDE.md` | 50 | 2026-08-06 | 2026-09-22 | certain-road |  |
-| `README.md` | 151 | 2026-08-06 | 2026-09-22 | certain-road |  |
-| `TASK_LOG.md` | 342 | 2026-09-22 | 2026-09-22 | RoadSight — task log |  |
+| `CLAUDE.md` | 59 | 2026-08-06 | 2026-10-04 | certain-road |  |
+| `Makefile` | 4 | 2026-10-04 | 2026-10-04 | `make check` runs every check CI runs; the steps are in scripts/check_repo.py. |  |
+| `README.md` | 154 | 2026-08-06 | 2026-10-04 | certain-road |  |
+| `TASK_LOG.md` | 348 | 2026-09-22 | 2026-10-04 | RoadSight — task log |  |
 | `pyproject.toml` | 64 | 2026-08-06 | 2026-09-22 | no docstring | modified |
 | `requirements.txt` | 381 | 2026-09-22 | 2026-09-22 | This file was autogenerated by uv via the following command: uv export --format requirements-txt --no-hashes | modified |
 | `splits/india_cal.txt` | 1156 | 2026-09-22 | 2026-09-22 | no docstring |  |
@@ -520,7 +531,7 @@ What does `certain_road.artifacts` expose, and is anything outside the package u
 |  | `ArtifactModel` | `class ArtifactModel(BaseModel)` | One row of one artifact. | **possibly unused** |
 |  | `FrameRow` | `class FrameRow(ArtifactModel)` | One sampled frame. Sample spacing and segment length are config, not constants. | 1 code, 2 test files |
 |  | `DetectionRow` | `class DetectionRow(ArtifactModel)` | One detected distress instance, in pixel coordinates. | 4 code, 5 test files |
-|  | `Detection` | `class Detection` | One detection as a lightweight in-memory value, for real-time pipelines. | 4 code, 4 test files |
+|  | `Detection` | `class Detection` | One detection as a lightweight in-memory value, for real-time pipelines. | 4 code, 5 test files |
 |  | `DriveLogRow` | `class DriveLogRow(ArtifactModel)` | One frame's drive decision and the command it produced. | 1 code, 2 test files |
 |  | `SegmentRow` | `class SegmentRow(ArtifactModel)` | One evaluation segment: a fixed block of consecutive frames. | 1 code, 1 test files |
 
@@ -581,11 +592,10 @@ What does `certain_road.core` expose, and is anything outside the package using 
 |  | `haversine_m` | `haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float` | Great-circle distance in metres. | 1 code, 1 test files |
 |  | `interp_track` | `interp_track(ts: list[float], lat: list[float], lon: list[float], t: float) -> tuple[float, float]` | Position at time `t`, linearly interpolated between fixes. | tests only (1) |
 | `certain_road.core.paths` | (module) |  | Repository-relative path resolution. |  |
-|  | `repo_root` | `repo_root() -> Path` | Walk upward from this file until the directory holding pyproject.toml. | 36 code, 9 test files |
+|  | `repo_root` | `repo_root() -> Path` | Walk upward from this file until the directory holding pyproject.toml. | 36 code, 11 test files |
 |  | `data_dir` | `data_dir() -> Path` | no docstring | **possibly unused** |
 |  | `raw_dir` | `raw_dir() -> Path` | no docstring | 4 code, 0 test files |
 |  | `processed_dir` | `processed_dir() -> Path` | no docstring | 1 code, 0 test files |
-|  | `models_dir` | `models_dir() -> Path` | no docstring | **possibly unused** |
 
 ### `certain_road.dashboard`
 
@@ -624,30 +634,30 @@ What does `certain_road.driving` expose, and is anything outside the package usi
 |---|---|---|---|---|
 | `certain_road.driving` | (module) |  | Drive pipeline: what should the robot do right now? |  |
 | `certain_road.driving.confirm` | (module) |  | N-of-M temporal confirmation. |  |
-|  | `Confirmer` | `class Confirmer` | Sliding window over a boolean condition. | 3 code, 1 test files |
+|  | `Confirmer` | `class Confirmer` | Sliding window over a boolean condition. | 3 code, 2 test files |
 | `certain_road.driving.controller` | (module) |  | Turn a drive state into a wire `Command`. |  |
 |  | `command_for` | `command_for(state: DriveState, policy: Policy) -> Command` | no docstring | 2 code, 1 test files |
 | `certain_road.driving.corridor` | (module) |  | Is a detection in the robot's driving path, and how urgently does it matter? |  |
-|  | `Corridor` | `class Corridor` | Driving corridor geometry and decision thresholds, in image fractions. | 3 code, 1 test files |
+|  | `Corridor` | `class Corridor` | Driving corridor geometry and decision thresholds, in image fractions. | 3 code, 2 test files |
 |  | `Urgency` | `class Urgency(StrEnum)` | How urgently a confirmed in-path hazard needs a reaction. | tests only (2) |
-|  | `load_corridor` | `load_corridor(path: Path) -> Corridor` | Load a `Corridor` from a YAML file shaped like `configs/driving/corridor.yaml`. | 1 code, 6 test files |
+|  | `load_corridor` | `load_corridor(path: Path) -> Corridor` | Load a `Corridor` from a YAML file shaped like `configs/driving/corridor.yaml`. | 1 code, 7 test files |
 |  | `corridor_polygon` | `corridor_polygon(corridor: Corridor, img_w: int, img_h: int) -> np.ndarray` | The corridor trapezoid in pixel coordinates for an `img_w` x `img_h` frame. | 1 code, 1 test files |
 |  | `overlap_fraction` | `overlap_fraction(det: Detection, corridor: Corridor) -> float` | Fraction of `det`'s box area that lies inside the corridor polygon. | tests only (1) |
-|  | `in_path` | `in_path(det: Detection, corridor: Corridor, *, min_overlap: float) -> bool` | Whether `det` overlaps the corridor by at least `min_overlap`. | tests only (2) |
+|  | `in_path` | `in_path(det: Detection, corridor: Corridor, *, min_overlap: float) -> bool` | Whether `det` overlaps the corridor by at least `min_overlap`. | tests only (3) |
 |  | `proximity` | `proximity(det: Detection) -> float` | Ground-plane proximity of `det`, from the box's bottom edge, not its | tests only (1) |
-|  | `urgency` | `urgency(det: Detection, corridor: Corridor) -> Urgency` | Classify `det`'s proximity against `corridor`'s configured thresholds. | tests only (1) |
+|  | `urgency` | `urgency(det: Detection, corridor: Corridor) -> Urgency` | Classify `det`'s proximity against `corridor`'s configured thresholds. | tests only (2) |
 |  | `lateral_offset` | `lateral_offset(det: Detection, corridor: Corridor) -> float` | Signed horizontal offset of `det`'s box centre from the corridor | tests only (1) |
-|  | `Zone` | `class Zone(StrEnum)` | Where a detection sits relative to the driving line. | **possibly unused** |
-|  | `lateral_zone` | `lateral_zone(det: Detection, corridor: Corridor, *, escape_lanes: float) -> Zone` | Classify `det` into the driving lane, an escape lane, or outside. | **possibly unused** |
+|  | `Zone` | `class Zone(StrEnum)` | Where a detection sits relative to the driving line. | tests only (1) |
+|  | `lateral_zone` | `lateral_zone(det: Detection, corridor: Corridor, *, escape_lanes: float) -> Zone` | Classify `det` into the driving lane, an escape lane, or outside. | tests only (1) |
 | `certain_road.driving.decision` | (module) |  | The drive state machine. |  |
 |  | `DriveState` | `class DriveState(StrEnum)` | no docstring | 2 code, 2 test files |
 |  | `Hazard` | `class Hazard` | A confirmed hazard, already through temporal confirmation. | tests only (1) |
 |  | `Perception` | `class Perception` | One frame's view of the world, as the state machine sees it. | tests only (1) |
 |  | `Policy` | `class Policy` | no docstring | 2 code, 0 test files |
-|  | `load_policy` | `load_policy(path: Path) -> Policy` | no docstring | 1 code, 5 test files |
+|  | `load_policy` | `load_policy(path: Path) -> Policy` | no docstring | 1 code, 6 test files |
 |  | `next_state` | `next_state(current: DriveState, perception: Perception, policy: Policy) -> DriveState` | Compute the next state. Deterministic and side-effect free. | 2 code, 1 test files |
 | `certain_road.driving.perceive` | (module) |  | Turn a frame's detections into a `Perception` the state machine can judge. |  |
-|  | `build_perception` | `build_perception(detections: list[Detection], corridor: Corridor, confirmer: Confirmer, *, escape_lanes: float, frame_age: int=0, healthy: bool=True) -> tuple[Perception, Detection \| None]` | Judge one frame. Returns the perception and the governing detection, if any. | 2 code, 0 test files |
+|  | `build_perception` | `build_perception(detections: list[Detection], corridor: Corridor, confirmer: Confirmer, *, escape_lanes: float, frame_age: int=0, healthy: bool=True) -> tuple[Perception, Detection \| None]` | Judge one frame. Returns the perception and the governing detection, if any. | 2 code, 1 test files |
 
 ### `certain_road.perception`
 
@@ -703,12 +713,12 @@ What does `certain_road.perception.dataset` expose, and is anything outside the 
 |  | `download_rdd2022` | `download_rdd2022(dest: Path) -> Path` | Download the archive, resuming if a partial file is present. | 1 code, 1 test files |
 |  | `extract_country` | `extract_country(zip_path: Path, country: str, dest: Path) -> Path` | Extract one country from the archive's two-level nesting (D036). | 1 code, 1 test files |
 | `certain_road.perception.dataset.pool` | (module) |  | T2 — one image pool, no duplicate files, leakage-proof split lists. |  |
-|  | `pool_name` | `pool_name(country: str, stem: str) -> str` | `<Country>__<stem>`, per T2. | 1 code, 0 test files |
-|  | `unit_hash` | `unit_hash(name: str, salt: str=SALT) -> float` | Stable value in [0, 1) from the name alone. | **possibly unused** |
-|  | `split_nonindia` | `split_nonindia(stems_by_country: dict[str, list[str]], *, val_frac: float, salt: str=SALT) -> dict[str, list[str]]` | Per-country 80/20. Splitting per country keeps every country's val share | 1 code, 0 test files |
-|  | `split_india` | `split_india(stems: list[str], *, fracs: dict[str, float], salt: str=SALT) -> dict[str, list[str]]` | Per-image split into india_train/val/cal/test at the configured fractions. | 1 code, 0 test files |
-|  | `split_india_grouped` | `split_india_grouped(stems: list[str], *, fracs: dict[str, float], groups: list[list[str]], salt: str=SALT, class_counts: dict[str, tuple[int, int]] \| None=None, balance_weight: float=4.0) -> dict[str, list[str]]` | Split India keeping same-scene groups intact (D061). | 1 code, 0 test files |
-|  | `sample_replay` | `sample_replay(train: list[str], n: int, seed: int) -> list[str]` | Fixed sample of non-India train used to rehearse Model B against forgetting. | 1 code, 0 test files |
+|  | `pool_name` | `pool_name(country: str, stem: str) -> str` | `<Country>__<stem>`, per T2. | 1 code, 1 test files |
+|  | `unit_hash` | `unit_hash(name: str, salt: str=SALT) -> float` | Stable value in [0, 1) from the name alone. | tests only (1) |
+|  | `split_nonindia` | `split_nonindia(stems_by_country: dict[str, list[str]], *, val_frac: float, salt: str=SALT) -> dict[str, list[str]]` | Per-country 80/20. Splitting per country keeps every country's val share | 1 code, 1 test files |
+|  | `split_india` | `split_india(stems: list[str], *, fracs: dict[str, float], salt: str=SALT) -> dict[str, list[str]]` | Per-image split into india_train/val/cal/test at the configured fractions. | 1 code, 1 test files |
+|  | `split_india_grouped` | `split_india_grouped(stems: list[str], *, fracs: dict[str, float], groups: list[list[str]], salt: str=SALT, class_counts: dict[str, tuple[int, int]] \| None=None, balance_weight: float=4.0) -> dict[str, list[str]]` | Split India keeping same-scene groups intact (D061). | 1 code, 1 test files |
+|  | `sample_replay` | `sample_replay(train: list[str], n: int, seed: int) -> list[str]` | Fixed sample of non-India train used to rehearse Model B against forgetting. | 1 code, 1 test files |
 |  | `materialise_one` | `materialise_one(*, country: str, stem: str, img_src: Path, xml_src: Path, images_dir: Path, labels_dir: Path, max_side: int, min_box_px: float) -> tuple[bool, Counter]` | Write one image+label pair into the pool. Returns (resized?, rejections). | 1 code, 0 test files |
 |  | `write_split_txt` | `write_split_txt(names: list[str], path: Path) -> None` | One `./images/<name>.jpg` per line — relative so Kaggle needs no rewrite. | 1 code, 0 test files |
 | `certain_road.perception.dataset.split` | (module) |  | Deterministic four-way split. |  |
@@ -738,7 +748,6 @@ What does `certain_road.runtime` expose, and is anything outside the package usi
 |  | `run` | `run(source: FrameSource, detector: Detector, corridor: Corridor, policy: Policy, transport: Transport, *, escape_lanes: float) -> Iterator[Step]` | Drive the loop, yielding one `Step` per frame. | tests only (3) |
 | `certain_road.runtime.recorder` | (module) |  | Persist what a drive produced. |  |
 |  | `record` | `record(steps: Iterable[Step], out_dir: Path, *, survey_date: date \| None=None) -> dict[str, Path]` | Consume a drive and write its artifacts. Returns the paths written. | tests only (2) |
-|  | `tee` | `tee(steps: Iterable[Step], sink: list[Step]) -> Iterator[Step]` | Pass steps through while collecting them. | **possibly unused** |
 
 ### `certain_road.sim`
 
@@ -751,18 +760,18 @@ What does `certain_road.sim` expose, and is anything outside the package using i
 |  | `Camera` | `class Camera` | Idealised pinhole camera. No lens distortion, no calibration. | **possibly unused** |
 |  | `Robot` | `class Robot` | no docstring | **possibly unused** |
 |  | `RobotState` | `class RobotState` | no docstring | tests only (1) |
-|  | `load_robot` | `load_robot(path: Path) -> Robot` | no docstring | 1 code, 2 test files |
+|  | `load_robot` | `load_robot(path: Path) -> Robot` | no docstring | 1 code, 3 test files |
 |  | `step` | `step(state: RobotState, command: Command, dt: float, robot: Robot) -> RobotState` | Advance one timestep. Deterministic: same inputs always give same output. | tests only (1) |
 | `certain_road.sim.project` | (module) |  | Project a world-space pothole into an image-space `Detection`. |  |
 |  | `project_pothole` | `project_pothole(world_x: float, world_y: float, radius: float, state: RobotState, camera: Camera) -> Detection \| None` | World-space pothole -> image-space `Detection`, or None if not visible. | tests only (1) |
 | `certain_road.sim.run` | (module) |  | Closed-loop scenario runner: perception → confirmation → decision → actuation. |  |
-|  | `run_scenario` | `run_scenario(scenario: Scenario, robot: Robot, corridor: Corridor, policy: Policy, *, frames: int \| None=None) -> Trace` | Drive the scenario under closed-loop control. | 1 code, 1 test files |
+|  | `run_scenario` | `run_scenario(scenario: Scenario, robot: Robot, corridor: Corridor, policy: Policy, *, frames: int \| None=None) -> Trace` | Drive the scenario under closed-loop control. | 1 code, 2 test files |
 | `certain_road.sim.scenario` | (module) |  | Repeatable trial scenarios. |  |
 |  | `Pothole` | `class Pothole` | no docstring | **possibly unused** |
 |  | `Scenario` | `class Scenario` | no docstring | **possibly unused** |
 |  | `Trace` | `class Trace` | What one scenario run produced, frame by frame. | **possibly unused** |
 | `certain_road.sim.view` | (module) |  | Top-down render of a scenario run, beside the camera view the robot saw. |  |
-|  | `render` | `render(scenario: Scenario, trace: Trace, robot: Robot, corridor: Corridor, out: Path) -> Path` | Write a two-panel PNG. Returns the path written. | 1 code, 0 test files |
+|  | `render` | `render(scenario: Scenario, trace: Trace, robot: Robot, corridor: Corridor, out: Path) -> Path` | Write a two-panel PNG. Returns the path written. | 1 code, 1 test files |
 
 ### `certain_road.survey`
 
@@ -805,6 +814,7 @@ What can be run, with which arguments, reading and writing what? Paths and confi
 | `build_pool.py` | T2 — build the YOLO image pool, the split lists, and the split audit. | none | `configs/data/*.yaml`<br>`configs/data/model_a.yaml`<br>`configs/data/model_b.yaml`<br>`configs/project.yaml`<br>`data/raw/RDD2022/*/train/annotations/xmls/*.xml`<br>`data/raw/RDD2022/*/train/images/*.jpg`<br>`data/yolo/images`<br>`data/yolo/labels`<br>`results/T2/india_scene_groups.json`<br>`results/T2/nonindia_excluded.json` | `configs/data`<br>`data/yolo/*.txt`<br>`results/T2/split_audit.json`<br>`results/T2/split_audit.md` | `countries.india` = `India`<br>`countries.nonindia`<br>`paths.splits` = `splits`<br>`paths.yolo` = `data/yolo`<br>`seed`<br>`split` | 2026-09-22 02:25 |
 | `build_pothole_pool.py` | D072 — a pothole-only pool for Model P. | none | `configs/project.yaml`<br>`data/raw/bharatpothole/BharatPotHole/BharatPotHole/*/images`<br>`data/raw/bharatpothole/BharatPotHole/BharatPotHole/*/labels/*.txt`<br>`data/yolo/*.txt`<br>`data/yolo/images/*.jpg`<br>`data/yolo/labels/*.txt` | `data/yolo_pothole/images/*.jpg`<br>`data/yolo_pothole/labels/*.txt`<br>`data/yolo_pothole/manifest.json`<br>`data/yolo_pothole/p_bph_val.txt`<br>`data/yolo_pothole/p_train.txt`<br>`data/yolo_pothole/p_val.txt` | `paths.yolo` = `data/yolo`<br>`pothole_class` | 2026-09-22 18:31 |
 | `check_bharatpothole.py` | D072 — does BharatPotHole overlap the India holdout? | none | `configs/project.yaml`<br>`data/raw/bharatpothole/BharatPotHole/BharatPotHole/*/images`<br>`data/yolo/*.txt`<br>`data/yolo/images/*.jpg` | `results/T9/bharatpothole_overlap.json` | `paths.yolo` = `data/yolo` | 2026-09-22 18:31 |
+| `check_repo.py` | Every repository check, in order: `uv run python scripts/check_repo.py` (or `make check`). | none | `scripts` | — | `generated`<br>`output` | outputs absent |
 | `eval_locked.py` | T6 — locked evaluation on a held-out set. | `--model` (required) ∈ sorted(ALLOWED)<br>`--set` (required)<br>`--weights` (required)<br>`--data-root` = YOLO_DIR<br>`--self-test`<br>`--out` = None | `configs/project.yaml`<br>`data/yolo`<br>`results/LOCKED/*_*_run/gt_root/images/*.jpg`<br>`results/LOCKED/*_*_run/val` | `results/LOCKED/*_*.json`<br>`results/LOCKED/*_*_run/data.yaml`<br>`results/LOCKED/*_*_run/gt_root/*.txt`<br>`results/LOCKED/*_*_run/gt_root/images`<br>`results/LOCKED/*_*_run/gt_root/labels/*.txt` | `classes`<br>`eval`<br>`paths.yolo` = `data/yolo`<br>`pothole_class` | 2026-09-24 17:19 |
 | `eval_open.py` | T6 — open evaluation on a non-held-out set, under the frozen settings. | `--weights` (required)<br>`--set` (required)<br>`--name` (required) | `configs/project.yaml`<br>`data/yolo/*.txt`<br>`data/yolo/images/*.jpg`<br>`data/yolo/labels`<br>`results/*/val` | `results/*/data.yaml`<br>`results/*/metrics.json` | `classes`<br>`eval`<br>`paths.yolo` = `data/yolo` | 2026-09-22 13:36 |
 | `eval_video.py` (read-only lane) | D075 — per-pothole confirmation on real road video, one model's pothole channel. | `video` (required)<br>`--horizon` = VCFG['horizon_frac']<br>`--model` = 'B' ∈ sorted(VCFG['models']) | `configs/eval/thresholds.yaml`<br>`configs/eval/video.yaml`<br>`configs/project.yaml`<br>`runs/video/*/*/annotated.mp4` | `results/video/*/*/summary.json` | `conf`<br>`confirm`<br>`device`<br>`eval.imgsz`<br>`horizon_frac`<br>`latency_warmup`<br>`models`<br>`tracker` | 2026-09-28 12:51 |
@@ -821,7 +831,7 @@ What can be run, with which arguments, reading and writing what? Paths and confi
 | `mps_sanity.py` | T4 — can this Mac train, and does MPS agree with CPU? | none | `configs/data/model_a.yaml`<br>`runs/t4/sanity_*/results.csv` | `results/mps_sanity.json` | — | 2026-09-22 01:54 |
 | `plot_style.py` | Shared chart style for the static result figures (dataviz reference palette). | none | — | — | — | outputs absent |
 | `qa_raw.py` | T1 step 5 — draw ground-truth boxes on raw images so they can be eyeballed. | none | `data/raw/RDD2022/*/train/annotations/xmls`<br>`data/raw/RDD2022/*/train/images/*.jpg` | `results/T1/qa/*__*.jpg`<br>`results/T1/qa/_montage_*.jpg` | — | 2026-09-22 01:08 |
-| `repo_map.py` | Generate docs/REPO-MAP.md: what exists, when it was built, and what is left. | none | `configs/project.yaml`<br>`configs/repo_map.yaml`<br>`docs/DECISIONS.md`<br>`results/*`<br>`results/*_*`<br>`results/LOCKED`<br>`results/RESULTS.md`<br>`runs`<br>`scripts`<br>`src/certain_road/core/paths.py` | — | `areas`<br>`citation_exclude`<br>`classes`<br>`collapse_over_files`<br>`decimals`<br>`external`<br>`generated`<br>`link_fixed_segments`<br>`never_collapse`<br>`output`<br>`path_roots`<br>`pipeline`<br>`quotes`<br>`read_only_lane`<br>`todo_markers`<br>`todo_scan`<br>`train_args`<br>`untracked_depth` | outputs absent |
+| `repo_map.py` | Generate docs/REPO-MAP.md: what exists, when it was built, and what is left. | none | `configs/project.yaml`<br>`configs/repo_map.yaml`<br>`docs/DECISIONS.md`<br>`results/*`<br>`results/*_*`<br>`results/LOCKED`<br>`results/RESULTS.md`<br>`runs`<br>`scripts`<br>`src/certain_road/core/paths.py` | — | `areas`<br>`citation_exclude`<br>`classes`<br>`collapse_over_files`<br>`decimals`<br>`external`<br>`generated`<br>`link_fixed_segments`<br>`never_collapse`<br>`output`<br>`path_roots`<br>`pipeline`<br>`produced_by`<br>`quotes`<br>`read_only_lane`<br>`todo_markers`<br>`todo_scan`<br>`train_args`<br>`untracked_depth` | outputs absent |
 | `scene_groups.py` | D061 — group India images that show the same road scene. | none | `configs/project.yaml`<br>`data/yolo/images/*.jpg` | `results/T2/india_scene_groups.json` | `paths.yolo` = `data/yolo` | 2026-09-22 02:20 |
 | `score_video_gt.py` (read-only lane) | Score each model's confirmed video tracks against hand-counted pothole intervals. | `gt` (required)<br>`--start` (required)<br>`--end` (required)<br>`--stem` = '2DV-cYmIvT4'<br>`--models` = ['B', 'P'] | `results/video/*/*/summary.json` | `results/video/*/gt_score.json` | — | 2026-09-28 13:21 |
 | `stage_upload.py` | T3 — stage only what Kaggle needs, and nothing it must never see. | none | `configs/project.yaml`<br>`data/kaggle_upload/images/*.jpg`<br>`data/kaggle_upload/labels/*.txt`<br>`data/yolo/*.txt`<br>`data/yolo/images/*.jpg`<br>`data/yolo/labels/*.txt` | `data/kaggle_upload/*.txt`<br>`data/kaggle_upload/images`<br>`data/kaggle_upload/labels`<br>`data/kaggle_upload/manifest.json` | `classes`<br>`paths.yolo` = `data/yolo` | 2026-09-22 02:26 |
@@ -835,7 +845,7 @@ What can be run, with which arguments, reading and writing what? Paths and confi
 
 ## 6. Task status
 
-Where does each spec task stand, and what decided it? Expected outputs are the writes of scripts whose docstring opens with the task id, `results/Tn*` directories, and the sources RESULTS.md names under the task's heading. All present: done; some: partial; none: not run; no expected output found: unknown. The commit is the last whose subject names the task. The last column is `TASK_LOG.md`'s own claim (last committed 2026-09-22), shown for contrast, never used.
+Where does each spec task stand, and what decided it? Expected outputs are the writes of scripts whose docstring opens with the task id, `results/Tn*` directories, and the sources RESULTS.md names under the task's heading. All present: done; some: partial; none: not run; no expected output found: unknown. The commit is the last whose subject names the task. The last column is `TASK_LOG.md`'s own claim, frozen when that file was superseded (see its banner): shown for contrast, never used.
 
 | Task | Name (source) | Status | Evidence | Scripts | Commit | TASK_LOG.md says |
 |---|---|---|---|---|---|---|
@@ -862,7 +872,7 @@ Where does each spec task stand, and what decided it? Expected outputs are the w
 
 ### 2026-08-06
 
-What was committed on 2026-08-06, naming which tasks and decisions?
+What was committed on 2026-08-06, naming which tasks and decisions? Commits that only regenerate this map are left out.
 
 | Commit | Subject | Tasks | Decisions | Files touched (by area) |
 |---|---|---|---|---|
@@ -888,7 +898,7 @@ What was committed on 2026-08-06, naming which tasks and decisions?
 
 ### 2026-08-07
 
-What was committed on 2026-08-07, naming which tasks and decisions?
+What was committed on 2026-08-07, naming which tasks and decisions? Commits that only regenerate this map are left out.
 
 | Commit | Subject | Tasks | Decisions | Files touched (by area) |
 |---|---|---|---|---|
@@ -902,7 +912,7 @@ What was committed on 2026-08-07, naming which tasks and decisions?
 
 ### 2026-08-14
 
-What was committed on 2026-08-14, naming which tasks and decisions?
+What was committed on 2026-08-14, naming which tasks and decisions? Commits that only regenerate this map are left out.
 
 | Commit | Subject | Tasks | Decisions | Files touched (by area) |
 |---|---|---|---|---|
@@ -910,7 +920,7 @@ What was committed on 2026-08-14, naming which tasks and decisions?
 
 ### 2026-08-15
 
-What was committed on 2026-08-15, naming which tasks and decisions?
+What was committed on 2026-08-15, naming which tasks and decisions? Commits that only regenerate this map are left out.
 
 | Commit | Subject | Tasks | Decisions | Files touched (by area) |
 |---|---|---|---|---|
@@ -925,7 +935,7 @@ What was committed on 2026-08-15, naming which tasks and decisions?
 
 ### 2026-09-05
 
-What was committed on 2026-09-05, naming which tasks and decisions?
+What was committed on 2026-09-05, naming which tasks and decisions? Commits that only regenerate this map are left out.
 
 | Commit | Subject | Tasks | Decisions | Files touched (by area) |
 |---|---|---|---|---|
@@ -944,7 +954,7 @@ What was committed on 2026-09-05, naming which tasks and decisions?
 
 ### 2026-09-06
 
-What was committed on 2026-09-06, naming which tasks and decisions?
+What was committed on 2026-09-06, naming which tasks and decisions? Commits that only regenerate this map are left out.
 
 | Commit | Subject | Tasks | Decisions | Files touched (by area) |
 |---|---|---|---|---|
@@ -960,7 +970,7 @@ What was committed on 2026-09-06, naming which tasks and decisions?
 
 ### 2026-09-07
 
-What was committed on 2026-09-07, naming which tasks and decisions?
+What was committed on 2026-09-07, naming which tasks and decisions? Commits that only regenerate this map are left out.
 
 | Commit | Subject | Tasks | Decisions | Files touched (by area) |
 |---|---|---|---|---|
@@ -969,7 +979,7 @@ What was committed on 2026-09-07, naming which tasks and decisions?
 
 ### 2026-09-22
 
-What was committed on 2026-09-22, naming which tasks and decisions?
+What was committed on 2026-09-22, naming which tasks and decisions? Commits that only regenerate this map are left out.
 
 | Commit | Subject | Tasks | Decisions | Files touched (by area) |
 |---|---|---|---|---|
@@ -1011,7 +1021,7 @@ What was committed on 2026-09-22, naming which tasks and decisions?
 
 ### 2026-09-24
 
-What was committed on 2026-09-24, naming which tasks and decisions?
+What was committed on 2026-09-24, naming which tasks and decisions? Commits that only regenerate this map are left out.
 
 | Commit | Subject | Tasks | Decisions | Files touched (by area) |
 |---|---|---|---|---|
@@ -1021,7 +1031,7 @@ What was committed on 2026-09-24, naming which tasks and decisions?
 
 ### 2026-09-28
 
-What was committed on 2026-09-28, naming which tasks and decisions?
+What was committed on 2026-09-28, naming which tasks and decisions? Commits that only regenerate this map are left out.
 
 | Commit | Subject | Tasks | Decisions | Files touched (by area) |
 |---|---|---|---|---|
@@ -1032,7 +1042,7 @@ What was committed on 2026-09-28, naming which tasks and decisions?
 
 ### 2026-09-29
 
-What was committed on 2026-09-29, naming which tasks and decisions?
+What was committed on 2026-09-29, naming which tasks and decisions? Commits that only regenerate this map are left out.
 
 | Commit | Subject | Tasks | Decisions | Files touched (by area) |
 |---|---|---|---|---|
@@ -1040,7 +1050,7 @@ What was committed on 2026-09-29, naming which tasks and decisions?
 
 ### 2026-10-03
 
-What was committed on 2026-10-03, naming which tasks and decisions?
+What was committed on 2026-10-03, naming which tasks and decisions? Commits that only regenerate this map are left out.
 
 | Commit | Subject | Tasks | Decisions | Files touched (by area) |
 |---|---|---|---|---|
@@ -1049,7 +1059,7 @@ What was committed on 2026-10-03, naming which tasks and decisions?
 
 ### 2026-10-04
 
-What was committed on 2026-10-04, naming which tasks and decisions?
+What was committed on 2026-10-04, naming which tasks and decisions? Commits that only regenerate this map are left out.
 
 | Commit | Subject | Tasks | Decisions | Files touched (by area) |
 |---|---|---|---|---|
@@ -1057,6 +1067,18 @@ What was committed on 2026-10-04, naming which tasks and decisions?
 | `5ce0ecc` | style: ruff format 48 tracked files, no behaviour change | — | — | kaggle 1 · scripts 28 · src 9 · tests 10 |
 | `ada6329` | docs: archived week-1 plan names the repo root portably | — | D084 | docs 1 |
 | `d231467` | D084: the locked run's absolute symlinks stay; a test pins every home path | — | D040, D075, D080, D082, D084 | docs 1 · tests 1 |
+| `ec04372` | REPO-MAP: generated onboarding map; generated files judged fresh by content | — | — | configs 1 · docs 2 · scripts 1 · tests 1 |
+| `fa07885` | docs: CLAUDE.md status from REPO-MAP, not "design phase, no code yet" | T0, T1, T12, T13, T14, T15, T16, T17, T7, T8, T9 | D018 | (root) 1 |
+| `534a049` | docs: TASK_LOG.md superseded by REPO-MAP §6; no longer maintained | T16, T17, T6, T7, T9 | — | (root) 1 · scripts 1 |
+| `bb302a2` | docs: README claims and commands checked against the repo | T1, T12, T13, T15, T16, T17, T7, T9 | D018, D053, D074 | (root) 1 |
+| `01a2193` | docs: one-page ONBOARDING.md, linked from CLAUDE.md and the README | — | D084 | (root) 2 · docs 1 |
+| `e1953aa` | tests: direct tests for the three modules no test imported | — | D009, D061 | tests 3 |
+| `0e7f7bd` | refactor: delete the two public functions nothing references | — | — | src 2 |
+| `aeca4f7` | REPO-MAP 10c: name the real producer of every unattributed result file | T10, T12, T2 | D061, D065, D066 | configs 1 · scripts 3 · tests 1 |
+| `6438c55` | check_repo: one command for every check, one line per step | — | D062 | (root) 3 · docs 1 · scripts 2 · tests 1 |
+| `1f78864` | ci: run exactly scripts/check_repo.py, with full history | — | — | .github 1 |
+| `117c389` | repo_map: leave map-only commits out, so a committed map is a fixed point | — | — | scripts 1 |
+| `3af6056` | docs: the release-cleanup plan with its progress, and the D082 plan | — | D082 | docs 2 |
 
 ### Decisions
 
@@ -1072,7 +1094,7 @@ Where did each decision come from, and what cites it? Title and status are the i
 | D006 | Distance-sampled frames + ROI area fraction; no tracker, no homography | Accepted | `7470190 2026-08-06` | `configs/eval/video.yaml`, `docs/MENTOR-WALKTHROUGH.md`, `docs/superpowers/plans/2026-09-05-robot-sprint.md`, `results/RESULTS.md`, `src/certain_road/driving/confirm.py`, `src/certain_road/perception/source.py` |
 | D007 | `assess` runs before `calibrate` | Accepted | `7470190 2026-08-06` | `docs/superpowers/plans/archive/2026-08-15-week-2-assess.md` |
 | D008 | `rsl` is its own stage | Accepted | `7470190 2026-08-06` | — |
-| D009 | Four-way data split | Accepted | `7470190 2026-08-06` | `docs/colab-training-guide.md`, `docs/datasets/rdd2022-india.md`, `docs/detector-benchmark.md`, `docs/superpowers/plans/archive/2026-08-06-week-1-foundation.md`, `results/T2/findings.md`, `src/certain_road/perception/dataset/pool.py`, `src/certain_road/perception/dataset/split.py`, `src/certain_road/perception/train.py` |
+| D009 | Four-way data split | Accepted | `7470190 2026-08-06` | `docs/colab-training-guide.md`, `docs/datasets/rdd2022-india.md`, `docs/detector-benchmark.md`, `docs/superpowers/plans/archive/2026-08-06-week-1-foundation.md`, `results/T2/findings.md`, `src/certain_road/perception/dataset/pool.py`, `src/certain_road/perception/dataset/split.py`, `src/certain_road/perception/train.py`, `tests/test_pool_split.py` |
 | D010 | Evaluation segments: disjoint random partition, within-country | Accepted | `7470190 2026-08-06` | `docs/datasets/rdd2022-india.md`, `docs/superpowers/plans/archive/2026-08-06-week-1-foundation.md`, `src/certain_road/artifacts/schema.py`, `src/certain_road/survey/segment.py` |
 | D011 | `pci_true` renamed `pci_ref` (reference PCI) | Accepted | `7470190 2026-08-06` | `docs/superpowers/plans/archive/2026-08-06-week-1-foundation.md` |
 | D012 | OOD detection / conformal p-values cut to future work | Accepted | `7470190 2026-08-06` | — |
@@ -1081,7 +1103,7 @@ Where did each decision come from, and what cites it? Title and status are the i
 | D015 | `density` renamed `vision_density` | Accepted | `7470190 2026-08-06` | `docs/superpowers/plans/archive/2026-08-06-week-1-foundation.md`, `docs/superpowers/plans/archive/2026-08-15-week-2-assess.md` |
 | D016 | Deduct curves digitized; raw points committed | Accepted | `7470190 2026-08-06` | `docs/superpowers/plans/archive/2026-08-15-week-2-assess.md` |
 | D017 | Full iterative CDV correction, not simplified | Accepted | `7470190 2026-08-06` | `docs/superpowers/plans/archive/2026-08-15-week-2-assess.md` |
-| D018 | PCI→RSL curve requires a mandatory `source:` citation | Open | `7470190 2026-08-06` | `docs/MENTOR-WALKTHROUGH.md`, `docs/superpowers/plans/archive/2026-08-15-week-2-assess.md` |
+| D018 | PCI→RSL curve requires a mandatory `source:` citation | Open | `7470190 2026-08-06` | `README.md`, `docs/MENTOR-WALKTHROUGH.md`, `docs/superpowers/plans/archive/2026-08-15-week-2-assess.md` |
 | D019 | Optimiser ranks on worst-case RSL with must-fix constraint | Accepted | `7470190 2026-08-06` | `docs/MENTOR-WALKTHROUGH.md` |
 | D020 | Dashboard is a self-contained offline HTML file | Accepted | `7470190 2026-08-06` | `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `results/RESULTS.md`, `results/dashboard/index.html`, `scripts/build_dashboard.py`, `scripts/make_report.py`, `src/certain_road/dashboard/render.py`, `src/certain_road/dashboard/template.html` |
 | D021 | Decision Replay panel | Accepted | `7470190 2026-08-06` | — |
@@ -1114,7 +1136,7 @@ Where did each decision come from, and what cites it? Title and status are the i
 | D048 | Jetson arrives 2026-08-18: risky bring-up pulled into a bounded weeks-1–4 parallel track; only `ingest`+`detect` ship to the edge | Accepted | `d7a391e 2026-09-05` | `docs/superpowers/plans/2026-09-05-robot-sprint.md`, `src/certain_road/perception/source.py` |
 | D049 | Project pivots to an autonomous road-inspection robot; perception feeds two independent pipelines; control transport is abstract | Accepted | `8c38584 2026-09-05` | `README.md`, `configs/canbus/transport.yaml`, `configs/driving/corridor.yaml`, `docs/superpowers/plans/2026-09-05-day5-corridor-sim.md`, `docs/superpowers/plans/archive/README.md`, `src/certain_road/artifacts/schema.py`, `src/certain_road/driving/corridor.py`, `src/certain_road/runtime/recorder.py`, `src/certain_road/sim/run.py`, `tests/test_driving_corridor.py` |
 | D050 | Simulator is a fourth `Transport`; robot for the demo, simulation for the trial matrix | Accepted | `69e4b45 2026-09-05` | `README.md`, `src/certain_road/driving/corridor.py`, `tests/test_driving_corridor.py` |
-| D051 | CP cut from the sprint; survey ends at vision-estimated PCI; ADAS-inspired behaviours added; calibration split preserved | Accepted | `09dcb26 2026-09-05` | `README.md`, `docs/detector-benchmark.md`, `docs/superpowers/plans/2026-09-05-robot-sprint.md`, `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `results/RESULTS.md`, `src/certain_road/runtime/pipeline.py`, `src/certain_road/survey/__init__.py`, `tests/test_eval_video.py` |
+| D051 | CP cut from the sprint; survey ends at vision-estimated PCI; ADAS-inspired behaviours added; calibration split preserved | Accepted | `09dcb26 2026-09-05` | `docs/detector-benchmark.md`, `docs/superpowers/plans/2026-09-05-robot-sprint.md`, `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `results/RESULTS.md`, `src/certain_road/runtime/pipeline.py`, `src/certain_road/survey/__init__.py`, `tests/test_eval_video.py` |
 | D052 | Deliverable is a vehicle-agnostic control unit demoed on the Jetson: recorded video → real YOLO → real CAN on vcan0; no robot, camera or transceiver required | Accepted | `ed1593f 2026-09-06` | `configs/canbus/transport.yaml`, `src/certain_road/canbus/transport.py`, `src/certain_road/perception/source.py` |
 | D053 | External RDD2022 weights rejected: 0.9765 mAP50 on our test set indicates train/test overlap, so they cannot be measured | Accepted | `d6f7367 2026-09-06` | `README.md`, `docs/MENTOR-WALKTHROUGH.md`, `docs/superpowers/plans/2026-09-22-workspace-cleanup.md`, `docs/superpowers/specs/2026-09-22-workspace-cleanup-design.md` |
 | D054 | Workspace cleaned and repo reorganised; redundant weights and data deleted, keepers named explicitly | Accepted | `1a14f7c 2026-09-22` | `docs/MENTOR-WALKTHROUGH.md`, `docs/superpowers/plans/2026-09-22-workspace-cleanup.md`, `docs/superpowers/specs/2026-09-22-workspace-cleanup-design.md` |
@@ -1124,7 +1146,7 @@ Where did each decision come from, and what cites it? Title and status are the i
 | D058 | Local commit at the end of each task and before every `eval_locked` run; never push | Accepted | `a23bf6a 2026-09-22` | `TASK_LOG.md`, `scripts/eval_locked.py` |
 | D059 | India block split rejected on evidence: adjacent IDs are uncorrelated, so a per-image salted-hash split at the spec's fractions is used | Accepted | `66204f9 2026-09-22` | `TASK_LOG.md`, `results/T2/split_audit.md`, `scripts/audit_duplicates.py`, `scripts/build_pool.py`, `src/certain_road/perception/dataset/pool.py` |
 | D060 | Model A trains on Kaggle only; the Mac is a fallback for Model B alone, and never for A | Accepted | `4a91ed2 2026-09-22` | `TASK_LOG.md`, `results/mps_sanity.json`, `scripts/mps_sanity.py` |
-| D061 | Near-duplicate audit by dHash before T3 bakes the splits into an upload | Accepted | `4a91ed2 2026-09-22` | `TASK_LOG.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `results/T2/duplicates.md`, `results/T2/findings.md`, `scripts/audit_duplicates.py`, `scripts/build_pool.py`, `scripts/scene_groups.py`, `src/certain_road/perception/dataset/dedupe.py`, `src/certain_road/perception/dataset/pool.py`, `tests/test_splits.py` |
+| D061 | Near-duplicate audit by dHash before T3 bakes the splits into an upload | Accepted | `4a91ed2 2026-09-22` | `TASK_LOG.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `results/T2/duplicates.md`, `results/T2/findings.md`, `scripts/audit_duplicates.py`, `scripts/build_pool.py`, `scripts/scene_groups.py`, `src/certain_road/perception/dataset/dedupe.py`, `src/certain_road/perception/dataset/pool.py`, `tests/test_pool_split.py`, `tests/test_splits.py` |
 | D062 | Allocation solved by exact priority-indexed DP, not PuLP: the bundled CBC binary is x86_64 and cannot run here | Accepted | `e0074a8 2026-09-22` | `TASK_LOG.md`, `scripts/build_pool.py`, `scripts/exhaustive_groups.py`, `scripts/exhaustive_leak_check.py`, `scripts/stage_upload.py`, `src/certain_road/survey/allocation.py` |
 | D063 | Leak verification is exhaustive, not hash-prefiltered; held-out India is never uploaded | Accepted | `e689432 2026-09-22` | `TASK_LOG.md`, `results/RESULTS.md`, `scripts/build_pothole_pool.py`, `scripts/check_bharatpothole.py`, `scripts/eval_locked.py`, `scripts/make_report.py`, `tests/test_splits.py` |
 | D064 | T10 resampling permutes scene groups, not images | Accepted | `e689432 2026-09-22` | `docs/superpowers/plans/2026-09-28-t10-t12.md`, `results/RESULTS.md`, `results/T10/conformal.json`, `results/T10/conformal.md`, `scripts/exp_conformal.py`, `scripts/make_report.py`, `scripts/t9_b_vs_p.py` |
@@ -1136,7 +1158,7 @@ Where did each decision come from, and what cites it? Title and status are the i
 | D070 | T10 alphas come from the measured miss-rate floor, not a fixed list; Model A cannot certify India | Accepted | `13bfc17 2026-09-22` | `configs/project.yaml`, `docs/superpowers/plans/2026-09-28-t10-t12.md`, `results/RESULTS.md`, `scripts/exp_conformal.py`, `scripts/make_report.py` |
 | D072 | Overall 3-class mAP is not the target; pothole AP and per-pothole video detection are | Accepted | `b1b04e4 2026-09-22` | `docs/superpowers/plans/2026-09-22-kernel-preflight.md`, `scripts/build_pothole_pool.py`, `scripts/check_bharatpothole.py`, `scripts/t9_b_vs_p.py` |
 | D073 | BharatPotHole is 162 drives, not 7,074 images; neither its val nor its test split is held out, so neither is used for evaluation | Accepted | `b138f0f 2026-09-22` | `docs/superpowers/plans/2026-09-22-kernel-preflight.md`, `results/RESULTS.md`, `scripts/bph_internal_leakage.py`, `scripts/make_report.py`, `scripts/t9_b_vs_p.py` |
-| D074 | Model P selected over Model B on india_val; the advantage survives scene-group resampling there but does not transfer to locked india_test, where the two are indistinguishable | Accepted | `1599a2f 2026-09-22` | `configs/eval/video.yaml`, `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-09-28-t10-t12.md`, `docs/superpowers/plans/2026-09-28-video-extent.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `results/RESULTS.md`, `results/dashboard/index.html`, `results/video/2DV-cYmIvT4/P/summary.json`, `scripts/eval_video.py`, `scripts/exp_conformal.py`, `scripts/exp_video_extent.py`, `scripts/make_report.py`, `src/certain_road/dashboard/render.py` |
+| D074 | Model P selected over Model B on india_val; the advantage survives scene-group resampling there but does not transfer to locked india_test, where the two are indistinguishable | Accepted | `1599a2f 2026-09-22` | `README.md`, `configs/eval/video.yaml`, `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-09-28-t10-t12.md`, `docs/superpowers/plans/2026-09-28-video-extent.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `results/RESULTS.md`, `results/dashboard/index.html`, `results/video/2DV-cYmIvT4/P/summary.json`, `scripts/eval_video.py`, `scripts/exp_conformal.py`, `scripts/exp_video_extent.py`, `scripts/make_report.py`, `src/certain_road/dashboard/render.py` |
 | D075 | Video evaluation confirms per track (same ID, 3 of the last 5 frames, behind a horizon gate) and reports tracks, not potholes; qualifies D006 and D051 for evaluation only | Accepted | uncommitted | `configs/eval/video.yaml`, `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `results/RESULTS.md`, `results/video/2DV-cYmIvT4/B/summary.json`, `results/video/2DV-cYmIvT4/P/summary.json`, `results/video/2DV-cYmIvT4/gt_score.json`, `scripts/eval_video.py`, `scripts/make_report.py`, `scripts/score_video_gt.py`, `tests/test_eval_video.py` |
 | D076 | The T10 tau grid never reached the measured floor, so D070's feasible-alpha prose contradicted its own table; fixed, and Model P's floors measured | Accepted | `a3badf4 2026-09-24` | `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-09-28-t10-t12.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `results/RESULTS.md`, `scripts/exp_conformal.py`, `scripts/make_report.py` |
 | D077 | T10 complete: Model B's certificate holds over 200 group-aware re-partitions, non-India calibration fails in every one, and every tight certificate costs a flood of false alarms | Accepted | `f511ec1 2026-09-28` | `configs/project.yaml`, `results/RESULTS.md`, `scripts/exp_allocation.py`, `scripts/make_report.py` |
@@ -1146,7 +1168,7 @@ Where did each decision come from, and what cites it? Title and status are the i
 | D081 | On dashcam video P fires where B does not (100 vs 9 tracks) while on india_test they are indistinguishable; whether P transfers or only fires more is Open until GT scoring; run both on Chennai footage and report both | Accepted · transfer claim Open | uncommitted | `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `results/RESULTS.md`, `scripts/make_report.py`, `scripts/score_video_gt.py`, `tests/test_make_report.py` |
 | D082 | Potholes come from Model P and cracks from Model B, and their pothole outputs are never summed; settles the channel D081 left open; no T12 number reflects it yet; D081's transfer claim stays Open | Accepted · T12 re-run Open | uncommitted | `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-repo-map.md`, `results/RESULTS.md`, `results/T12/demo_network.json`, `results/dashboard/index.html`, `scripts/exp_allocation.py`, `scripts/make_report.py`, `src/certain_road/dashboard/render.py`, `tests/test_dashboard.py`, `tests/test_make_report.py` |
 | D083 | T16: the dashboard stays one offline HTML file (D020 over the spec); the optimiser's and worst-first's plans always side by side; T12 numbers carry the Model B recall caveat | Accepted | `5e7058c 2026-10-03` | `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `results/RESULTS.md`, `scripts/make_report.py`, `tests/test_make_report.py` |
-| D084 | The locked Model P run's 2,312 absolute symlinks stay as committed (results/LOCKED is never rewritten); a test pins them and every home-directory path, so nothing new can depend on one machine | Accepted | `d231467 2026-10-04` | `docs/superpowers/plans/2026-10-04-cleanup.md`, `tests/test_repo_hygiene.py` |
+| D084 | The locked Model P run's 2,312 absolute symlinks stay as committed (results/LOCKED is never rewritten); a test pins them and every home-directory path, so nothing new can depend on one machine | Accepted | `d231467 2026-10-04` | `docs/ONBOARDING.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `tests/test_repo_hygiene.py` |
 
 ## 8. Model and artifact registry
 
@@ -1237,6 +1259,7 @@ Which modules does each test file import?
 | `tests/test_drift.py` | `certain_road.assess.drift` |
 | `tests/test_driving_corridor.py` | `certain_road.artifacts.schema`, `certain_road.driving.corridor` |
 | `tests/test_driving_decision.py` | `certain_road.canbus.protocol`, `certain_road.core.paths`, `certain_road.driving.confirm`, `certain_road.driving.controller`, `certain_road.driving.corridor`, `certain_road.driving.decision` |
+| `tests/test_driving_perceive.py` | `certain_road.artifacts.schema`, `certain_road.driving.confirm`, `certain_road.driving.corridor`, `certain_road.driving.perceive` |
 | `tests/test_eval_video.py` | `scripts/eval_video.py` |
 | `tests/test_fixtures.py` | `certain_road.artifacts.io`, `certain_road.artifacts.schema`, `certain_road.perception.dataset.convert` |
 | `tests/test_geometry.py` | `certain_road.core.geometry` |
@@ -1248,6 +1271,7 @@ Which modules does each test file import?
 | `tests/test_perception_predict.py` | `certain_road.artifacts.io`, `certain_road.artifacts.schema`, `certain_road.perception.predict` |
 | `tests/test_perception_remap.py` | `certain_road.perception.predict` |
 | `tests/test_perception_source.py` | `certain_road.perception.source` |
+| `tests/test_pool_split.py` | `certain_road.core.paths`, `certain_road.perception.dataset.pool` |
 | `tests/test_repo_hygiene.py` | — |
 | `tests/test_repo_map.py` | `scripts/repo_map.py` |
 | `tests/test_runtime_pipeline.py` | `certain_road.artifacts.schema`, `certain_road.canbus.protocol`, `certain_road.canbus.transport`, `certain_road.core.paths`, `certain_road.driving.corridor`, `certain_road.driving.decision`, `certain_road.perception.source`, `certain_road.runtime.pipeline` |
@@ -1256,6 +1280,7 @@ Which modules does each test file import?
 | `tests/test_scoring_allocation.py` | `certain_road.survey.allocation`, `certain_road.survey.scoring` |
 | `tests/test_sim_matrix.py` | `certain_road.core.paths`, `certain_road.driving.corridor`, `certain_road.driving.decision`, `certain_road.sim.model`, `certain_road.sim.run`, `certain_road.sim.scenario` |
 | `tests/test_sim_model.py` | `certain_road.canbus.protocol`, `certain_road.core.paths`, `certain_road.driving.corridor`, `certain_road.sim.model`, `certain_road.sim.project` |
+| `tests/test_sim_view.py` | `certain_road.core.paths`, `certain_road.driving.corridor`, `certain_road.driving.decision`, `certain_road.sim.model`, `certain_road.sim.run`, `certain_road.sim.scenario`, `certain_road.sim.view` |
 | `tests/test_splits.py` | `certain_road.core.paths`, `certain_road.perception.dataset.dedupe` |
 | `tests/test_survey_segment.py` | `certain_road.artifacts.io`, `certain_road.artifacts.schema`, `certain_road.canbus.transport`, `certain_road.core.paths`, `certain_road.driving.corridor`, `certain_road.driving.decision`, `certain_road.perception.source`, `certain_road.runtime.pipeline`, `certain_road.runtime.recorder`, `certain_road.survey.segment` |
 | `tests/test_train_config.py` | `certain_road.core.paths`, `certain_road.perception.train` |
@@ -1264,11 +1289,8 @@ Which `src/` modules with public symbols does no test import directly?
 
 | Module |
 |---|
-| `certain_road.driving.perceive` |
-| `certain_road.perception.dataset.pool` |
-| `certain_road.sim.view` |
 
-pytest, run at build time: **422 passed** (exit 0).
+pytest, run at build time: **436 passed** (exit 0).
 
 import-linter: 8 contracts in `.importlinter`; lint-imports reports **Contracts: 8 kept, 0 broken.** (exit 0).
 
@@ -1276,7 +1298,7 @@ import-linter: 8 contracts in `.importlinter`; lint-imports reports **Contracts:
 
 ### a) Tasks not run
 
-Which tasks have outputs missing, and what unblocks them? Unblockers are `TASK_LOG.md`'s 'Blocked on the user' rows naming the task.
+Which tasks have outputs missing, and what unblocks them? Unblockers are the 'Blocked on the user' rows of `TASK_LOG.md` naming the task; that file is superseded, so these are its last record (see its banner).
 
 | Task | Status | Missing | Unblocked by |
 |---|---|---|---|
@@ -1320,17 +1342,23 @@ Which comments carry TODO, FIXME, XXX?
 |---|---|
 | none | — |
 
-Which result files does no script's parsed writes produce?
+Which result files does no script's parsed writes produce, and no `produced_by` entry in `configs/repo_map.yaml` name?
 
 | File |
 |---|
-| `results/LOCKED/A_india_full_run/val/predictions.json` |
-| `results/LOCKED/B_india_heldout_run/val/predictions.json` |
-| `results/LOCKED/P_india_heldout_run/val/predictions.json` |
-| `results/T2/_removed29.json` |
-| `results/T2/_top_dupe_candidates.json` |
-| `results/T2/exhaustive_india_vs_nonindia_val.json` |
-| `results/T6_A_nonindia_val/val/predictions.json` |
+| none |
+
+Which result files come from a library call or an ad-hoc run, not a parsed script write? Producers as `configs/repo_map.yaml` records them.
+
+| File | Produced by |
+|---|---|
+| `results/LOCKED/A_india_full_run/val/predictions.json` | scripts/eval_locked.py, through ultralytics model.val(save_json=True) |
+| `results/LOCKED/B_india_heldout_run/val/predictions.json` | scripts/eval_locked.py, through ultralytics model.val(save_json=True) |
+| `results/LOCKED/P_india_heldout_run/val/predictions.json` | scripts/eval_locked.py, through ultralytics model.val(save_json=True) |
+| `results/T2/_removed29.json` | 29 India x non-India pairs from D066's duplicate-threshold check (commit bb8889d); no committed script writes it |
+| `results/T2/_top_dupe_candidates.json` | the top 40 same-scene candidates from the D061 audit (commit 0ccef57); no committed script writes it |
+| `results/T2/exhaustive_india_vs_nonindia_val.json` | an ad-hoc exhaustive comparison recorded in D065 (commit 38529ed); no committed script writes it |
+| `results/T6_A_nonindia_val/val/predictions.json` | scripts/eval_open.py, through ultralytics model.val(save_json=True) |
 
 Which generated files differ from a fresh rebuild, beyond their stamp line? Each is rebuilt in memory by the function its script calls; modification times are not used, because a clone resets them.
 
