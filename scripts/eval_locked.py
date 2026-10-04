@@ -20,6 +20,7 @@ The per-image predictions are written by ultralytics, not by this script:
 import argparse
 import hashlib
 import json
+import os
 import platform
 import subprocess
 import sys
@@ -88,7 +89,8 @@ def pothole_only_root(out_dir: Path, source: Path, eval_set: str) -> Path:
 
     The pothole-only ground truth for a locked run is therefore derived here,
     inside the run directory, from the 3-class labels. Images are symlinked, so
-    the pixels are provably the same ones every other model was scored on.
+    the pixels are provably the same ones every other model was scored on. The links
+    are relative, so a committed run resolves on any clone that has `data/` (D084).
     """
     root = out_dir / "gt_root"
     (root / "images").mkdir(parents=True, exist_ok=True)
@@ -98,7 +100,10 @@ def pothole_only_root(out_dir: Path, source: Path, eval_set: str) -> Path:
     for stem in stems:
         img = root / "images" / f"{stem}.jpg"
         if not img.exists():
-            img.symlink_to((source / "images" / f"{stem}.jpg").resolve())
+            # Relative to the link's own directory (D084): an absolute target names this
+            # machine's checkout, and a committed run would dangle on every other clone.
+            target = (source / "images" / f"{stem}.jpg").resolve()
+            img.symlink_to(os.path.relpath(target, img.parent.resolve()))
         kept = [
             "0 " + " ".join(r.split()[1:])
             for r in (source / "labels" / f"{stem}.txt").read_text().splitlines()
