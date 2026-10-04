@@ -95,10 +95,14 @@ Current design spec: [`design.md`](design.md)
 | D072 | Overall 3-class mAP is not the target; pothole AP and per-pothole video detection are | Accepted |
 | D073 | BharatPotHole is 162 drives, not 7,074 images; neither its val nor its test split is held out, so neither is used for evaluation | Accepted |
 | D074 | Model P selected over Model B on india_val; the advantage survives scene-group resampling there but does not transfer to locked india_test, where the two are indistinguishable | Accepted |
+| D075 | Video evaluation confirms per track (same ID, 3 of the last 5 frames, behind a horizon gate) and reports tracks, not potholes; qualifies D006 and D051 for evaluation only | Accepted |
 | D076 | The T10 tau grid never reached the measured floor, so D070's feasible-alpha prose contradicted its own table; fixed, and Model P's floors measured | Accepted |
 | D077 | T10 complete: Model B's certificate holds over 200 group-aware re-partitions, non-India calibration fails in every one, and every tight certificate costs a flood of false alarms | Accepted |
 | D078 | T11: the spec's plain martingale is blind to a shift after 500 in-domain frames; a CUSUM reset at matched null false-alarm rate detects 197/200 with median delay 77 frames | Accepted |
 | D079 | T12: conformal robustness changes repair decisions and helps modestly; maximising benefit defers the worst roads, so the dashboard must report both objectives | Accepted |
+| D080 | Scope: a detection count measures discrete defects the detector recognises, not surface condition, and silence is not a good road; Model B's near-silence on degraded Bengaluru road is its training domain, not scale | Accepted |
+| D081 | On dashcam video P fires where B does not (100 vs 9 tracks) while on india_test they are indistinguishable; whether P transfers or only fires more is Open until GT scoring; run both on Chennai footage and report both | Accepted · transfer claim Open |
+| D082 | Potholes come from Model P and cracks from Model B, and their pothole outputs are never summed; settles the channel D081 left open; no T12 number reflects it yet; D081's transfer claim stays Open | Accepted · T12 re-run Open |
 | D083 | T16: the dashboard stays one offline HTML file (D020 over the spec); the optimiser's and worst-first's plans always side by side; T12 numbers carry the Model B recall caveat | Accepted |
 | D084 | The locked Model P run's 2,312 absolute symlinks stay as committed (results/LOCKED is never rewritten); eval_locked.py now links relatively; a test pins every escaping link and home-directory path, and configs/data stays absolute by decision | Accepted |
 | D085 | Conformal prediction, cut by D051 under sprint pressure, was reinstated by the RoadSight spec adopted at T0 (a23bf6a), which made the certified miss rate the core claim; no separate decision recorded the reversal | Accepted |
@@ -2627,6 +2631,62 @@ recorded in D060 and in the `train.py` docstring, not here.
   P's held-out number comes from one `eval_locked` run and does not exist yet.
 - **Nothing that licenses re-tuning A** (D067 stands).
 
+## D075 — Video evaluation confirms per track, and counts tracks, not potholes
+
+**2026-09-28 · Accepted · Qualifies D006 and D051 for video evaluation only**
+
+*Written after D076 and D077, into a number that had been left unused.*
+
+D072 made per-pothole detection in video a target. Counting potholes needs
+objects, not a condition: D051's confirmer answers "is a hazard in my path",
+which is right for steering and silent on how many potholes a drive contains.
+`scripts/eval_video.py` therefore tracks.
+
+### The rule
+
+- Model B's pothole channel at conf 0.25, ByteTrack (`bytetrack.yaml` as shipped),
+  tracker state persisted across frames.
+- **ROI gate:** a box whose bottom edge lies above the horizon line is dropped
+  before confirmation. Downloaded video has no camera model, so the horizon is a
+  hand-set fraction of frame height, recorded in every run's summary.
+- **Confirmation:** a track is confirmed once **the same track ID** is present in
+  at least 3 of the last 5 frames. Hits on different IDs never pool — the
+  difference from D051, where any 3 of 5 frames containing a hazard confirm.
+- Settings in `configs/eval/video.yaml`; the rule is `confirm_step`, pinned by
+  `tests/test_eval_video.py`.
+
+**Stated cost of conf 0.25.** ByteTrack's second association stage matches
+low-score boxes (0.1 to 0.25) to lost tracks. At conf 0.25 nothing below 0.25
+reaches it, so that recovery path is off, and a pothole whose score dips for a
+frame or two is more likely to come back under a new ID.
+
+### The count is of tracks, not physical potholes
+
+It is biased in both directions, and on video without ground truth neither bias
+can be measured:
+
+- **Upward by ID switches.** A pothole lost for longer than the tracker's buffer
+  — occlusion, a run of missed detections, camera shake — and re-acquired under a
+  new ID confirms twice. `test_one_pothole_reacquired_under_a_new_id_confirms_twice`
+  pins this on purpose: it is the behaviour, not a defect to be fixed quietly.
+- **Downward by merges.** Two potholes held by one ID — overlapping boxes, or an
+  ID that jumps to a neighbour — confirm once.
+
+This is D006's objection ("ID switches corrupt counts"), and D006 stands: **the
+survey still uses no tracker.** D075 permits a tracker only where the output is
+labelled as a track count.
+
+### Reporting
+
+- **Where ground truth exists** — the MuJoCo trial — report the confirmed track
+  count **beside** the GT-matched per-pothole count, so the size of the bias is
+  shown rather than assumed. (No MuJoCo trial exists in this repo yet; D050's
+  simulator is a kinematic model. Whichever trial first has per-pothole ground
+  truth inherits this rule.)
+- **On real video with no ground truth**, report tracks and label them as tracks:
+  `unique_confirmed_tracks` in `summary.json` and on the video overlay. Never
+  "potholes found".
+
 ## D076 — The tau grid never reached the floor; Model P's feasible alphas
 
 **2026-09-24 · Accepted · corrects one number in D070**
@@ -2919,6 +2979,267 @@ budget, silently.
   with the value.
 - Scoring remains a monotone proxy after Ibragimov et al. (Sensors 2024); ASTM
   D6433 deduct curves are not used.
+
+## D080 — Scope: a detection count is discrete defects, not surface condition; B's Bengaluru silence is domain, not scale
+
+**2026-09-28 · Accepted · extends D069 · uses D075 and D078 · D074 stands**
+
+On the Bengaluru dashcam clip (`2DV-cYmIvT4`, CC BY, RT Dashcam; first 180 s) the
+road at t≈100–110 s is broken, muddy and water-filled, and Model B is close to
+silent there. That was proposed as an **extent** failure: damage too large to read
+as one object. The measurements below do not support that cause. They support a
+narrower scope statement and a different cause.
+
+Evidence: `scripts/exp_video_extent.py` -> `results/video/2DV-cYmIvT4/extent.json`,
+`scale.png`, `drift.png`; `scripts/eval_video.py --model B|P` ->
+`results/video/2DV-cYmIvT4/{B,P}/summary.json`.
+
+### Scale does not explain it
+
+Ten frames, t = 100…109 s, Model B at conf 0.05. Padding shrinks the damage
+relative to the image; the zoom arm (lower-centre half-frame, ~2x) enlarges it.
+
+| condition | frames with any box | boxes | **pothole boxes** | max conf |
+|---|---|---|---|---|
+| pad 1x | 2/10 | 4 | **0** | 0.282 |
+| pad 1.5x | 3/10 | 10 | **0** | 0.220 |
+| pad 2x | 1/10 | 1 | **0** | 0.110 |
+| pad 3x | 0/10 | 0 | **0** | — |
+| zoom 2x | 3/10 | 6 | **0** | 0.290 |
+| *control: Model P, pad 1x* | *6/10* | *11* | ***11*** | *0.375* |
+
+"Too large" predicts pothole boxes rise with padding; "too small" predicts they
+rise with the zoom. **Neither happens.** On the same frames at the same conf, Model
+P finds 11 pothole boxes in 6 of 10.
+
+**GT extent.** india_train relative box area (w·h): all classes median 0.0208
+(IQR 0.0070–0.0687, max 0.668, n 4,340); pothole median 0.0085 (IQR 0.0036–0.0210,
+max 0.307, n 2,025). Drawn by eye on the t=105 s frame:
+
+| extent | relative area | percentile, pothole GT | percentile, all GT |
+|---|---|---|---|
+| the whole degraded stretch | 0.1265 | 97.0 | 86.1 |
+| **one discrete water-filled pothole** | **0.0045** | **31.0** | 16.5 |
+
+The stretch is larger than almost every pothole label, but **the individual
+potholes on it are ordinary pothole-sized objects**, and B misses those too. Where
+D069 found India labels damaged stretches while the model marks discrete defects,
+here discrete defects of a typical size are present and still unseen. The binding
+failure is not the size of the damage.
+
+**B is near-silent, not silent.** "Nothing even at conf 0.05" holds for the frames
+at whole seconds. Across all 300 frames of the window, B emits a pothole box at
+>= 0.05 in 37 frames, >= 0.25 in 5 (max 0.341), and never on the same track in 3
+of 5 frames, so D075 confirms none.
+
+### Model P sees this road; B does not
+
+Identical settings (conf 0.25, ByteTrack, horizon 0.66, D075 3-of-5), whole 180 s:
+
+| | confirmed tracks | tracks seen | raw boxes | gated above horizon | tracks in t=100–110 s |
+|---|---|---|---|---|---|
+| B | 9 | 14 | 206 | 0 | 0 |
+| P | **100** | 133 | 2,191 | 36 | 3 (3–5 frames each) |
+
+Tracks, not potholes (D075), and no ground truth, so neither count is scored.
+**Report only: D074 stands** — this clip is not a selection set. Twelve
+BharatPotHole training images, sampled at seed 0, show what P learned from:
+forward-facing wide-angle dashcams pitched up like this one, wet roads, and
+water-filled potholes labelled as small discrete boxes. Eight `india_train`
+images at seed 0 show what B learned from: square 720x720 phone frames through the
+windscreen, a narrower field of view, and dry, dusty, sunlit road, with no standing
+water in any of the eight. **B's
+silence is a training-domain limit** — camera geometry and the appearance of wet,
+muddy potholes — **not a limit of what a detector can do on this road.** P also
+misses most of the stretch by eye, so no model here makes the stretch well
+covered.
+
+### The drift monitor does alarm — on the footage, not the stretch
+
+D078's monitor, Model B's frame scores against **B's own `india_val` bag** (772
+frames; B's scores need B's bag), scored through the frozen eval block with
+`model.val`'s multi-label NMS. Re-scoring 20 `india_val` images through the video
+path reproduced the bag to max |delta| 3.3e-6.
+
+| statistic | every frame (30 fps) | every 30th frame (~1 fps) |
+|---|---|---|
+| **CUSUM, M >= 10⁴ (D078)** | alarm **1.0 s** | alarm **15.0 s** |
+| plain, M >= 100 (spec) | alarm 0.9 s | alarm 6.0 s |
+
+Median frame score: video **0.996**, `india_val` 0.952 — 0.745 on its 304 frames
+with GT, 0.988 on its 468 without. The video scores above even undamaged Indian
+road, and 4,283 of 5,400 frames carry no box of any class at >= 0.05. So the
+monitor flags that B is out of its domain **from the first second**, about 100 s
+before the degraded stretch. It is a verdict on the footage and camera, not on the
+broken road.
+
+Two limits on that alarm, carried forward:
+
+- **At 30 fps the monitor forgets.** Every frame joins the bag, the bag becomes
+  mostly this video, and the CUSUM falls back to 0 at 74.3 s. Through t=100–110 s
+  it is above threshold **0%** of the time. At ~1 fps it never returns to 0 and is
+  above threshold 100% of the window. **An alarm must be latched by whatever
+  consumes it**; the running statistic is not a state.
+- **Video frames are not exchangeable.** D078's false-alarm guarantee assumes
+  exchangeable frames; consecutive frames of one drive are strongly correlated even
+  at 1 fps. No in-domain Indian video exists here to measure the null on video, so
+  this alarm's false-alarm rate is unmeasured. It is consistent with the domain
+  finding above; it does not prove it on its own.
+
+### The scope limit
+
+1. **A detection count measures discrete defects the detector recognises. It is
+   not a measure of surface condition.** On continuously degraded surface there is
+   no discrete-defect count that represents the road, and D075's track count is
+   biased in both directions on top of that.
+2. **A low count, or silence, is not evidence of a good road.** Silence from a
+   detector outside its domain looks exactly like a clean road in the count. The
+   D078 monitor is the only runtime signal that separates them, and only when its
+   alarm is latched.
+3. **B's per-pothole video results are claimed for RDD-like imagery only.** On
+   forward-facing wide-angle dashcam footage of wet, water-filled potholes, B is
+   near-silent, and a model trained on similar footage (P) is not. That is a
+   property of B's training data, not of the task.
+
+## D081 — Dashcam video: P fires where B does not; whether that is transfer is Open; run both on Chennai
+
+**2026-09-28 · Accepted (the counts and the deployment rule) · the transfer claim is
+Open until GT scoring · D074 stands**
+
+### Two results that pull in different directions
+
+**Forward-facing wide-angle dashcam video** (`2DV-cYmIvT4`, 180 s, D080; identical
+settings: conf 0.25, ByteTrack, horizon 0.66, D075 3-of-5):
+
+| | confirmed tracks | raw boxes | tracks seen |
+|---|---|---|---|
+| B | 9 | 206 | 14 |
+| P | **100** | **2,191** | 133 |
+
+**RDD-style `india_test`** (D074, locked, 1,156 images, 413 pothole boxes): pothole
+AP50 B 0.3582 vs P 0.3559, delta −0.0031 with 95% CI [−0.0361, +0.0298] over 1,037
+scene groups. **Indistinguishable.**
+
+### The hypothesis, not yet a result
+
+**"On dashcam video P transfers and B does not."** Evidence for it: on ten frames at
+conf 0.05, P finds 11 pothole boxes and B none under any padding or zoom (D080),
+and BharatPotHole, which P was trained on, looks like this footage.
+
+**Why it is not accepted yet: part of P's advantage may be firing rate, not skill.**
+P emits **10.6x** B's raw boxes and 11.1x its tracks. A model that fires more will
+confirm more tracks whether or not they are potholes. D074 shows the same
+direction on held-out Indian roads: at conf 0.25, P's recall is higher by +0.029
+(0.3753 vs 0.3462) but its false alarms per image are higher by +28%
+(0.1678 vs 0.1315). Neither track count is scored, and tracks are not potholes
+(D075).
+
+**What decides it:** `scripts/score_video_gt.py` against a hand-counted 60 s
+window of the same clip. It reports, per model, potholes hit of those present,
+duplicate tracks, false alarms per minute and median frames per hit. A new entry
+records the outcome. **Until then, no report may state that P transfers to dashcam
+video.** The permitted statement is "P fires on this footage and B does not".
+
+### Deployment rule: run both on Chennai footage, report both
+
+The Chennai rig (U5, T15) is dashcam-like by the user's description (2026-09-28);
+no Chennai footage has arrived, so that is not yet verified here.
+
+- **B for 3-class scoring.** P is pothole-only. The vision-estimated PCI needs
+  cracks, and only B sees them.
+- **P for potholes.** It fires on dashcam footage where B is near-silent.
+- **Report both side by side, never one alone.** If P and B disagree on Chennai,
+  the disagreement is the finding.
+
+Costs and open points:
+
+- **Two detectors per frame.** On this Mac, B runs at p50 11.3 ms and P at 12.2 ms
+  (D080 runs), so running both roughly halves throughput. The Jetson cost is
+  unmeasured (U6).
+- **Two pothole channels now exist**: B's pothole class and P. They must not be
+  summed into one `vision_density`, or every pothole seen by both counts twice.
+  Which one feeds the PCI proxy is **not decided here**.
+- If Chennai footage turns out RDD-like rather than dashcam-like, D074 applies and
+  P is expected to add nothing measurable. Reporting both makes that visible
+  rather than assumed.
+
+## D082 — Potholes from Model P, cracks from Model B, never summed
+
+**2026-09-29 · Accepted · the T12 re-run under it is Open · settles the channel
+D081 left open · builds on D074 · D081's transfer claim stays Open**
+
+*Written 2026-10-03, after D083, which cites it. The decision is the user's,
+recorded in the T16 plan on 2026-09-29; the entry itself was never written.*
+
+D081 left two pothole channels, B's pothole class and P, with a rule (never sum
+them) and a gap: "Which one feeds the PCI proxy is **not decided here**." This
+entry fills the gap.
+
+### The rule
+
+- **The pothole term of `vision_density` comes from Model P.** D074 selected P
+  for pothole detection and carried it forward as "no worse than B on held-out
+  India"; on dashcam video it fires where B is near-silent (D080, D081).
+- **The crack terms (`linear_crack`, `alligator_crack`) come from Model B.** P is
+  pothole-only.
+- **Never summed.** B's pothole class does not enter `vision_density`, or every
+  pothole both models see counts twice. B runs anyway for cracks, so its pothole
+  output is still reported beside P's under D081's run-both rule; it does not
+  score.
+
+### The evidence does not yet reflect the rule
+
+**Every T12 number was simulated at Model B's recall for every class, potholes
+included.** That covers the allocation results, the T16 dashboard (D083) and the
+Allocation section of `results/RESULTS.md`. None of them is a D082 number.
+
+- The dashboard, RESULTS.md and the `detector` field of
+  `results/T12/demo_network.json` say so wherever a T12 number appears.
+  `results/T12/allocation.json` predates this entry: it holds B's per-class recall
+  without naming the model.
+- **Re-running T12 with P's pothole recall is Open, not done.** Until it runs, no
+  repair plan, share of oracle benefit or true-worst-20 count in this project
+  follows D082.
+- What D082 already changes is wording, not numbers. The dashboard header and
+  RESULTS.md state the attribution, and both name P's T10 rows as the operative
+  pothole certificate; B's rows are shown because T12 ran on B.
+
+### Nothing enforces it
+
+`survey/scoring.py` scores detections by class and has no notion of which model
+produced a detection. **The rule is applied by what the pipeline feeds it, not by
+a check.** Hand it B's pothole boxes beside P's and it sums them without
+complaint. No code yet runs both detectors into one survey. When one does, a test
+that B's pothole detections leave `vision_density` unchanged turns the rule into
+a check.
+
+### Cost: P's false alarms, which T10 does not bound
+
+- **Held-out India.** On locked `india_test` at conf 0.25 (D074), P raises 0.1678
+  false alarms per image against B's 0.1315 (+28%), for recall 0.3753 against
+  0.3462.
+- **Dashcam video, one AI-annotated window.** On t = 120–180 s of `2DV-cYmIvT4`
+  (17 potholes; `results/video/2DV-cYmIvT4/gt_score.json`), P's confirmed tracks
+  hit 10 and B's 4. P's false alarms run at 20 per minute against B's 1, and P
+  adds 7 duplicate tracks to B's none. The caveats:
+  - It is a single 60 s window.
+  - It was annotated by Claude (AI) in one pass, not the hand count D081
+    anticipated. It is not strictly blind: the CSV header records that the
+    annotator had seen some model output for this range.
+  - Matching is interval-only, with no spatial check, so hits are an upper bound.
+
+  **This is not a verdict on D081's transfer claim.**
+- **The certificate controls misses only.** T10 certifies P's pothole miss rate,
+  not its false alarms. A false alarm in the pothole term lowers an evaluation
+  segment's vision-estimated PCI exactly as a real pothole does, and no certified
+  bound limits how far.
+
+### What this does not decide
+
+**Whether P transfers to dashcam video.** D081's claim stays Open. The video
+numbers above are the cost of this choice. The video-GT plan reserves the
+settling entry for after the user's go-ahead, and none is recorded. Until then
+the permitted statement is still "P fires on this footage and B does not".
 
 ## D083 — T16: the dashboard stays one offline HTML file; both plans, always
 
