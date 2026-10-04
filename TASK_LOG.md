@@ -1,5 +1,11 @@
 # RoadSight — task log
 
+> **Superseded on 2026-10-04 by [`docs/REPO-MAP.md`](docs/REPO-MAP.md) §6,** which
+> derives each task's status from evidence every time it is generated. This file is
+> no longer maintained: its progress and blocker tables were last updated on
+> 2026-09-22 and are kept as history, and the entries below remain the record of
+> what was done and found at the time.
+
 Running state for the T0–T17 specification. `docs/DECISIONS.md` is the durable
 record of *why*; this file is the record of *what has been done*.
 

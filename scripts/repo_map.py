@@ -978,7 +978,6 @@ def evidence(row: dict) -> str:
 
 
 def s6_tasks(r: Repo, rows: list[dict]) -> list[str]:
-    log_date = r.last.get("TASK_LOG.md", Status.UNKNOWN)
     table_rows = [
         [row["task"], f"{row['name'][0]} <sub>({row['name'][1]})</sub>", f"**{row['status']}**",
          evidence(row), ", ".join(f"`{s}`" for s in row["scripts"]) or "—",
@@ -992,8 +991,8 @@ def s6_tasks(r: Repo, rows: list[dict]) -> list[str]:
         "directories, and the sources RESULTS.md names under the task's heading. All "
         f"present: {Status.DONE}; some: {Status.PARTIAL}; none: {Status.NOT_RUN}; no "
         f"expected output found: {Status.UNKNOWN}. The commit is the last whose subject "
-        f"names the task. The last column is `TASK_LOG.md`'s own claim (last committed "
-        f"{log_date}), shown for contrast, never used."
+        "names the task. The last column is `TASK_LOG.md`'s own claim, frozen when that file "
+        "was superseded (see its banner): shown for contrast, never used."
     )
     header = ["Task", "Name (source)", "Status", "Evidence", "Scripts", "Commit",
               "TASK_LOG.md says"]  # fmt: skip
@@ -1184,8 +1183,9 @@ def s10_left(r: Repo, rows: list[dict]) -> list[str]:
     ]  # fmt: skip
     out = ["## 10. What is left", "", f"### a) Tasks {Status.NOT_RUN}", ""]
     out += table(
-        "Which tasks have outputs missing, and what unblocks them? Unblockers are "
-        "`TASK_LOG.md`'s 'Blocked on the user' rows naming the task.",
+        "Which tasks have outputs missing, and what unblocks them? Unblockers are the "
+        "'Blocked on the user' rows of `TASK_LOG.md` naming the task; that file is "
+        "superseded, so these are its last record (see its banner).",
         ["Task", "Status", "Missing", "Unblocked by"],
         left,
     )
