@@ -72,7 +72,7 @@ Current design spec: [`design.md`](design.md)
 | D048 | Jetson arrives 2026-08-18: risky bring-up pulled into a bounded weeks-1–4 parallel track; only `ingest`+`detect` ship to the edge | Accepted |
 | D049 | Project pivots to an autonomous road-inspection robot; perception feeds two independent pipelines; control transport is abstract | Accepted |
 | D050 | Simulator is a fourth `Transport`; robot for the demo, simulation for the trial matrix | Accepted |
-| D051 | CP cut from the sprint; survey ends at vision-estimated PCI; ADAS-inspired behaviours added; calibration split preserved | Accepted |
+| D051 | CP cut from the sprint; survey ends at vision-estimated PCI; ADAS-inspired behaviours added; calibration split preserved | Superseded by D085 |
 | D052 | Deliverable is a vehicle-agnostic control unit demoed on the Jetson: recorded video → real YOLO → real CAN on vcan0; no robot, camera or transceiver required | Accepted |
 | D053 | External RDD2022 weights rejected: 0.9765 mAP50 on our test set indicates train/test overlap, so they cannot be measured | Accepted |
 | D054 | Workspace cleaned and repo reorganised; redundant weights and data deleted, keepers named explicitly | Accepted |
@@ -100,7 +100,8 @@ Current design spec: [`design.md`](design.md)
 | D078 | T11: the spec's plain martingale is blind to a shift after 500 in-domain frames; a CUSUM reset at matched null false-alarm rate detects 197/200 with median delay 77 frames | Accepted |
 | D079 | T12: conformal robustness changes repair decisions and helps modestly; maximising benefit defers the worst roads, so the dashboard must report both objectives | Accepted |
 | D083 | T16: the dashboard stays one offline HTML file (D020 over the spec); the optimiser's and worst-first's plans always side by side; T12 numbers carry the Model B recall caveat | Accepted |
-| D084 | The locked Model P run's 2,312 absolute symlinks stay as committed (results/LOCKED is never rewritten); a test pins them and every home-directory path, so nothing new can depend on one machine | Accepted |
+| D084 | The locked Model P run's 2,312 absolute symlinks stay as committed (results/LOCKED is never rewritten); eval_locked.py now links relatively; a test pins every escaping link and home-directory path, and configs/data stays absolute by decision | Accepted |
+| D085 | Conformal prediction, cut by D051 under sprint pressure, was reinstated by the RoadSight spec adopted at T0 (a23bf6a), which made the certified miss rate the core claim; no separate decision recorded the reversal | Accepted |
 
 ---
 
@@ -1366,7 +1367,7 @@ avoiding the hard part.
 
 ## D051 — CP cut from the sprint; survey ends at vision-estimated PCI; ADAS-inspired behaviours added
 
-**2026-09-05 · Accepted · Refines D049, D050**
+**2026-09-05 · Superseded by D085 · Refines D049, D050**
 
 The Sep 20 sprint focuses on **autonomous pothole avoidance plus road surveying**. Conformal
 prediction is **cut from the 15-day scope**.
@@ -3031,7 +3032,7 @@ path itself, as `certain_road.perception.train` does. That change is not made he
 Changing a pin, including fixing one, means editing the test, so the change shows in
 review.
 
-### Open
+### Open when written (resolved in the update below)
 
 - **`eval_locked.py` still writes absolute links.** A future 1-class locked run would
   add more and fail the guard. Linking relatively is a small change to the
@@ -3039,3 +3040,56 @@ review.
   by failing CI.
 - **`configs/data/*.yaml`** become relative only after `mps_sanity.py` resolves them
   (above).
+
+### Update, 2026-10-04: the links are fixed at the source; `configs/data` stays absolute
+
+- **`eval_locked.py` now writes relative links** (`d8d1b2c`): each link is relative
+  to its own directory, so it resolves on any clone that has `data/`.
+  - `tests/test_eval_locked_links.py` runs the link-building step on a tiny temporary
+    fixture and fails on any absolute or escaping link.
+  - Run once on the real Model P held-out split in a scratch directory under the
+    gitignored `runs/`: 2,312 relative links, all resolving inside the repository.
+    Ultralytics' own dataset loader found 2,312 images and 820 pothole boxes through
+    them, as the locked run reports. No model was loaded. The scratch directory was
+    deleted.
+  - The 2,312 existing links stay as committed; `results/LOCKED/` is not rewritten.
+- **`configs/data/*.yaml` stay absolute, by the user's decision (2026-10-04).** The D040
+  reason above stands. The release cleanup's criterion "no home-directory path outside
+  `results/`" is therefore **not met for these 9 files, deliberately**. They stay
+  pinned.
+- **A future locked run still writes two files that hold home paths:**
+  - its `data.yaml`, whose absolute `path:` is what ultralytics needs (D040);
+  - ultralytics' `gt_root/labels.cache`.
+
+  Committing such a run means adding those two files to the test's pins, as the
+  existing runs' are. Neither file is changed here, because that would alter what
+  ultralytics reads during a one-shot run.
+
+Nothing in this entry is open.
+
+## D085 — The RoadSight spec reinstated conformal prediction; no decision recorded it
+
+**2026-10-04 · Accepted · supersedes D051 · records a reversal made at T0 (`a23bf6a`)**
+
+D051 (2026-09-05) cut conformal prediction from the 15-day sprint under schedule
+pressure, and said what that cost: CP was the research novelty (D004, D005), and
+without it the abstain path falls back to a confidence heuristic.
+
+**The RoadSight specification reversed the cut.** Adopting it as T0 (`a23bf6a`,
+2026-09-22) brought in T10, conformal risk control on the pothole miss rate, and made
+the certified miss rate the project's core claim. T10 was then built and measured:
+D064, D070, D076, D077 and `results/T10/`.
+
+**No separate decision reinstated it.** Of the entries between D051 and T10's own:
+
+- D057's module table lists `conformal.py` as "write new";
+- D055 retargets T10's class index;
+- D054, written the same day the spec was adopted, still dropped documentation built
+  on "the conformal layer that D051 cut".
+
+None of them reverses D051, which stayed Accepted while T10 was built over the cut it
+records. This entry closes that gap. D051 is marked superseded, and its text is left
+intact.
+
+**What of D051 still stands.** Its ADAS-inspired driving behaviours. This entry
+reverses only the cut.
