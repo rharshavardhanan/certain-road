@@ -26,9 +26,14 @@ uv sync --all-extras --dev
 ## Check it works
 
 ```bash
-uv run lint-imports   # the stage-isolation contracts
-uv run pytest
+uv run python scripts/check_repo.py
 ```
+
+It runs every check CI runs, in order, one line each: ruff, the format check, the
+stage-isolation contracts, the test suite, the repo map's regeneration, and whether
+each generated file still matches a fresh rebuild. It exits non-zero if any fails.
+`make check` runs the same command where `make` works; on macOS that needs the Xcode
+licence accepted first (`sudo xcodebuild -license`).
 
 On a fresh clone a few split-leakage tests skip. They need the gitignored image pool,
 and each skip message names the script that builds it.

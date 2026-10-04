@@ -88,9 +88,9 @@ argument, including the honest limits of the claim, is in
 ```bash
 uv sync
 
-# the architecture is enforced, not just described
-uv run lint-imports
-uv run pytest
+# every check CI runs: lint, formatting, the architecture contracts, the suite,
+# the generated repo map, and the freshness of every generated file
+uv run python scripts/check_repo.py
 
 # what the CLI offers
 uv run certain-road --help

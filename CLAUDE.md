@@ -12,6 +12,7 @@ tested. T1–T7, T9–T12, T16 and T17 have their outputs. T13 (simulation), T14
 hardware) and T15 (Chennai footage) are not run; §10a says what each waits for. T0
 and T8 have no output to check. The map is generated from evidence: rerun
 `uv run python scripts/repo_map.py` instead of trusting this paragraph.
+`uv run python scripts/check_repo.py` runs every check CI runs.
 
 ## Read these first
 

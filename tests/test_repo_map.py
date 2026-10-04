@@ -26,6 +26,7 @@ from repo_map import (  # noqa: E402
     script_io,
     sources_in,
     stale_lines,
+    suite_summary,
 )
 
 SCRIPT = '''
@@ -200,6 +201,15 @@ def test_a_result_file_is_attributed_through_a_glob_or_not_at_all():
         "eval_locked.py"
     )
     assert producer_of("results/LOCKED/B_india_heldout.json", produced_by) is None
+
+
+def test_the_pytest_summary_is_read_from_its_last_count_line_without_timing():
+    assert suite_summary("....\n435 passed in 39.77s\n") == "435 passed"
+    assert suite_summary("F...\nFAILED t.py::x\n1 failed, 434 passed in 40.10s\n") == (
+        "1 failed, 434 passed"
+    )
+    # Doubling pytest's -q suppresses the count line entirely: say so, never guess.
+    assert suite_summary("....................  [100%]\n") == Status.UNKNOWN
 
 
 def test_sources_named_by_a_generated_markdown_or_html_file():

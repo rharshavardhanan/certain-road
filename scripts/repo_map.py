@@ -16,6 +16,7 @@ Tunables live in `configs/repo_map.yaml`.
 
 import ast
 import difflib
+import functools
 import glob
 import json
 import re
@@ -113,6 +114,19 @@ def stale_lines(committed: str, rebuilt: str, stamp: str) -> list[str]:
 
     diff = difflib.unified_diff(keep(committed), keep(rebuilt), lineterm="", n=0)
     return [ln for ln in diff if ln[:1] in "+-" and not ln.startswith(("+++", "---"))]
+
+
+def suite_summary(stdout: str) -> str:
+    """pytest's final count line without its timing, or unknown when there is none.
+
+    The repo's addopts already pass -q; adding another -q suppresses the count line,
+    and a run with no count line is reported as unknown rather than read as a pass.
+    """
+    line = next(
+        (ln for ln in reversed(stdout.splitlines()) if re.search(r"\d+ (passed|failed)", ln)),
+        None,
+    )
+    return re.sub(r"\s+in [\d.]+s.*$", "", line.strip("= ")) if line else Status.UNKNOWN
 
 
 def producer_of(path: str, produced_by: dict[str, str]) -> str | None:
@@ -408,6 +422,7 @@ def matches(path: str, pattern: str) -> bool:
     return all(fnmatch(x, y) or fnmatch(y, x) for x, y in zip(a, b, strict=False))
 
 
+@functools.cache  # one build per process: the map's 10c and check_repo's freshness share it
 def rebuild(script: str) -> str:
     """A generated file's content, built in memory by the same function its script calls."""
     blank = {"utc": "", "commit": ""}  # the stamp line is set aside by the comparison
@@ -1134,7 +1149,7 @@ def deployed(r: Repo, locked: dict) -> list[str]:
     return [*table(q, ["Class", "Model", "Weights"], rows), note, ""]
 
 
-def s9_tests(r: Repo) -> list[str]:
+def s9_tests(r: Repo, runs: dict | None = None) -> list[str]:
     src_modules = {module_name(f): f for f in r.files if f.startswith("src/") and f.endswith(".py")}
     stems = {Path(s["path"]).stem: s["path"] for s in r.scripts.values()}
     tested, rows = set(), []
@@ -1150,13 +1165,10 @@ def s9_tests(r: Repo) -> list[str]:
         m for m, f in src_modules.items()
         if m not in tested and public_symbols(ast.parse((ROOT / f).read_text()))
     )  # fmt: skip
-    run = sh(sys.executable, "-m", "pytest")
-    summary = next(
-        (ln for ln in reversed(run.stdout.splitlines()) if re.search(r"\d+ (passed|failed)", ln)),
-        Status.UNKNOWN,
-    )
-    summary = re.sub(r"\s+in [\d.]+s.*$", "", summary.strip("= "))
-    lint = sh(str(Path(sys.executable).parent / "lint-imports"))
+    runs = runs or {}  # scripts/check_repo.py passes the runs it already made
+    run = runs.get("pytest") or sh(sys.executable, "-m", "pytest")
+    summary = suite_summary(run.stdout)
+    lint = runs.get("lint-imports") or sh(str(Path(sys.executable).parent / "lint-imports"))
     kept = re.search(r"Contracts: .*", lint.stdout)
     contracts = len(re.findall(r"^\[importlinter:contract:", (ROOT / ".importlinter").read_text(),
                                re.M))  # fmt: skip
@@ -1325,7 +1337,7 @@ def s11_reproduce(r: Repo, rows: list[dict]) -> list[str]:
     return ["## 11. How to reproduce from scratch", "", *table(q, header, out_rows)]
 
 
-def build() -> str:
+def build(runs: dict | None = None) -> str:
     r = Repo()
     rows = task_rows(r)
     head = [
@@ -1348,7 +1360,7 @@ def build() -> str:
         s6_tasks(r, rows),
         s7_timeline(r),
         s8_models(r),
-        s9_tests(r),
+        s9_tests(r, runs),
         s10_left(r, rows),
         s11_reproduce(r, rows),
     ]
@@ -1356,10 +1368,24 @@ def build() -> str:
     return doc.replace(f"{ROOT}/", "")  # repo paths print relative: no machine's home path
 
 
-def main() -> None:
+def write_map(runs: dict | None = None) -> int:
+    """Regenerate the map; return how many lines changed, the timestamp line aside.
+
+    The file is rewritten only when something besides its timestamp changed, so a
+    check run on an up-to-date tree leaves it, and the working tree, untouched.
+    """
     out = ROOT / CFG["output"]
-    out.write_text(build())
-    print(f"wrote {out.relative_to(ROOT)}")
+    new = build(runs)
+    old = out.read_text() if out.exists() else ""
+    changed = len(stale_lines(old, new, r"^Generated \d{4}-\d{2}-\d{2} "))
+    if changed or not old:
+        out.write_text(new)
+    return changed
+
+
+def main() -> None:
+    changed = write_map()
+    print(f"wrote {CFG['output']} ({changed} lines changed, timestamp aside)")
 
 
 if __name__ == "__main__":
