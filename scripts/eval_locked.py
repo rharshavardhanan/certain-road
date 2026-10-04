@@ -11,6 +11,10 @@ used here (seen in T4), so a CPU result is the one another machine can reproduce
 Every output carries the weights SHA256, package versions, UTC timestamp and git
 commit — which is why D058 requires a commit before any locked run: otherwise the
 stamp names a commit that does not contain the code that produced the number.
+
+The per-image predictions are written by ultralytics, not by this script:
+`model.val(save_json=True)` leaves them in `<run>/val/predictions.json`, which T10
+(`exp_conformal.py`), T11 (`exp_drift.py`) and T12 (`exp_allocation.py`) read.
 """
 
 import argparse

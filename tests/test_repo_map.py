@@ -22,6 +22,7 @@ from repo_map import (  # noqa: E402
     drop_sections,
     first_sentence,
     matches,
+    producer_of,
     script_io,
     sources_in,
     stale_lines,
@@ -191,6 +192,14 @@ def test_excepted_sections_are_dropped_up_to_the_next_heading():
     text = "# R\nintro\n## Video (lane)\nv1\nv2\n## Decision log status\nd1\n## Allocation\na1\n"
     kept = drop_sections(text, ["## Video", "## Decision log"])
     assert kept == "# R\nintro\n## Allocation\na1"
+
+
+def test_a_result_file_is_attributed_through_a_glob_or_not_at_all():
+    produced_by = {"results/LOCKED/*_run/val/predictions.json": "eval_locked.py"}
+    assert producer_of("results/LOCKED/B_india_heldout_run/val/predictions.json", produced_by) == (
+        "eval_locked.py"
+    )
+    assert producer_of("results/LOCKED/B_india_heldout.json", produced_by) is None
 
 
 def test_sources_named_by_a_generated_markdown_or_html_file():

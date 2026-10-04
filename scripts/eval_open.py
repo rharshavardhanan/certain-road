@@ -8,6 +8,10 @@ It exists so the generalization gap is a like-for-like subtraction. The 0.5912
 that appears in the training log came from a different pipeline — a GPU, fp16,
 ultralytics' own aggregation — and subtracting India's CPU/fp32/pycocotools
 number from it would measure the pipelines as much as the domains.
+
+The per-image predictions are written by ultralytics: `model.val(save_json=True)`
+leaves them in `<run>/val/predictions.json`, which T10 (`exp_conformal.py`) and T11
+(`exp_drift.py`) read.
 """
 
 import argparse

@@ -63,6 +63,16 @@ decimals: 4
 todo_markers: [TODO, FIXME, XXX]
 todo_scan: [src, scripts, tests, configs, kaggle]
 
+# Section 10c: result files that no script's parsed writes produce, and their real
+# producer. The parse sees only literal paths, so a file written by a library call,
+# or produced by an ad-hoc run recorded in a decision, needs naming here.
+produced_by:
+  "results/LOCKED/*_run/val/predictions.json": "scripts/eval_locked.py, through ultralytics model.val(save_json=True)"
+  "results/T6_A_nonindia_val/val/predictions.json": "scripts/eval_open.py, through ultralytics model.val(save_json=True)"
+  "results/T2/exhaustive_india_vs_nonindia_val.json": "an ad-hoc exhaustive comparison recorded in D065 (commit 38529ed); no committed script writes it"
+  "results/T2/_top_dupe_candidates.json": "the top 40 same-scene candidates from the D061 audit (commit 0ccef57); no committed script writes it"
+  "results/T2/_removed29.json": "29 India x non-India pairs from D066's duplicate-threshold check (commit bb8889d); no committed script writes it"
+
 # Section 10c and scripts/check_repo.py: generated files are rebuilt in memory and
 # compared with what is on disk, everything but the stamp line (a regex). A clone
 # resets modification times, so freshness is judged by content, not by mtime (C6).

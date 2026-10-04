@@ -115,6 +115,16 @@ def stale_lines(committed: str, rebuilt: str, stamp: str) -> list[str]:
     return [ln for ln in diff if ln[:1] in "+-" and not ln.startswith(("+++", "---"))]
 
 
+def producer_of(path: str, produced_by: dict[str, str]) -> str | None:
+    """The configured producer of a file whose path matches a glob segment for segment."""
+    parts = path.split("/")
+    for pattern, producer in produced_by.items():
+        globs = pattern.split("/")
+        if len(globs) == len(parts) and all(map(fnmatch, parts, globs)):
+            return producer
+    return None
+
+
 def drop_sections(text: str, headings: list[str]) -> str:
     """The text without each '## ' section whose heading starts with one of `headings`."""
     kept, dropping = [], False
@@ -1225,10 +1235,18 @@ def s10_left(r: Repo, rows: list[dict]) -> list[str]:
         if f.startswith("results/") and f.endswith(".json") and str(Path(f).parent)
         not in r.collapsed and not any(matches(f, w) for w in writes)
     ]  # fmt: skip
+    named = [(f, producer_of(f, CFG["produced_by"])) for f in orphans]
     out += table(
-        "Which result files does no script's parsed writes produce?",
+        "Which result files does no script's parsed writes produce, and no `produced_by` "
+        "entry in `configs/repo_map.yaml` name?",
         ["File"],
-        [[f"`{f}`"] for f in orphans] or [["none"]],
+        [[f"`{f}`"] for f, who in named if not who] or [["none"]],
+    )
+    out += table(
+        "Which result files come from a library call or an ad-hoc run, not a parsed script "
+        "write? Producers as `configs/repo_map.yaml` records them.",
+        ["File", "Produced by"],
+        [[f"`{f}`", who] for f, who in named if who] or [["none", "—"]],
     )
     stale = []
     for entry in CFG["generated"]:
