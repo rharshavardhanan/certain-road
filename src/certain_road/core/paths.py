@@ -25,7 +25,3 @@ def raw_dir() -> Path:
 
 def processed_dir() -> Path:
     return data_dir() / "processed"
-
-
-def models_dir() -> Path:
-    return repo_root() / "models"

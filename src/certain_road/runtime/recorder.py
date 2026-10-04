@@ -19,7 +19,7 @@ Two artifacts per drive, deliberately separate:
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable
 from datetime import date
 from pathlib import Path
 
@@ -81,14 +81,3 @@ def record(
     write_artifact(pd.DataFrame(det_rows, columns=DetectionRow.columns()), detections, DetectionRow)
     write_artifact(pd.DataFrame(log_rows, columns=DriveLogRow.columns()), drive_log, DriveLogRow)
     return {"detections": detections, "drive_log": drive_log}
-
-
-def tee(steps: Iterable[Step], sink: list[Step]) -> Iterator[Step]:
-    """Pass steps through while collecting them.
-
-    Lets a caller consume the live stream — render it, count it — and still record
-    the whole drive, without the pipeline needing to know that recording happens.
-    """
-    for step in steps:
-        sink.append(step)
-        yield step
