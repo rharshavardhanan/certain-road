@@ -464,14 +464,22 @@ def links(a: str, b: str) -> bool:
 
 
 def history() -> list[dict]:
+    """Commits oldest first, without the ones that only regenerate this map.
+
+    The map inventories git history, so committing it would otherwise change what it
+    should say, and every later run would rewrite it. Leaving map-only commits out makes
+    a committed, current map a fixed point: regenerating it changes nothing.
+    """
     raw = sh("git", "log", "--reverse", "--name-only", "--format=%x1e%h%x1f%cs%x1f%s%x1f%B%x1f")
     commits = []
     for chunk in raw.stdout.split("\x1e")[1:]:
         h, date, subject, message, files = chunk.split("\x1f")
+        touched = [f for f in files.splitlines() if f]
+        if touched == [CFG["output"]]:
+            continue
         commits.append(
-            {"hash": h, "date": date, "subject": subject, "message": message,
-             "files": [f for f in files.splitlines() if f]}
-        )  # fmt: skip
+            {"hash": h, "date": date, "subject": subject, "message": message, "files": touched}
+        )
     return commits
 
 
@@ -625,7 +633,7 @@ class Repo:
                 self.first.setdefault(f, c["date"])
                 self.first_seq.setdefault(f, seq)
                 self.last[f] = c["date"]
-        self.head = sh("git", "rev-parse", "--short", "HEAD").stdout.strip()
+        self.head = self.commits[-1]["hash"]  # the newest commit that is not map-only
         self.branch = sh("git", "branch", "--show-current").stdout.strip()
         self.lane = CFG["read_only_lane"]
 
@@ -1039,7 +1047,10 @@ def s7_timeline(r: Repo) -> list[str]:
                  ", ".join(sorted(set(DEC_RE.findall(c["message"])))) or "—",
                  " · ".join(f"{a} {n}" for a, n in sorted(areas.items()))]
             )  # fmt: skip
-        q = f"What was committed on {day}, naming which tasks and decisions?"
+        q = (
+            f"What was committed on {day}, naming which tasks and decisions? Commits that "
+            "only regenerate this map are left out."
+        )
         header = ["Commit", "Subject", "Tasks", "Decisions", "Files touched (by area)"]
         out += [f"### {day}", "", *table(q, header, rows)]
     intro = introducing_commits()
