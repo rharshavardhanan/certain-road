@@ -15,7 +15,7 @@ it before segment 17"* does.
 
 ## Architecture
 
-One detector feeds **two pipelines that never touch** (D049):
+The perception stage feeds **two pipelines that never touch** (D049):
 
 ```
                     camera / recorded video
@@ -32,7 +32,7 @@ One detector feeds **two pipelines that never touch** (D049):
        Command                               │
               │                         [ dashboard ]
         [ canbus ]                    offline HTML report
-   Serial · CAN · Null · Sim
+        CAN · Null
 ```
 
 **Stages never import each other.** They communicate only through typed Parquet artifacts
@@ -43,26 +43,31 @@ That rule is what makes the schedule work: the survey side is built and tested a
 synthetic fixtures, with no trained model, no GPU and no hardware, so a 12-hour training run
 never blocks development.
 
-The control transport is abstract (D049), so the same `driving/` modules run against a
-serial link, a CAN bus, a null sink, or the simulator without knowing the difference. The
-simulator is simply a fourth `Transport` (D050) — real YOLO and real decision logic, with
-only actuation synthesised.
+The control transport is abstract (D049): `driving/` writes to a `Transport`, and a CAN
+transport and a null sink exist; a serial link is designed but not written. The simulator
+(D050) runs the same corridor test and decision state machine against scripted scenarios,
+with no detector and no hardware.
 
 ## Status
 
-Built, tested, in CI: the `uv` project and `typer` CLI, the stage-isolation contracts,
-versioned Parquet artifact IO, the RDD2022 data pipeline, detector training, the detector
-evaluation harness, the drive pipeline (corridor test, decision state machine, CAN
-protocol), the simulator, and the drive recorder. **186 tests.**
+Task status is generated from evidence in [`docs/REPO-MAP.md`](docs/REPO-MAP.md) §6;
+rerun `uv run python scripts/repo_map.py` for the current state. On 2026-10-04:
 
-Designed and specified, not yet written: `assess` (boxes → vision-estimated PCI), `rsl`,
-the budget optimiser, and the dashboard.
-
-Conformal prediction was **cut from the sprint** (D051). The survey pipeline ends at
-vision-estimated PCI; the calibration split is preserved so the layer can be added back
-without redoing the data work.
+- **Done:** the raw audit and leakage-proof splits (T1–T3), the MPS check (T4), Kaggle
+  training (T5), locked evaluation of Models A, B and P (T6, T7, T9), conformal risk
+  control (T10), the drift alarm (T11), repair allocation (T12), the offline dashboard
+  (T16) and [`results/RESULTS.md`](results/RESULTS.md) (T17).
+- **Not run:** the Webots simulation (T13), edge hardware (T14) and Chennai footage (T15).
+  REPO-MAP §10a says what each waits for.
+- **Designed, not built:** the remaining-service-life (RSL) stage (D018 is Open).
 
 ## The detector, honestly
+
+The current detectors are Model B (three-class) and Model P (pothole-only, selected for
+potholes in D074). Their locked held-out numbers are in
+[`results/RESULTS.md`](results/RESULTS.md), generated from `results/LOCKED/`. The table
+below is the earlier `multicountry_v8s` benchmark, kept because the rejection of external
+weights (D053) rests on it.
 
 | model | source | mAP50 | mAP50-95 | latency |
 |---|---|---:|---:|---:|
@@ -90,23 +95,16 @@ uv run pytest
 # what the CLI offers
 uv run certain-road --help
 
-# what is actually in the data — every class string, KEEP or DROP
-uv run certain-road dataset census --country India
-
-# evaluate the trained detector end to end (a few minutes on MPS)
-uv run certain-road perception eval \
-  --weights runs/detect/models/yolo/multicountry_v8s/weights/best.pt \
-  --split test --country india --out /tmp/eval.md
-
-# inference producing a typed artifact
-uv run certain-road perception predict \
-  --weights runs/detect/models/yolo/multicountry_v8s/weights/best.pt \
-  --images data/processed/india/images/test \
-  --out /tmp/detections.parquet
-
-# the drive pipeline, no hardware required
+# the drive pipeline, no hardware required (writes runs/sim/centre.png)
 uv run certain-road sim run --scenario centre
+
+# needs the RDD2022 archive under data/raw/ (`certain-road dataset fetch`):
+# every class string in the annotations, KEEP or DROP
+uv run certain-road dataset census --country India
 ```
+
+Every script that produced a result, in the order to rerun them, is in
+[`docs/REPO-MAP.md`](docs/REPO-MAP.md) §11.
 
 > ⚠️ Do not run `dataset split` during a demo — it clears and re-links image directories.
 
@@ -117,10 +115,12 @@ gitignored; the dataset is acquired with `certain-road dataset fetch`.
 
 ```
 configs/     every tunable — no magic numbers in code
-docs/        design, decisions, walkthrough, dataset cards
-scripts/     fixture generation and training progress
+docs/        design, decisions, generated repo map, walkthrough, dataset cards
+kaggle/      the training kernel pushed to Kaggle
+results/     committed results; results/LOCKED/ holds the one-shot evaluations
+scripts/     experiments, evaluation, the report, the dashboard, repo tooling
 src/         the certain_road package, one module per stage
-tests/       186 tests, including the architecture contracts
+tests/       the test suite, including the architecture contracts
 ```
 
 ## Documentation
@@ -128,8 +128,10 @@ tests/       186 tests, including the architecture contracts
 | Document | What it is |
 |---|---|
 | [`docs/design.md`](docs/design.md) | The authoritative design spec |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Every choice, why it was made, and what superseded it — append-only, 54 entries |
-| [`docs/MENTOR-WALKTHROUGH.md`](docs/MENTOR-WALKTHROUGH.md) | What every file is and how it works, from first principles |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Every choice, why it was made, and what superseded it — append-only |
+| [`docs/REPO-MAP.md`](docs/REPO-MAP.md) | Generated: every file's purpose, task status with evidence, what is left, how to reproduce |
+| [`results/RESULTS.md`](results/RESULTS.md) | Generated: every result, each table with the file it was read from |
+| [`docs/MENTOR-WALKTHROUGH.md`](docs/MENTOR-WALKTHROUGH.md) | The code from first principles, as it stood on 2026-09-22 (its last update) |
 | [`docs/detector-benchmark.md`](docs/detector-benchmark.md) | The India test-set benchmark and the rejected external weights |
 | [`docs/datasets/`](docs/datasets/) | Dataset cards, including one rejected dataset and the evidence for rejecting it |
 
