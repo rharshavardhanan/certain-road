@@ -78,7 +78,7 @@ The architecture's central promise — stages never import each other — must b
 - [ ] **Step 1: Initialise the uv project**
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 uv init --package --python 3.12 --name certain-road
 uv add pydantic pandas pyarrow typer pyyaml tqdm requests
 uv add ultralytics torch torchvision
@@ -104,7 +104,7 @@ Expected: `python 3.12.x`, `mps available True`, `OK`.
 - [ ] **Step 3: Create the package namespaces**
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road/src/certain_road
+cd "$(git rev-parse --show-toplevel)/src/certain_road"
 for p in artifacts core ingest detect assess calibrate rsl optimize report; do
   mkdir -p "$p" && printf '"""%s stage."""\n' "$p" > "$p/__init__.py"
 done
@@ -119,7 +119,7 @@ repo root — which breaks `from tests.fixtures.synthetic import ...` in Task 3.
 Adding it later also leaves stale pytest caches behind.
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 mkdir -p tests && touch tests/__init__.py
 ```
 
@@ -253,7 +253,7 @@ forbidden_modules =
 This step exists because an enforcement mechanism nobody has seen fire is an assumption, not a guarantee.
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 echo "from certain_road.assess import *  # deliberate violation" >> src/certain_road/rsl/__init__.py
 uv run lint-imports; echo "exit=$?"
 ```
@@ -263,7 +263,7 @@ Expected: non-zero exit, naming the `stages-are-independent` contract.
 Now revert it:
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 printf '"""rsl stage."""\n' > src/certain_road/rsl/__init__.py
 uv run lint-imports; echo "exit=$?"
 ```
@@ -344,7 +344,7 @@ Expected: all pass.
 - [ ] **Step 15: Commit**
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 git add -A
 git commit -m "$(cat <<'EOF'
 feat: project skeleton with enforced stage isolation
@@ -678,7 +678,7 @@ Expected: all six PASS.
 - [ ] **Step 7: Commit**
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 git add -A
 git commit -m "$(cat <<'EOF'
 feat: versioned artifact schemas and IO
@@ -929,7 +929,7 @@ Expected: `wrote 1530 frames and ~3000 detections to .../runs/synthetic/artifact
 - [ ] **Step 7: Commit**
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 git add -A
 git commit -m "$(cat <<'EOF'
 feat: synthetic artifact fixtures
@@ -1154,7 +1154,7 @@ Expected: `RDD2022_released_through_CRDDC2022.zip` at ~13.26 GB.
 This takes 20–60 minutes depending on connection. It is resumable — re-running after an interruption continues rather than restarting.
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 uv run certain-road dataset fetch --country India
 ```
 
@@ -1165,7 +1165,7 @@ If the image count is 7,706 rather than 9,665, the `train/images` directory hold
 - [ ] **Step 8: Verify on disk**
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 ls data/raw/RDD2022/India/train/images | wc -l
 ls data/raw/RDD2022/India/train/annotations/xmls | wc -l
 du -sh data/raw/RDD2022/India data/raw/*.zip
@@ -1177,7 +1177,7 @@ cat data/raw/CHECKSUMS.txt
 `data/` is gitignored, so only code is committed.
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 git add -A
 git commit -m "$(cat <<'EOF'
 feat: RDD2022 acquisition with selective country extraction
@@ -1513,7 +1513,7 @@ def dataset_convert(country: str = "India") -> None:
 - [ ] **Step 7: Run the census on real data**
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 uv run certain-road dataset census --country India
 ```
 
@@ -1522,7 +1522,7 @@ Record the output — the DROP rows go into the dataset card in Task 6. Any clas
 - [ ] **Step 8: Run the conversion**
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 uv run certain-road dataset convert --country India
 ls data/processed/india/labels_all | wc -l
 ```
@@ -1532,7 +1532,7 @@ Expected: ~7,706 label files.
 - [ ] **Step 9: Spot-check one conversion by hand**
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 STEM=$(ls data/raw/RDD2022/India/train/annotations/xmls | head -1 | sed 's/.xml//')
 echo "--- VOC ---"; cat "data/raw/RDD2022/India/train/annotations/xmls/${STEM}.xml"
 echo "--- YOLO ---"; cat "data/processed/india/labels_all/${STEM}.txt"
@@ -1543,7 +1543,7 @@ Verify by hand that centre and size correspond to the VOC corners. Automated tes
 - [ ] **Step 10: Commit**
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 git add -A
 git commit -m "$(cat <<'EOF'
 feat: class census and VOC to YOLO conversion
@@ -1792,7 +1792,7 @@ def dataset_split(country: str = "India") -> None:
 - [ ] **Step 6: Run the split**
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 uv run certain-road dataset split --country India
 ```
 
@@ -1801,7 +1801,7 @@ Expected, approximately: `train 4624 · val 771 · calib 1541 · test 770`.
 - [ ] **Step 7: Verify the layout and the calib firewall**
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 for s in train val calib test; do
   printf "%-6s images=%-6s labels=%s\n" "$s" \
     "$(ls data/processed/india/images/$s | wc -l | tr -d ' ')" \
@@ -1877,7 +1877,7 @@ not a seeded shuffle, so adding files never reshuffles existing assignments.
 - [ ] **Step 9: Commit**
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 git add -A
 git commit -m "$(cat <<'EOF'
 feat: deterministic four-way split with calib firewall
@@ -1912,7 +1912,7 @@ Timeboxed. This is a go/no-go investigation with a written verdict, not a featur
 - [ ] **Step 1: Download and extract**
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 mkdir -p data/raw/water_potholes
 curl -sL "https://data.mendeley.com/public-api/datasets/tp95cdvgm8/files?folder_id=root&version=1" \
   | python3 -c "
@@ -1929,7 +1929,7 @@ find data/raw/water_potholes -maxdepth 2 -type d
 - [ ] **Step 2: Census the classes**
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 XMLDIR=$(find data/raw/water_potholes -type d -name "XML" | head -1)
 echo "XML dir: $XMLDIR"
 uv run python -c "
@@ -1945,7 +1945,7 @@ print('total', counts.total())
 - [ ] **Step 3: Count files and inspect images**
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 for d in IMG XML TXT; do
   p=$(find data/raw/water_potholes -type d -name "$d" | head -1)
   [ -n "$p" ] && echo "$d: $(ls "$p" | wc -l | tr -d ' ') files"
@@ -2008,7 +2008,7 @@ Append a `D033` entry to `docs/DECISIONS.md` (and its index row) stating the ver
 - [ ] **Step 6: Commit**
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 git add -A
 git commit -m "$(cat <<'EOF'
 docs: water-pothole dataset viability verdict
@@ -2174,7 +2174,7 @@ def detect_train(smoke: bool = False, country: str = "India") -> None:
 - [ ] **Step 7: Smoke test**
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 uv run certain-road detect train --smoke
 ```
 
@@ -2187,7 +2187,7 @@ Expected: two epochs complete, `results -> models/yolo/india_v1_smoke`.
 - [ ] **Step 8: Launch the real run unattended**
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 mkdir -p runs/logs
 nohup uv run certain-road detect train > runs/logs/train_india_v1.log 2>&1 &
 echo "pid $!"
@@ -2197,7 +2197,7 @@ sleep 120 && tail -20 runs/logs/train_india_v1.log
 Expect 4–6 hours for 100 epochs over 4,624 images. Monitor with:
 
 ```bash
-tail -f /Users/harshav/PROJECTS/certain-road/runs/logs/train_india_v1.log
+tail -f "$(git rev-parse --show-toplevel)/runs/logs/train_india_v1.log"
 ```
 
 **This is the point where weeks 2–4 unblock.** Do not wait for training — `assess` and `calibrate` are built against the Task 3 fixtures while this runs, and only need the real weights in week 4.
@@ -2211,7 +2211,7 @@ Calibrate expectations before reading them: **4,624 training images is small and
 - [ ] **Step 10: Commit**
 
 ```bash
-cd /Users/harshav/PROJECTS/certain-road
+cd "$(git rev-parse --show-toplevel)"
 git add -A
 git commit -m "$(cat <<'EOF'
 feat: YOLOv8n training on MPS
