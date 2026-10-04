@@ -703,9 +703,11 @@ def decisions(r: Report) -> None:
             "**D082 is cited but not yet written in `docs/DECISIONS.md`.** The attribution "
             "it is cited for — potholes from Model P, cracks from Model B, never summed — is "
             "applied in this report as the user's instruction. D082 is reserved for the "
-            "video-evaluation session. **D083 was taken by the session that ran T10–T17**, "
-            "for T16."
+            "video-evaluation session."
         )
+    # True whether or not D082 exists yet, so it is not inside the branch above.
+    if "D083" in index:
+        r.para("**D083 was taken by the session that ran T10–T17**, for T16.")
     rows = [[d, *index.get(d, ("not yet written", "–"))] for d in CITED]
     if not index:
         r.not_run("Decision index", "docs/DECISIONS.md")

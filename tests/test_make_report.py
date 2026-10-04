@@ -97,6 +97,8 @@ def test_d082_is_reported_missing_until_it_is_written(tmp_path):
     report = build_report(tmp_path, STAMP)
     assert "D082 is cited but not yet written" not in report
     assert "potholes from P, cracks from B" in report
+    # Who took D083 stays true after D082 lands, so the note must not vanish with it.
+    assert "D083 was taken by the session that ran T10–T17" in report
 
 
 def test_the_video_annotator_comes_from_the_ground_truth_file(tmp_path):
