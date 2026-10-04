@@ -3,17 +3,23 @@
 A pavement management decision-support system. It answers **"which road segments
 should be repaired first, given a fixed budget?"** — not "where is a pothole".
 
-Camera → YOLOv8n → vision-estimated PCI → conformal interval → RSL interval →
+Camera → YOLOv8s detectors (Model B, three-class; Model P, pothole-only) →
+vision-estimated PCI → conformal interval → RSL interval (designed, not built) →
 budget optimiser → offline HTML dashboard.
 
-**Status: design phase. No code yet.** Nothing below about running or testing is
-live until the week-1 skeleton lands.
+**Status (2026-10-04, from [`docs/REPO-MAP.md`](docs/REPO-MAP.md) §6):** built and
+tested. T1–T7, T9–T12, T16 and T17 have their outputs. T13 (simulation), T14 (edge
+hardware) and T15 (Chennai footage) are not run; §10a says what each waits for. T0
+and T8 have no output to check. The map is generated from evidence: rerun
+`uv run python scripts/repo_map.py` instead of trusting this paragraph.
 
 ## Read these first
 
 - [`docs/design.md`](docs/design.md) — the current design.
 - [`docs/DECISIONS.md`](docs/DECISIONS.md) — the decision log: every choice, why it
   was made, and what superseded it.
+- [`docs/REPO-MAP.md`](docs/REPO-MAP.md) — generated: what every file does, task
+  status with its evidence, and what is left.
 
 ## Maintaining the decision log
 
