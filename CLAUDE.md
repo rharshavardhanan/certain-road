@@ -18,6 +18,8 @@ and T8 have no output to check. The map is generated from evidence: rerun
 - [`docs/design.md`](docs/design.md) — the current design.
 - [`docs/DECISIONS.md`](docs/DECISIONS.md) — the decision log: every choice, why it
   was made, and what superseded it.
+- [`docs/ONBOARDING.md`](docs/ONBOARDING.md) — one page: install, check, where
+  things live, what has not run.
 - [`docs/REPO-MAP.md`](docs/REPO-MAP.md) — generated: what every file does, task
   status with its evidence, and what is left.
 

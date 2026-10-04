@@ -127,6 +127,7 @@ tests/       the test suite, including the architecture contracts
 
 | Document | What it is |
 |---|---|
+| [`docs/ONBOARDING.md`](docs/ONBOARDING.md) | Start here: install, check, where things live, what has not run |
 | [`docs/design.md`](docs/design.md) | The authoritative design spec |
 | [`docs/DECISIONS.md`](docs/DECISIONS.md) | Every choice, why it was made, and what superseded it — append-only |
 | [`docs/REPO-MAP.md`](docs/REPO-MAP.md) | Generated: every file's purpose, task status with evidence, what is left, how to reproduce |
