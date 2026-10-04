@@ -47,8 +47,7 @@ def main() -> int:
     hashes = np.array([dhash(YOLO / "images" / f"{n}.jpg") for n in names], dtype=np.uint64)
 
     print("finding dHash candidates ...", flush=True)
-    candidates = [(a, b) for a, b, _ in
-                  hamming_pairs(hashes, hashes, GROUP_HAMMING, same_set=True)]
+    candidates = [(a, b) for a, b, _ in hamming_pairs(hashes, hashes, GROUP_HAMMING, same_set=True)]
     print(f"{len(candidates)} candidate pairs; scoring by pixel correlation ...", flush=True)
 
     cache: dict[int, np.ndarray] = {}
@@ -73,10 +72,14 @@ def main() -> int:
 
     grouped_images = sum(len(v) for v in multi.values())
     payload = {
-        "max_hamming": GROUP_HAMMING, "same_scene_corr": SAME_SCENE_CORR,
-        "india_images": len(names), "candidate_pairs": len(candidates),
-        "linked_pairs": len(linked), "groups": multi,
-        "group_count": len(multi), "grouped_images": grouped_images,
+        "max_hamming": GROUP_HAMMING,
+        "same_scene_corr": SAME_SCENE_CORR,
+        "india_images": len(names),
+        "candidate_pairs": len(candidates),
+        "linked_pairs": len(linked),
+        "groups": multi,
+        "group_count": len(multi),
+        "grouped_images": grouped_images,
         "largest_group": max((len(v) for v in multi.values()), default=0),
     }
     out = repo_root() / "results" / "T2"

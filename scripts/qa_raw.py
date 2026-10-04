@@ -21,15 +21,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from certain_road.core.paths import raw_dir, repo_root  # noqa: E402
 from certain_road.perception.dataset.voc import parse_voc  # noqa: E402
 
-COUNTRIES = ["India", "Japan", "Norway", "United_States", "Czech",
-             "China_MotorBike", "China_Drone"]
+COUNTRIES = ["India", "Japan", "Norway", "United_States", "Czech", "China_MotorBike", "China_Drone"]
 SAMPLE_PER_COUNTRY = 8
 CELL = 420
 COLS, ROWS = 4, 2
 SEED = 0
 
-COLOURS = {"D00": (0, 200, 0), "D10": (0, 200, 0),
-           "D20": (0, 165, 255), "D40": (0, 0, 255)}
+COLOURS = {"D00": (0, 200, 0), "D10": (0, 200, 0), "D20": (0, 165, 255), "D40": (0, 0, 255)}
 DROPPED = (150, 150, 150)
 
 
@@ -38,9 +36,14 @@ def letterbox(img, size):
     s = size / max(h, w)
     out = cv2.resize(img, (max(1, round(w * s)), max(1, round(h * s))))
     canvas = cv2.copyMakeBorder(
-        out, (size - out.shape[0]) // 2, size - out.shape[0] - (size - out.shape[0]) // 2,
-        (size - out.shape[1]) // 2, size - out.shape[1] - (size - out.shape[1]) // 2,
-        cv2.BORDER_CONSTANT, value=(30, 30, 30))
+        out,
+        (size - out.shape[0]) // 2,
+        size - out.shape[0] - (size - out.shape[0]) // 2,
+        (size - out.shape[1]) // 2,
+        size - out.shape[1] - (size - out.shape[1]) // 2,
+        cv2.BORDER_CONSTANT,
+        value=(30, 30, 30),
+    )
     return canvas
 
 
@@ -63,23 +66,40 @@ def render(country, out_dir):
             p1, p2 = (int(o.xmin), int(o.ymin)), (int(o.xmax), int(o.ymax))
             thick = max(2, round(max(img.shape[:2]) / 400))
             cv2.rectangle(img, p1, p2, colour, thick)
-            cv2.putText(img, o.name, (p1[0], max(14, p1[1] - 4)),
-                        cv2.FONT_HERSHEY_SIMPLEX, max(0.5, thick * 0.25), colour, thick)
-        notes.append(f"{xml_path.stem} {ann.width}x{ann.height} "
-                     f"{len(ann.objects)}box {sorted({o.name for o in ann.objects})}")
+            cv2.putText(
+                img,
+                o.name,
+                (p1[0], max(14, p1[1] - 4)),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                max(0.5, thick * 0.25),
+                colour,
+                thick,
+            )
+        notes.append(
+            f"{xml_path.stem} {ann.width}x{ann.height} "
+            f"{len(ann.objects)}box {sorted({o.name for o in ann.objects})}"
+        )
         cv2.imwrite(str(out_dir / f"{country}__{xml_path.stem}.jpg"), img)
         cell = letterbox(img, CELL)
-        cv2.putText(cell, xml_path.stem, (6, CELL - 8),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.45, (255, 255, 255), 1)
+        cv2.putText(
+            cell, xml_path.stem, (6, CELL - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (255, 255, 255), 1
+        )
         cells.append(cell)
 
     while len(cells) < COLS * ROWS:
         cells.append(letterbox(cv2.imread(str(root / "images" / f"{picks[0].stem}.jpg")), CELL) * 0)
-    grid = cv2.vconcat([cv2.hconcat(cells[r * COLS:(r + 1) * COLS]) for r in range(ROWS)])
+    grid = cv2.vconcat([cv2.hconcat(cells[r * COLS : (r + 1) * COLS]) for r in range(ROWS)])
     banner = grid[:0].copy()
     grid = cv2.copyMakeBorder(grid, 34, 0, 0, 0, cv2.BORDER_CONSTANT, value=(20, 20, 20))
-    cv2.putText(grid, f"{country}  |  green D00/D10  orange D20  red D40  grey dropped",
-                (10, 23), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
+    cv2.putText(
+        grid,
+        f"{country}  |  green D00/D10  orange D20  red D40  grey dropped",
+        (10, 23),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.6,
+        (255, 255, 255),
+        1,
+    )
     del banner
     cv2.imwrite(str(out_dir / f"_montage_{country}.jpg"), grid)
     return notes

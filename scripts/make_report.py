@@ -294,6 +294,7 @@ def external(r: Report) -> None:
                     f4(t["at_conf_0.25"]["false_alarms_per_image"]),
                 ]
             )
+
         def ci(d: dict) -> str:
             lo, hi = d["bootstrap_P_minus_B"]["pothole_ap50"]["ci95"]
             return f"[{lo:+.4f}, {hi:+.4f}] ({d['bootstrap_units']['count']:,} groups)"
@@ -383,8 +384,12 @@ def conformal(r: Report) -> None:
         for x in d["cases"][case]["table"]:
             m = means[case].get(x["alpha"], {})
             k = m.get("feasible_draws", 0)
-            mean = "–" if not k else f4(m["mean_test_risk"]) + (
-                "" if k == d["n_resamples"] else f" ({k} of {d['n_resamples']} feasible)")
+            mean = (
+                "–"
+                if not k
+                else f4(m["mean_test_risk"])
+                + ("" if k == d["n_resamples"] else f" ({k} of {d['n_resamples']} feasible)")
+            )
             if not x["feasible"]:
                 rows.append([x["alpha"], "infeasible", "–", mean, "–"])
             else:

@@ -64,7 +64,7 @@ def test_agrees_with_the_simulator_camera_under_f_from_fov():
     horizon row each implies must coincide."""
     img_w, hfov = 1280, 1.2
     f = (img_w / 2) / math.tan(hfov / 2)
-    assert f == pytest.approx(935.5, abs=0.5)      # the T13 design figure
+    assert f == pytest.approx(935.5, abs=0.5)  # the T13 design figure
 
 
 def test_haversine_matches_a_known_degree_of_latitude():
@@ -79,7 +79,7 @@ def test_haversine_is_zero_for_identical_points():
 def test_interp_track_interpolates_and_clamps():
     ts, lat, lon = [0.0, 10.0], [0.0, 1.0], [0.0, 2.0]
     assert interp_track(ts, lat, lon, 5.0) == pytest.approx((0.5, 1.0))
-    assert interp_track(ts, lat, lon, -5.0) == (0.0, 0.0)      # clamps, never extrapolates
+    assert interp_track(ts, lat, lon, -5.0) == (0.0, 0.0)  # clamps, never extrapolates
     assert interp_track(ts, lat, lon, 99.0) == (1.0, 2.0)
 
 

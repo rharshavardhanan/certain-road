@@ -63,18 +63,20 @@ def main() -> int:
         (STAGE / f"{split}.txt").write_text((YOLO / f"{split}.txt").read_text())
 
     manifest = {
-        "git_commit": subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True,
-                                     text=True, check=True).stdout.strip(),
+        "git_commit": subprocess.run(
+            ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True
+        ).stdout.strip(),
         "uploaded_splits": {s: len(stems(s)) for s in [*UPLOAD_SPLITS, "nonindia_replay"]},
         "uploaded_images": len(upload),
         "withheld": {
             "reason": "held-out India never leaves the local machine (D062); "
-                      "locked evaluation runs locally on CPU",
+            "locked evaluation runs locally on CPU",
             "splits": {s: len(stems(s)) for s in WITHHELD_SPLITS},
             "withheld_images": len(withheld),
         },
-        "split_sha256": {s: sha256(STAGE / f"{s}.txt")
-                         for s in [*UPLOAD_SPLITS, "nonindia_replay"]},
+        "split_sha256": {
+            s: sha256(STAGE / f"{s}.txt") for s in [*UPLOAD_SPLITS, "nonindia_replay"]
+        },
         "classes": CFG["classes"],
     }
     (STAGE / "manifest.json").write_text(json.dumps(manifest, indent=2))

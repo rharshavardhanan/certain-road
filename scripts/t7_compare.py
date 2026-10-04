@@ -32,8 +32,7 @@ IOUS = [0.1, 0.3, 0.5]
 
 
 def stems():
-    return [Path(x).stem for x in (YOLO_DIR / f"{SPLIT}.txt").read_text().splitlines()
-            if x.strip()]
+    return [Path(x).stem for x in (YOLO_DIR / f"{SPLIT}.txt").read_text().splitlines() if x.strip()]
 
 
 def gt_of(ss):
@@ -72,8 +71,16 @@ def analyse(pj, ss, gt, sizes):
         w, h = sizes[s]
         loose = [r for r in preds.get(s, [])]
         strict = [r for r in loose if r[5] >= EVAL["report_conf"]]
-        gb = np.array([[(cx - bw / 2) * w, (cy - bh / 2) * h, (cx + bw / 2) * w,
-                        (cy + bh / 2) * h] for _, cx, cy, bw, bh in g]) if g else np.zeros((0, 4))
+        gb = (
+            np.array(
+                [
+                    [(cx - bw / 2) * w, (cy - bh / 2) * h, (cx + bw / 2) * w, (cy + bh / 2) * h]
+                    for _, cx, cy, bw, bh in g
+                ]
+            )
+            if g
+            else np.zeros((0, 4))
+        )
 
         # recall curve at conf 0.001
         if g and loose:
@@ -91,8 +98,12 @@ def analyse(pj, ss, gt, sizes):
             for t in IOUS:
                 if (ious[same, gi] >= t).any():
                     recall[NAMES[gc]][f"iou_{t}"] += 1
-            if ((ctr[same, 0] >= gb[gi, 0]) & (ctr[same, 0] <= gb[gi, 2])
-                    & (ctr[same, 1] >= gb[gi, 1]) & (ctr[same, 1] <= gb[gi, 3])).any():
+            if (
+                (ctr[same, 0] >= gb[gi, 0])
+                & (ctr[same, 0] <= gb[gi, 2])
+                & (ctr[same, 1] >= gb[gi, 1])
+                & (ctr[same, 1] <= gb[gi, 3])
+            ).any():
                 recall[NAMES[gc]]["centre"] += 1
 
         # confusion + P/R at report_conf
@@ -131,15 +142,25 @@ def analyse(pj, ss, gt, sizes):
     prec = tp / (tp + fp) if tp + fp else 0.0
     rec = tp / (tp + fn) if tp + fn else 0.0
     return {
-        "map50": round(coco["map50"], 4), "map50_95": round(coco["map50_95"], 4),
+        "map50": round(coco["map50"], 4),
+        "map50_95": round(coco["map50_95"], 4),
         "per_class_ap50": {k: round(v["ap50"], 4) for k, v in coco["per_class"].items()},
         "per_class_instances": {k: v["instances"] for k, v in coco["per_class"].items()},
         "confusion_at_report_conf": {k: dict(v) for k, v in conf.items()},
-        "pr_at_report_conf": {"precision": round(prec, 4), "recall": round(rec, 4),
-                              "tp": tp, "fp": fp, "fn": fn},
+        "pr_at_report_conf": {
+            "precision": round(prec, 4),
+            "recall": round(rec, 4),
+            "tp": tp,
+            "fp": fp,
+            "fn": fn,
+        },
         "recall_curve_conf0.001": {
-            k: {kk: (round(vv / v["total"], 4) if kk != "total" and v["total"] else vv)
-                for kk, vv in v.items()} for k, v in recall.items()},
+            k: {
+                kk: (round(vv / v["total"], 4) if kk != "total" and v["total"] else vv)
+                for kk, vv in v.items()
+            }
+            for k, v in recall.items()
+        },
     }
 
 
@@ -155,18 +176,27 @@ def main() -> int:
     a_pj = next((locked / "A_india_full_run" / "val").glob("predictions.json"))
     b_pj = next((locked / "B_india_heldout_run" / "val").glob("predictions.json"))
 
-    out = {"split": SPLIT, "images": len(ss), "eval_settings": EVAL,
-           "A": analyse(a_pj, ss, gt, sizes), "B": analyse(b_pj, ss, gt, sizes)}
+    out = {
+        "split": SPLIT,
+        "images": len(ss),
+        "eval_settings": EVAL,
+        "A": analyse(a_pj, ss, gt, sizes),
+        "B": analyse(b_pj, ss, gt, sizes),
+    }
     dest = repo_root() / "results" / "T7"
     dest.mkdir(parents=True, exist_ok=True)
     (dest / "A_vs_B_india_test.json").write_text(json.dumps(out, indent=2))
 
     print(f"=== A vs B on {SPLIT} ({len(ss)} images), pycocotools ===")
     print(f"{'':<20}{'A':>10}{'B':>10}{'delta':>10}")
-    print(f"{'mAP50':<20}{out['A']['map50']:>10.4f}{out['B']['map50']:>10.4f}"
-          f"{out['B']['map50'] - out['A']['map50']:>+10.4f}")
-    print(f"{'mAP50-95':<20}{out['A']['map50_95']:>10.4f}{out['B']['map50_95']:>10.4f}"
-          f"{out['B']['map50_95'] - out['A']['map50_95']:>+10.4f}")
+    print(
+        f"{'mAP50':<20}{out['A']['map50']:>10.4f}{out['B']['map50']:>10.4f}"
+        f"{out['B']['map50'] - out['A']['map50']:>+10.4f}"
+    )
+    print(
+        f"{'mAP50-95':<20}{out['A']['map50_95']:>10.4f}{out['B']['map50_95']:>10.4f}"
+        f"{out['B']['map50_95'] - out['A']['map50_95']:>+10.4f}"
+    )
     for c in NAMES.values():
         a, b = out["A"]["per_class_ap50"][c], out["B"]["per_class_ap50"][c]
         print(f"{'  ' + c:<20}{a:>10.4f}{b:>10.4f}{b - a:>+10.4f}")

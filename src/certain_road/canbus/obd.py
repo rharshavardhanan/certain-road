@@ -40,11 +40,11 @@ def parse_response(arbitration_id: int, data: bytes, pid: int) -> float | None:
     if data[1] != POSITIVE_RESPONSE or data[2] != pid:
         return None
     if pid == PID_VEHICLE_SPEED:
-        return float(data[3])                       # km/h, one byte, no scaling
+        return float(data[3])  # km/h, one byte, no scaling
     if pid == PID_ENGINE_RPM:
         if len(data) < 5:
             return None
-        return (256.0 * data[3] + data[4]) / 4.0    # quarter-RPM resolution
+        return (256.0 * data[3] + data[4]) / 4.0  # quarter-RPM resolution
     return None
 
 
@@ -71,8 +71,11 @@ class ObdReader:
     def _query(self, pid: int) -> float | None:
         import can
 
-        self._bus.send(can.Message(arbitration_id=FUNCTIONAL_REQUEST_ID,
-                                   data=request_frame(pid), is_extended_id=False))
+        self._bus.send(
+            can.Message(
+                arbitration_id=FUNCTIONAL_REQUEST_ID, data=request_frame(pid), is_extended_id=False
+            )
+        )
         deadline = time.monotonic() + self._timeout_s
         while time.monotonic() < deadline:
             msg = self._bus.recv(timeout=max(0.0, deadline - time.monotonic()))
@@ -84,9 +87,11 @@ class ObdReader:
         return None
 
     def read(self) -> Reading:
-        return Reading(speed_kmh=self._query(PID_VEHICLE_SPEED),
-                       rpm=self._query(PID_ENGINE_RPM),
-                       t_monotonic=time.monotonic())
+        return Reading(
+            speed_kmh=self._query(PID_VEHICLE_SPEED),
+            rpm=self._query(PID_ENGINE_RPM),
+            t_monotonic=time.monotonic(),
+        )
 
 
 class NullObdReader:

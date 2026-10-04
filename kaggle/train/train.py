@@ -69,9 +69,12 @@ def log_environment() -> dict:
     subprocess.run(["nvidia-smi"], check=False)
     import torch
 
-    info = {"torch": torch.__version__, "cuda": torch.version.cuda,
-            "gpus": torch.cuda.device_count(),
-            "names": [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())]}
+    info = {
+        "torch": torch.__version__,
+        "cuda": torch.version.cuda,
+        "gpus": torch.cuda.device_count(),
+        "names": [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())],
+    }
     print(json.dumps(info, indent=2), flush=True)
     return info
 
@@ -87,6 +90,7 @@ def ensure_ultralytics(pin: str) -> str:
     """
     try:
         import ultralytics
+
         if ultralytics.__version__ == pin:
             print(f"ultralytics {pin} already present", flush=True)
             return pin
@@ -99,22 +103,29 @@ def ensure_ultralytics(pin: str) -> str:
         print(f"installing {len(wheels)} attached wheel(s) offline", flush=True)
         offline = subprocess.run(
             [sys.executable, "-m", "pip", "install", "-q", "--no-index", "--no-deps", *wheels],
-            capture_output=True, text=True)
+            capture_output=True,
+            text=True,
+        )
         if offline.returncode != 0:
             print(f"offline install failed: {offline.stderr.strip()[-400:]}", flush=True)
     else:
         print("no wheels attached; trying the network", flush=True)
         online = subprocess.run(
             [sys.executable, "-m", "pip", "install", "-q", f"ultralytics=={pin}"],
-            capture_output=True, text=True)
+            capture_output=True,
+            text=True,
+        )
         if online.returncode != 0:
-            print(f"pip install failed (no kernel internet?): "
-                  f"{online.stderr.strip()[-300:]}", flush=True)
+            print(
+                f"pip install failed (no kernel internet?): {online.stderr.strip()[-300:]}",
+                flush=True,
+            )
 
     try:
         import importlib
 
         import ultralytics as u
+
         importlib.reload(u)
         return u.__version__
     except ImportError as exc:
@@ -151,8 +162,12 @@ def find_dataset_root(anchor: str = ANCHOR) -> Path:
 def write_data_yaml(root: Path, job: dict) -> Path:
     import yaml
 
-    cfg = {"path": str(root), "train": job["train"], "val": job["val"],
-           "names": {int(k): v for k, v in job["names"].items()}}
+    cfg = {
+        "path": str(root),
+        "train": job["train"],
+        "val": job["val"],
+        "names": {int(k): v for k, v in job["names"].items()},
+    }
     out = WORKING / f"data_{job['run']}.yaml"
     with open(out, "w") as fh:
         yaml.safe_dump(cfg, fh, sort_keys=False)
@@ -176,12 +191,12 @@ def assert_no_forbidden_prefix(root: Path, job: dict) -> None:
     lists = job["train"] if isinstance(job["train"], list) else [job["train"]]
     for name in lists:
         entries = (root / name).read_text().splitlines()
-        hits = [e for e in entries
-                if any(Path(e).name.startswith(p) for p in forbidden)]
+        hits = [e for e in entries if any(Path(e).name.startswith(p) for p in forbidden)]
         if hits:
             raise SystemExit(
                 f"REFUSING TO TRAIN: {name} contains {len(hits)} forbidden "
-                f"entries (prefixes {forbidden}); first: {hits[:3]}")
+                f"entries (prefixes {forbidden}); first: {hits[:3]}"
+            )
         print(f"guard ok: {name} has 0 of {forbidden} in {len(entries)} entries", flush=True)
 
 
@@ -214,8 +229,9 @@ def preflight_dataset(root: Path, job: dict) -> dict:
     def as_list(value) -> list[str]:
         return value if isinstance(value, list) else [value]
 
-    named = ([("train", n) for n in as_list(job["train"])]
-             + [("val", n) for n in as_list(job["val"])])
+    named = [("train", n) for n in as_list(job["train"])] + [
+        ("val", n) for n in as_list(job["val"])
+    ]
     num_cls = len(job["names"])
 
     report: dict[str, dict] = {}
@@ -226,15 +242,23 @@ def preflight_dataset(root: Path, job: dict) -> dict:
         labels = img2label_paths(images)
         found_i = sum(1 for p in images if os.path.isfile(p))
         found_l = sum(1 for p in labels if os.path.isfile(p))
-        report[name] = {"role": role, "listed": len(entries),
-                        "images_present": found_i, "labels_present": found_l}
-        print(f"preflight {role} {name}: {found_i}/{len(entries)} images, "
-              f"{found_l}/{len(entries)} labels", flush=True)
+        report[name] = {
+            "role": role,
+            "listed": len(entries),
+            "images_present": found_i,
+            "labels_present": found_l,
+        }
+        print(
+            f"preflight {role} {name}: {found_i}/{len(entries)} images, "
+            f"{found_l}/{len(entries)} labels",
+            flush=True,
+        )
         if found_i < len(entries) or found_l < len(entries):
             raise SystemExit(
                 f"REFUSING TO TRAIN: {name} lists {len(entries)} entries but the "
                 f"mount has {found_i} images and {found_l} labels "
-                f"(root {root}). The dataset version is incomplete.")
+                f"(root {root}). The dataset version is incomplete."
+            )
         pairs += list(zip(images, labels, strict=True))
 
     nm = ne = nc = 0
@@ -245,13 +269,13 @@ def preflight_dataset(root: Path, job: dict) -> dict:
             nm, ne, nc = nm + out[5], ne + out[7], nc + out[8]
             if out[9]:
                 msgs.append(out[9])
-    print(f"preflight scan: {len(pairs)} pairs, missing={nm} empty={ne} "
-          f"corrupt={nc}", flush=True)
+    print(f"preflight scan: {len(pairs)} pairs, missing={nm} empty={ne} corrupt={nc}", flush=True)
     report["scan"] = {"pairs": len(pairs), "missing": nm, "empty": ne, "corrupt": nc}
     if nm or nc:
         raise SystemExit(
             f"REFUSING TO TRAIN: ultralytics scan of {len(pairs)} pairs reports "
-            f"{nm} missing and {nc} corrupt; first: {msgs[:3]}")
+            f"{nm} missing and {nc} corrupt; first: {msgs[:3]}"
+        )
     return report
 
 
@@ -286,8 +310,12 @@ def main() -> int:
     else:
         model = YOLO(resolve_init_weights(job["init_weights"]))
         outcome = model.train(
-            data=str(data_yaml), device=device,
-            project=str(WORKING / "runs"), name=job["run"], exist_ok=True, **cfg
+            data=str(data_yaml),
+            device=device,
+            project=str(WORKING / "runs"),
+            name=job["run"],
+            exist_ok=True,
+            **cfg,
         )
 
     # `train()` returns a dict under DDP in this ultralytics version, not an
@@ -311,13 +339,21 @@ def main() -> int:
     csv = results_dir / "results.csv"
     if csv.exists():
         epochs_done = max(0, len(csv.read_text().strip().splitlines()) - 1)
-    (export / "status.json").write_text(json.dumps({
-        "run": job["run"], "epochs_done": epochs_done,
-        "epochs_requested": cfg.get("epochs"),
-        "early_stopped": finished and epochs_done < int(cfg.get("epochs", 0)),
-        "finished": finished, "environment": env,
-        "ultralytics_used": ultra_version, "ultralytics_requested": job["ultralytics"],
-    }, indent=2))
+    (export / "status.json").write_text(
+        json.dumps(
+            {
+                "run": job["run"],
+                "epochs_done": epochs_done,
+                "epochs_requested": cfg.get("epochs"),
+                "early_stopped": finished and epochs_done < int(cfg.get("epochs", 0)),
+                "finished": finished,
+                "environment": env,
+                "ultralytics_used": ultra_version,
+                "ultralytics_requested": job["ultralytics"],
+            },
+            indent=2,
+        )
+    )
     print(json.dumps(json.loads((export / "status.json").read_text()), indent=2), flush=True)
     return 0
 

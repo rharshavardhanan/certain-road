@@ -295,13 +295,24 @@ def plot(report: dict) -> None:
     ax.text(0.47, 0.515, "risk = alpha (the promise)", color=MUTED, fontsize=8, rotation=28.5)
     # Direct labels placed by hand in clear space: B and P track within ~0.03 of
     # each other the whole way, and all four converge at the right edge.
-    placed = {"A_nonindia_to_test": (0.30, 0.86), "A_india_cal_to_test": (0.62, 0.74),
-              "B_india_cal_to_test": (0.53, 0.37), "P_india_cal_to_test": (0.15, 0.035)}
-    short = {"A_nonindia_to_test": "A, non-India cal", "A_india_cal_to_test": "A, India cal",
-             "B_india_cal_to_test": "B", "P_india_cal_to_test": "P"}
+    placed = {
+        "A_nonindia_to_test": (0.30, 0.86),
+        "A_india_cal_to_test": (0.62, 0.74),
+        "B_india_cal_to_test": (0.53, 0.37),
+        "P_india_cal_to_test": (0.15, 0.035),
+    }
+    short = {
+        "A_nonindia_to_test": "A, non-India cal",
+        "A_india_cal_to_test": "A, India cal",
+        "B_india_cal_to_test": "B",
+        "P_india_cal_to_test": "P",
+    }
     for name, (label, slot) in SERIES.items():
-        pts = [(r["alpha"], r["test_risk"]) for r in report["cases"][name]["curve"]
-               if r["test_risk"] is not None]
+        pts = [
+            (r["alpha"], r["test_risk"])
+            for r in report["cases"][name]["curve"]
+            if r["test_risk"] is not None
+        ]
         if not pts:
             continue
         xs, ys = zip(*pts, strict=True)
@@ -312,9 +323,12 @@ def plot(report: dict) -> None:
     ax.set_xlabel("certified alpha (promised pothole miss rate)")
     ax.set_ylabel("pothole miss rate on india_test")
     ax.legend(frameon=False, fontsize=8, loc="lower right", labelcolor=INK_2)
-    title(ax, "Calibrated in India the bound holds; calibrated elsewhere it breaks",
-          "india_test, locked predictions, IoU 0.5. A line starts where its alpha "
-          "first becomes feasible.")
+    title(
+        ax,
+        "Calibrated in India the bound holds; calibrated elsewhere it breaks",
+        "india_test, locked predictions, IoU 0.5. A line starts where its alpha "
+        "first becomes feasible.",
+    )
     save(fig, OUT / "risk_vs_alpha.png")
 
     # 2. The resampled distribution at one alpha both sources can certify.
@@ -324,10 +338,22 @@ def plot(report: dict) -> None:
     for name in ("B_india_cal_to_test", "A_nonindia_to_test"):
         label, slot = SERIES[name]
         row = next(r for r in report["resampling"]["cases"][name] if r["alpha"] == alpha)
-        counts, _, _ = ax.hist(row["risks"], bins=bins, color=SLOTS[slot], label=label,
-                               edgecolor="#fcfcfb", linewidth=0.8)
-        ax.text(row["mean_test_risk"], max(counts) + 1.5,
-                f"mean {row['mean_test_risk']:.2f}", color=INK_2, fontsize=8, ha="center")
+        counts, _, _ = ax.hist(
+            row["risks"],
+            bins=bins,
+            color=SLOTS[slot],
+            label=label,
+            edgecolor="#fcfcfb",
+            linewidth=0.8,
+        )
+        ax.text(
+            row["mean_test_risk"],
+            max(counts) + 1.5,
+            f"mean {row['mean_test_risk']:.2f}",
+            color=INK_2,
+            fontsize=8,
+            ha="center",
+        )
     ax.axvline(alpha, color=MUTED, linewidth=1, linestyle=(0, (4, 3)))
     top = ax.get_ylim()[1]
     ax.set_ylim(0, top * 1.08)
@@ -336,20 +362,27 @@ def plot(report: dict) -> None:
     ax.set_xlabel("pothole miss rate on the resampled test half")
     ax.set_ylabel("re-partitions")
     ax.legend(frameon=False, fontsize=8, loc="upper center", labelcolor=INK_2)
-    title(ax, f"200 group-aware re-partitions at alpha = {alpha}",
-          "Same test halves for both. India calibration centres on alpha; "
-          "non-India calibration never comes close.")
+    title(
+        ax,
+        f"200 group-aware re-partitions at alpha = {alpha}",
+        "Same test halves for both. India calibration centres on alpha; "
+        "non-India calibration never comes close.",
+    )
     save(fig, OUT / "resampled_risk_hist.png")
 
     # 3. What the certificate costs: false alarms per image at tau-hat.
     fig, ax = figure()
     for name in ("B_india_cal_to_test", "P_india_cal_to_test"):
         label, slot = SERIES[name]
-        pts = [(r["alpha"], r["false_alarms_per_image"])
-               for r in report["cases"][name]["table"] if r["feasible"]]
+        pts = [
+            (r["alpha"], r["false_alarms_per_image"])
+            for r in report["cases"][name]["table"]
+            if r["feasible"]
+        ]
         xs, ys = zip(*pts, strict=True)
-        ax.plot(xs, ys, color=SLOTS[slot], linewidth=2, marker="o", markersize=5,
-                label=label, zorder=3)
+        ax.plot(
+            xs, ys, color=SLOTS[slot], linewidth=2, marker="o", markersize=5, label=label, zorder=3
+        )
         ax.text(xs[0], ys[0] * 1.25, f"{ys[0]:.1f}", color=INK_2, fontsize=8, ha="center")
     ax.axhline(1.0, color=MUTED, linewidth=1, linestyle=(0, (4, 3)))
     ax.text(0.71, 1.08, "one false alarm per image", color=MUTED, fontsize=8, ha="right")
@@ -357,9 +390,12 @@ def plot(report: dict) -> None:
     ax.set_xlabel("certified alpha (promised pothole miss rate)")
     ax.set_ylabel("false alarms per image at tau-hat (log)")
     ax.legend(frameon=False, fontsize=8, loc="upper right", labelcolor=INK_2)
-    title(ax, "The certificate controls misses, not false alarms",
-          "india_test, pothole channel. Tight alpha is certified at tau ~ 0.001, "
-          "where the detector flags everything.")
+    title(
+        ax,
+        "The certificate controls misses, not false alarms",
+        "india_test, pothole channel. Tight alpha is certified at tau ~ 0.001, "
+        "where the detector flags everything.",
+    )
     save(fig, OUT / "false_alarms_vs_alpha.png")
 
 

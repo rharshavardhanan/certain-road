@@ -49,40 +49,68 @@ def main() -> int:
 
     data_yaml = out_dir / "data.yaml"
     with open(data_yaml, "w") as fh:
-        yaml.safe_dump({"path": str(YOLO_DIR.resolve()),
-                        "train": f"{args.eval_set}.txt", "val": f"{args.eval_set}.txt",
-                        "names": names}, fh, sort_keys=False)
+        yaml.safe_dump(
+            {
+                "path": str(YOLO_DIR.resolve()),
+                "train": f"{args.eval_set}.txt",
+                "val": f"{args.eval_set}.txt",
+                "names": names,
+            },
+            fh,
+            sort_keys=False,
+        )
 
     model = YOLO(str(args.weights))
     result = model.val(
-        data=str(data_yaml), split="val", save_json=True, plots=True,
-        project=str(out_dir), name="val", exist_ok=True, verbose=False,
-        conf=EVAL["conf"], iou=EVAL["iou"], max_det=EVAL["max_det"],
-        imgsz=EVAL["imgsz"], rect=EVAL["rect"], half=EVAL["half"], device=EVAL["device"],
+        data=str(data_yaml),
+        split="val",
+        save_json=True,
+        plots=True,
+        project=str(out_dir),
+        name="val",
+        exist_ok=True,
+        verbose=False,
+        conf=EVAL["conf"],
+        iou=EVAL["iou"],
+        max_det=EVAL["max_det"],
+        imgsz=EVAL["imgsz"],
+        rect=EVAL["rect"],
+        half=EVAL["half"],
+        device=EVAL["device"],
     )
 
-    image_paths = [YOLO_DIR / "images" / f"{Path(x).stem}.jpg"
-                   for x in (YOLO_DIR / f"{args.eval_set}.txt").read_text().splitlines()
-                   if x.strip()]
+    image_paths = [
+        YOLO_DIR / "images" / f"{Path(x).stem}.jpg"
+        for x in (YOLO_DIR / f"{args.eval_set}.txt").read_text().splitlines()
+        if x.strip()
+    ]
     gt, stem_to_id = yolo_to_coco_gt(image_paths, YOLO_DIR / "labels", names)
     pred_json = next((out_dir / "val").glob("predictions.json"), None)
-    coco = coco_eval(gt, load_predictions(pred_json, stem_to_id, len(names)) if pred_json
-                     else [], names)
+    coco = coco_eval(
+        gt, load_predictions(pred_json, stem_to_id, len(names)) if pred_json else [], names
+    )
 
-    per_class_ultra = {names[i]: float(result.box.ap50[i]) for i in range(len(names))
-                       if i < len(result.box.ap50)}
+    per_class_ultra = {
+        names[i]: float(result.box.ap50[i]) for i in range(len(names)) if i < len(result.box.ap50)
+    }
     payload = {
-        "set": args.eval_set, "weights": str(args.weights), "images": len(image_paths),
+        "set": args.eval_set,
+        "weights": str(args.weights),
+        "images": len(image_paths),
         "eval_settings": EVAL,
-        "ultralytics_metrics": {"map50": float(result.box.map50),
-                                "map50_95": float(result.box.map),
-                                "precision": float(result.box.mp),
-                                "recall": float(result.box.mr),
-                                "per_class_ap50": per_class_ultra},
+        "ultralytics_metrics": {
+            "map50": float(result.box.map50),
+            "map50_95": float(result.box.map),
+            "precision": float(result.box.mp),
+            "recall": float(result.box.mr),
+            "per_class_ap50": per_class_ultra,
+        },
         "pycocotools_metrics": coco,
-        "cross_check": {"map50_abs_delta": round(abs(float(result.box.map50) - coco["map50"]), 4),
-                        "tolerance": 0.03,
-                        "ok": abs(float(result.box.map50) - coco["map50"]) <= 0.03},
+        "cross_check": {
+            "map50_abs_delta": round(abs(float(result.box.map50) - coco["map50"]), 4),
+            "tolerance": 0.03,
+            "ok": abs(float(result.box.map50) - coco["map50"]) <= 0.03,
+        },
     }
     (out_dir / "metrics.json").write_text(json.dumps(payload, indent=2))
     print(json.dumps(payload, indent=2))

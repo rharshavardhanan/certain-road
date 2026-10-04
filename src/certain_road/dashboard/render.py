@@ -73,8 +73,10 @@ def table(head: list[str], rows: list[list[str]], *, numeric_from: int = 1) -> s
         + "</tr>"
         for r in rows
     )
-    return (f'<div class="table-wrap"><table><thead><tr>{th}</tr></thead>'
-            f'<tbody>{body}</tbody></table></div>')
+    return (
+        f'<div class="table-wrap"><table><thead><tr>{th}</tr></thead>'
+        f"<tbody>{body}</tbody></table></div>"
+    )
 
 
 # --- allocation -------------------------------------------------------------
@@ -451,16 +453,22 @@ def drift_alts(root: Path) -> tuple[str, str]:
     """
     d = load_json(root / "results/T11/drift.json")
     if isinstance(d, NotRun):
-        return ("Martingale traces for both drift statistics.",
-                "Detection delay with the CUSUM reset.")
+        return (
+            "Martingale traces for both drift statistics.",
+            "Detection delay with the CUSUM reset.",
+        )
     n, pl, cu = d["n_streams"], d["plain"]["shift"], d["cusum"]["shift"]
-    traces = (f"After the shift to India, the plain martingale alarms in {pl['detected']} of "
-              f"{n} streams; with the CUSUM reset, {cu['detected']} of {n}.")
+    traces = (
+        f"After the shift to India, the plain martingale alarms in {pl['detected']} of "
+        f"{n} streams; with the CUSUM reset, {cu['detected']} of {n}."
+    )
     f = cu["delay_frames"]
-    delay = (f"With the CUSUM reset, {cu['detected']} of {n} streams alarm after India begins"
-             + (f", median {f['median']:g} India frames" if f else "")
-             + f"; {cu['alarmed_in_null_prefix']} alarm inside the non-India prefix and "
-             f"{cu['never_alarmed']} never alarm.")
+    delay = (
+        f"With the CUSUM reset, {cu['detected']} of {n} streams alarm after India begins"
+        + (f", median {f['median']:g} India frames" if f else "")
+        + f"; {cu['alarmed_in_null_prefix']} alarm inside the non-India prefix and "
+        f"{cu['never_alarmed']} never alarm."
+    )
     return traces, delay
 
 
@@ -502,8 +510,12 @@ def build_page(root: Path, stamp: dict, *, worst_k: int) -> str:
             detector_section(root),
             '<h2 id="conformal">Conformal risk control (T10)</h2>',
             conformal_section(root),
-            figure(root, "results/T10/risk_vs_alpha.png", "Miss rate against certified alpha.",
-                   alt="Calibrated in India the bound holds; calibrated elsewhere it breaks."),
+            figure(
+                root,
+                "results/T10/risk_vs_alpha.png",
+                "Miss rate against certified alpha.",
+                alt="Calibrated in India the bound holds; calibrated elsewhere it breaks.",
+            ),
             figure(
                 root,
                 "results/T10/false_alarms_vs_alpha.png",

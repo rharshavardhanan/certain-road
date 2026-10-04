@@ -20,8 +20,12 @@ from certain_road.dashboard.render import build_page  # noqa: E402
 
 def main() -> int:
     root = repo_root()
-    commit = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True,
-                            text=True, cwd=root).stdout.strip() or "unknown"
+    commit = (
+        subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, cwd=root
+        ).stdout.strip()
+        or "unknown"
+    )
     stamp = {"utc": datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC"), "commit": commit}
     worst_k = yaml.safe_load((root / "configs/project.yaml").read_text())["allocation"]["worst_k"]
     page = build_page(root, stamp, worst_k=int(worst_k))

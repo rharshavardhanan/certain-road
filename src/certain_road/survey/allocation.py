@@ -78,7 +78,7 @@ def allocate_optimal(
         if w == 0:
             continue
         # Descending in p, so each segment is offered at most once.
-        candidate = best[:-w or None] + segment.cost
+        candidate = best[: -w or None] + segment.cost
         target = best[w:]
         improved = candidate < target
         take[i, w:][improved] = True

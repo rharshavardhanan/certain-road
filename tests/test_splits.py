@@ -44,7 +44,7 @@ def test_no_india_in_any_nonindia_split():
 
 def test_india_subsets_are_pairwise_disjoint():
     for i, a in enumerate(INDIA_SUBSETS):
-        for b in INDIA_SUBSETS[i + 1:]:
+        for b in INDIA_SUBSETS[i + 1 :]:
             overlap = names(a) & names(b)
             assert not overlap, f"{a} & {b} share {sorted(overlap)[:5]}"
 
@@ -165,8 +165,9 @@ VECTORS = YOLO / "_vectors"
 UPLOAD = repo_root() / "data" / "kaggle_upload"
 
 
-@pytest.mark.skipif(not (VECTORS / "india_train.npy").exists(),
-                    reason="run scripts/exhaustive_leak_check.py")
+@pytest.mark.skipif(
+    not (VECTORS / "india_train.npy").exists(), reason="run scripts/exhaustive_leak_check.py"
+)
 def test_no_india_pair_reaches_the_same_scene_threshold():
     """Every india_train x held-out pair, not just the ones a hash flagged.
 

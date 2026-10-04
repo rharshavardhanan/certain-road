@@ -47,8 +47,16 @@ class FakeEcu(threading.Thread):
                 if pid == PID_VEHICLE_SPEED:
                     payload = [0x03, 0x41, pid, self.speed, 0, 0, 0, 0]
                 elif pid == PID_ENGINE_RPM:
-                    payload = [0x04, 0x41, pid,
-                               self.rpm_quarters >> 8, self.rpm_quarters & 0xFF, 0, 0, 0]
+                    payload = [
+                        0x04,
+                        0x41,
+                        pid,
+                        self.rpm_quarters >> 8,
+                        self.rpm_quarters & 0xFF,
+                        0,
+                        0,
+                        0,
+                    ]
                 else:
                     continue
                 bus.send(can.Message(arbitration_id=0x7E8, data=payload, is_extended_id=False))
@@ -63,21 +71,23 @@ def test_request_frame_is_the_documented_eight_bytes():
 
 
 def test_speed_decodes_from_one_byte():
-    assert parse_response(0x7E8, bytes([0x03, 0x41, 0x0D, 87, 0, 0, 0, 0]),
-                          PID_VEHICLE_SPEED) == 87.0
+    assert (
+        parse_response(0x7E8, bytes([0x03, 0x41, 0x0D, 87, 0, 0, 0, 0]), PID_VEHICLE_SPEED) == 87.0
+    )
 
 
 def test_rpm_uses_quarter_resolution():
     # 0x0F 0xA0 = 4000 quarters = 1000 rpm
-    assert parse_response(0x7E8, bytes([0x04, 0x41, 0x0C, 0x0F, 0xA0, 0, 0, 0]),
-                          PID_ENGINE_RPM) == 1000.0
+    assert (
+        parse_response(0x7E8, bytes([0x04, 0x41, 0x0C, 0x0F, 0xA0, 0, 0, 0]), PID_ENGINE_RPM)
+        == 1000.0
+    )
 
 
 @pytest.mark.parametrize("arb", [0x7DF, 0x123, 0x7F0])
 def test_replies_outside_the_ecu_id_range_are_ignored(arb):
     """0x7DF is where we transmit; a 'reply' there is our own frame echoed."""
-    assert parse_response(arb, bytes([0x03, 0x41, 0x0D, 60, 0, 0, 0, 0]),
-                          PID_VEHICLE_SPEED) is None
+    assert parse_response(arb, bytes([0x03, 0x41, 0x0D, 60, 0, 0, 0, 0]), PID_VEHICLE_SPEED) is None
 
 
 def test_a_reply_for_a_different_pid_is_rejected():
@@ -87,8 +97,10 @@ def test_a_reply_for_a_different_pid_is_rejected():
 
 
 def test_negative_response_is_rejected():
-    assert parse_response(0x7E8, bytes([0x03, 0x7F, 0x0D, 0x12, 0, 0, 0, 0]),
-                          PID_VEHICLE_SPEED) is None
+    assert (
+        parse_response(0x7E8, bytes([0x03, 0x7F, 0x0D, 0x12, 0, 0, 0, 0]), PID_VEHICLE_SPEED)
+        is None
+    )
 
 
 def test_truncated_frame_is_rejected():

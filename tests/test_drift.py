@@ -53,8 +53,9 @@ def test_false_alarm_rate_respects_ville_bound():
     alarms = 0
     for trial in range(1000):
         pool = rng.uniform(0, 1, 700)
-        alarm, _ = run_stream(pool[:200], pool[200:], eps=EPS,
-                              alarm_threshold=THRESHOLD, seed=trial)
+        alarm, _ = run_stream(
+            pool[:200], pool[200:], eps=EPS, alarm_threshold=THRESHOLD, seed=trial
+        )
         alarms += alarm is not None
     assert alarms / 1000 <= 0.02, f"false-alarm rate {alarms / 1000:.3f}"
 
@@ -69,8 +70,9 @@ def test_a_real_shift_is_detected():
 
 def test_log_martingale_trace_is_finite_and_full_length():
     rng = np.random.default_rng(1)
-    _, trace = run_stream(rng.uniform(0, 1, 100), rng.uniform(0, 1, 250),
-                          eps=EPS, alarm_threshold=THRESHOLD)
+    _, trace = run_stream(
+        rng.uniform(0, 1, 100), rng.uniform(0, 1, 250), eps=EPS, alarm_threshold=THRESHOLD
+    )
     assert len(trace) == 250 and np.all(np.isfinite(trace))
 
 
@@ -95,6 +97,7 @@ def test_same_seed_reproduces_the_run():
 # Model A's real scores it detected the India shift in 0 of 40 streams. The
 # reset floors log M at zero so no debt accumulates.
 
+
 def test_cusum_delay_does_not_grow_with_time_spent_in_domain():
     """The plain martingale's delay grows with the null prefix; the reset's does not.
 
@@ -112,18 +115,24 @@ def test_cusum_delay_does_not_grow_with_time_spent_in_domain():
     for prefix in (0, 2000):
         stream = np.concatenate([rng.uniform(0.0, 0.5, prefix), shifted])
         for cusum in (False, True):
-            alarm, _ = run_stream(reference, stream, eps=EPS,
-                                  alarm_threshold=thresholds[cusum], seed=0, cusum=cusum)
+            alarm, _ = run_stream(
+                reference, stream, eps=EPS, alarm_threshold=thresholds[cusum], seed=0, cusum=cusum
+            )
             assert alarm is not None and alarm >= prefix
             delays[(prefix, cusum)] = alarm - prefix
-    assert delays[(2000, False)] > 10 * delays[(0, False)]      # plain: debt repaid first
-    assert delays[(2000, True)] <= delays[(0, True)] + 2        # reset: no debt
+    assert delays[(2000, False)] > 10 * delays[(0, False)]  # plain: debt repaid first
+    assert delays[(2000, True)] <= delays[(0, True)] + 2  # reset: no debt
 
 
 def test_cusum_statistic_never_goes_below_zero():
     rng = np.random.default_rng(2)
-    _, trace = run_stream(rng.uniform(0, 1, 200), rng.uniform(0, 1, 1000), eps=EPS,
-                          alarm_threshold=THRESHOLD, cusum=True)
+    _, trace = run_stream(
+        rng.uniform(0, 1, 200),
+        rng.uniform(0, 1, 1000),
+        eps=EPS,
+        alarm_threshold=THRESHOLD,
+        cusum=True,
+    )
     assert min(trace) >= 0.0
 
 
@@ -133,7 +142,8 @@ def test_cusum_run_length_under_the_null_respects_the_lorden_bound():
     threshold, runs = 50.0, []
     for trial in range(200):
         pool = rng.uniform(0, 1, 5200)
-        alarm, _ = run_stream(pool[:200], pool[200:], eps=EPS, alarm_threshold=threshold,
-                              seed=trial, cusum=True)
+        alarm, _ = run_stream(
+            pool[:200], pool[200:], eps=EPS, alarm_threshold=threshold, seed=trial, cusum=True
+        )
         runs.append(5000 if alarm is None else alarm + 1)  # censored at stream end
     assert float(np.mean(runs)) >= threshold, float(np.mean(runs))

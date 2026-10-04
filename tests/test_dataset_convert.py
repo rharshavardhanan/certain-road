@@ -179,7 +179,7 @@ def test_size_override_clips_to_the_real_image_not_the_declared_one():
 def test_min_box_px_drops_thin_boxes_and_counts_them():
     ann = _ann(100, 100, [("D40", 10, 10, 11, 30), ("D40", 10, 10, 30, 30)])
     lines, rejected = to_yolo_lines(ann, min_box_px=2)
-    assert len(lines) == 1              # the 1px-wide box is gone
+    assert len(lines) == 1  # the 1px-wide box is gone
     assert rejected["below_min_box_px"] == 1
 
 

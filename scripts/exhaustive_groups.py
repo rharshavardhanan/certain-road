@@ -40,7 +40,7 @@ def main() -> int:
     uf = UnionFind(len(india))
     linked = 0
     for start in range(0, len(india), BLOCK):
-        block = iv[start:start + BLOCK] @ iv.T
+        block = iv[start : start + BLOCK] @ iv.T
         rows, cols = np.where(block >= SAME_SCENE_CORR)
         for r, c in zip(rows, cols, strict=True):
             a, b = start + int(r), int(c)
@@ -53,8 +53,10 @@ def main() -> int:
         groups.setdefault(uf.find(i), []).append(name)
     multi = {str(k): sorted(v) for k, v in groups.items() if len(v) > 1}
     sizes = sorted((len(v) for v in multi.values()), reverse=True)
-    print(f"  linked pairs {linked:,} -> {len(multi)} groups covering "
-          f"{sum(sizes):,} images; largest {sizes[0] if sizes else 0}")
+    print(
+        f"  linked pairs {linked:,} -> {len(multi)} groups covering "
+        f"{sum(sizes):,} images; largest {sizes[0] if sizes else 0}"
+    )
 
     print("\nexhaustive India x nonindia_train ...", flush=True)
     drop: set[str] = set()
@@ -72,19 +74,37 @@ def main() -> int:
     print(f"  max {worst:.4f}; dropping {len(drop)} non-India training images")
 
     out = repo_root() / "results" / "T2"
-    (out / "india_scene_groups.json").write_text(json.dumps({
-        "method": "exhaustive India x India pixel correlation (no hash prefilter)",
-        "same_scene_corr": SAME_SCENE_CORR, "india_images": len(india),
-        "linked_pairs": linked, "groups": multi, "group_count": len(multi),
-        "grouped_images": sum(sizes), "largest_group": sizes[0] if sizes else 0,
-    }, indent=2))
-    (out / "nonindia_excluded.json").write_text(json.dumps({
-        "reason": "duplicates an India image at corr >= "
-                  f"{SAME_SCENE_CORR}; Model A must not train on it",
-        "max_corr": round(worst, 4), "count": len(drop), "stems": sorted(drop),
-    }, indent=2))
-    print(f"\nwrote india_scene_groups.json ({len(multi)} groups) and "
-          f"nonindia_excluded.json ({len(drop)} stems)")
+    (out / "india_scene_groups.json").write_text(
+        json.dumps(
+            {
+                "method": "exhaustive India x India pixel correlation (no hash prefilter)",
+                "same_scene_corr": SAME_SCENE_CORR,
+                "india_images": len(india),
+                "linked_pairs": linked,
+                "groups": multi,
+                "group_count": len(multi),
+                "grouped_images": sum(sizes),
+                "largest_group": sizes[0] if sizes else 0,
+            },
+            indent=2,
+        )
+    )
+    (out / "nonindia_excluded.json").write_text(
+        json.dumps(
+            {
+                "reason": "duplicates an India image at corr >= "
+                f"{SAME_SCENE_CORR}; Model A must not train on it",
+                "max_corr": round(worst, 4),
+                "count": len(drop),
+                "stems": sorted(drop),
+            },
+            indent=2,
+        )
+    )
+    print(
+        f"\nwrote india_scene_groups.json ({len(multi)} groups) and "
+        f"nonindia_excluded.json ({len(drop)} stems)"
+    )
     return 0
 
 

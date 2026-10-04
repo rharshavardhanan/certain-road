@@ -57,8 +57,13 @@ def compare(label: str, left: str, right_splits: list[str], cache: dict) -> dict
     out = [{"left": ls[i], "right": rs[j], "distance": d} for i, j, d in pairs]
     out.sort(key=lambda r: r["distance"])
     print(f"{label}: {len(out)} pairs within Hamming {AUDIT_HAMMING}", flush=True)
-    return {"left_split": left, "right_splits": right_splits,
-            "left_n": len(ls), "right_n": len(rs), "pairs": out}
+    return {
+        "left_split": left,
+        "right_splits": right_splits,
+        "left_n": len(ls),
+        "right_n": len(rs),
+        "pairs": out,
+    }
 
 
 def main() -> int:
@@ -66,31 +71,53 @@ def main() -> int:
     india = compare("india", "india_train", ["india_cal", "india_test"], cache)
     nonindia = compare("nonindia", "nonindia_train", ["nonindia_val"], cache)
 
-    payload = {"max_hamming": AUDIT_HAMMING, "method": "dHash 64-bit (9x8 grayscale row diffs)",
-               "india_cross_split": india, "nonindia_cross_split": nonindia}
+    payload = {
+        "max_hamming": AUDIT_HAMMING,
+        "method": "dHash 64-bit (9x8 grayscale row diffs)",
+        "india_cross_split": india,
+        "nonindia_cross_split": nonindia,
+    }
     out = repo_root() / "results" / "T2"
     out.mkdir(parents=True, exist_ok=True)
     (out / "duplicates.json").write_text(json.dumps(payload, indent=2))
 
-    md = ["# D061 — near-duplicate audit", "",
-          f"64-bit dHash, flagged at Hamming distance <= {AUDIT_HAMMING}.", "",
-          "| comparison | left | right | flagged pairs |", "|---|---|---|---|",
-          f"| india_train vs cal+test | {india['left_n']} | {india['right_n']} | "
-          f"**{len(india['pairs'])}** |",
-          f"| nonindia_train vs val | {nonindia['left_n']} | {nonindia['right_n']} | "
-          f"{len(nonindia['pairs'])} |", ""]
+    md = [
+        "# D061 — near-duplicate audit",
+        "",
+        f"64-bit dHash, flagged at Hamming distance <= {AUDIT_HAMMING}.",
+        "",
+        "| comparison | left | right | flagged pairs |",
+        "|---|---|---|---|",
+        f"| india_train vs cal+test | {india['left_n']} | {india['right_n']} | "
+        f"**{len(india['pairs'])}** |",
+        f"| nonindia_train vs val | {nonindia['left_n']} | {nonindia['right_n']} | "
+        f"{len(nonindia['pairs'])} |",
+        "",
+    ]
     if india["pairs"]:
-        md += ["## India cross-split pairs (closest 25)", "",
-               "| left (train) | right (held out) | distance |", "|---|---|---|"]
+        md += [
+            "## India cross-split pairs (closest 25)",
+            "",
+            "| left (train) | right (held out) | distance |",
+            "|---|---|---|",
+        ]
         md += [f"| {p['left']} | {p['right']} | {p['distance']} |" for p in india["pairs"][:25]]
     else:
-        md += ["## India", "", "**No India cross-split near-duplicates.** The held-out "
-               "India sets contain no image that closely resembles a training image, so "
-               "the T6/T7 India numbers are not inflated by memorised frames."]
-    md += ["", "## Non-India", "",
-           f"{len(nonindia['pairs'])} pairs cross nonindia_train/val. Reported as a count "
-           "only (D061): these inflate validation optimism and so affect early stopping, "
-           "but they cannot reach the India sets the headline claim is measured on."]
+        md += [
+            "## India",
+            "",
+            "**No India cross-split near-duplicates.** The held-out "
+            "India sets contain no image that closely resembles a training image, so "
+            "the T6/T7 India numbers are not inflated by memorised frames.",
+        ]
+    md += [
+        "",
+        "## Non-India",
+        "",
+        f"{len(nonindia['pairs'])} pairs cross nonindia_train/val. Reported as a count "
+        "only (D061): these inflate validation optimism and so affect early stopping, "
+        "but they cannot reach the India sets the headline claim is measured on.",
+    ]
     (out / "duplicates.md").write_text("\n".join(md) + "\n")
     print("\n" + "\n".join(md[:9]))
     return 0

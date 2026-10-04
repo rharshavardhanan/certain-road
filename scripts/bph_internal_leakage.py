@@ -57,18 +57,19 @@ def against_train(train, split, name):
         for f in train[v]:
             for g in sf:
                 if abs(g - f) <= ADJACENT:
-                    adjacent.append({"video": v, "train_frame": f,
-                                     "eval_frame": g, "delta": abs(g - f)})
+                    adjacent.append(
+                        {"video": v, "train_frame": f, "eval_frame": g, "delta": abs(g - f)}
+                    )
     frames_in_shared = sum(len(split[v]) for v in shared)
     total = sum(len(v) for v in split.values())
     return {
         "split": name,
-        "videos": len(split), "frames": total,
+        "videos": len(split),
+        "frames": total,
         "shared_video_ids": len(shared),
         "shared_video_examples": shared[:10],
         "frames_from_shared_videos": frames_in_shared,
-        "share_of_frames_from_shared_videos": round(
-            frames_in_shared / total, 4) if total else 0.0,
+        "share_of_frames_from_shared_videos": round(frames_in_shared / total, 4) if total else 0.0,
         "near_adjacent_pairs": len(adjacent),
         "near_adjacent_examples": adjacent[:10],
         "held_out": not shared,
@@ -79,10 +80,11 @@ def main() -> int:
     train, un_tr = parse("train")
     valid, un_va = parse("valid")
     test, un_te = parse("test")
-    for name, d, un in (("train", train, un_tr), ("valid", valid, un_va),
-                        ("test", test, un_te)):
-        print(f"{name}: {len(d)} videos, {sum(len(v) for v in d.values())} frames "
-              f"({len(un)} unparsed)")
+    for name, d, un in (("train", train, un_tr), ("valid", valid, un_va), ("test", test, un_te)):
+        print(
+            f"{name}: {len(d)} videos, {sum(len(v) for v in d.values())} frames "
+            f"({len(un)} unparsed)"
+        )
 
     evals = [against_train(train, valid, "valid"), against_train(train, test, "test")]
     all_videos = set(train) | set(valid) | set(test)
@@ -100,20 +102,25 @@ def main() -> int:
         "frames_per_video": round(all_frames / len(all_videos), 1) if all_videos else 0.0,
         "eval_splits": evals,
         "verdict": (
-            f"{'/'.join(e['split'] for e in leaky)} not held out; "
-            f"excluded from all evaluation" if leaky
-            else "disjoint videos; BPH eval splits are fair held-out sets"),
+            f"{'/'.join(e['split'] for e in leaky)} not held out; excluded from all evaluation"
+            if leaky
+            else "disjoint videos; BPH eval splits are fair held-out sets"
+        ),
     }
     out = repo_root() / "results" / "T9"
     out.mkdir(parents=True, exist_ok=True)
     (out / "bph_internal_leakage.json").write_text(json.dumps(report, indent=2))
     for e in evals:
         print(f"\n{e['split']}: {e['shared_video_ids']}/{e['videos']} videos also in train")
-        print(f"  frames from shared videos: {e['frames_from_shared_videos']}/{e['frames']} "
-              f"({e['share_of_frames_from_shared_videos']:.1%})")
+        print(
+            f"  frames from shared videos: {e['frames_from_shared_videos']}/{e['frames']} "
+            f"({e['share_of_frames_from_shared_videos']:.1%})"
+        )
         print(f"  near-adjacent pairs (|delta| <= {ADJACENT}): {e['near_adjacent_pairs']}")
-    print(f"\neffective diversity: {len(all_videos)} distinct videos across "
-          f"{all_frames} frames ({report['frames_per_video']} frames/video)")
+    print(
+        f"\neffective diversity: {len(all_videos)} distinct videos across "
+        f"{all_frames} frames ({report['frames_per_video']} frames/video)"
+    )
     print(f"\nVERDICT: {report['verdict']}")
     return 0
 

@@ -33,14 +33,12 @@ def dataset_ready(slug: str) -> bool:
     P died exactly that way. `datasets files` is not a substitute: it paginates,
     so an anchor file on a later page reads as absent.
     """
-    out = subprocess.run(["kaggle", "datasets", "status", slug],
-                         capture_output=True, text=True)
+    out = subprocess.run(["kaggle", "datasets", "status", slug], capture_output=True, text=True)
     return "ready" in (out.stdout + out.stderr).lower()
 
 
 def kernel_status(slug: str) -> str:
-    out = subprocess.run(["kaggle", "kernels", "status", slug],
-                         capture_output=True, text=True)
+    out = subprocess.run(["kaggle", "kernels", "status", slug], capture_output=True, text=True)
     return (out.stdout + out.stderr).strip()
 
 
@@ -58,14 +56,28 @@ def build(job: dict, slug: str, kernel_sources: list[str]) -> Path:
     source = source.replace(marker, f"EMBEDDED_JOB: dict | None = {job!r}")
     (target / "train.py").write_text(source)
     (target / "job.json").write_text(json.dumps(job, indent=2))  # local reference only
-    (target / "kernel-metadata.json").write_text(json.dumps({
-        "id": f"{KAGGLE_USER}/{slug}", "title": slug,
-        "code_file": "train.py", "language": "python", "kernel_type": "script",
-        "is_private": True, "enable_gpu": True, "enable_internet": True,
-        "dataset_sources": ([POTHOLE_DATASET, WEIGHTS_DATASET] if slug.endswith("-p")
-                            else [DATASET, WEIGHTS_DATASET]), "kernel_sources": kernel_sources,
-        "competition_sources": [],
-    }, indent=2))
+    (target / "kernel-metadata.json").write_text(
+        json.dumps(
+            {
+                "id": f"{KAGGLE_USER}/{slug}",
+                "title": slug,
+                "code_file": "train.py",
+                "language": "python",
+                "kernel_type": "script",
+                "is_private": True,
+                "enable_gpu": True,
+                "enable_internet": True,
+                "dataset_sources": (
+                    [POTHOLE_DATASET, WEIGHTS_DATASET]
+                    if slug.endswith("-p")
+                    else [DATASET, WEIGHTS_DATASET]
+                ),
+                "kernel_sources": kernel_sources,
+                "competition_sources": [],
+            },
+            indent=2,
+        )
+    )
     return target
 
 
@@ -76,9 +88,13 @@ def job_for(kind: str) -> tuple[str, dict]:
         cfg.pop("model")
         cfg.update(epochs=1, fraction=0.05, save_period=-1)
         return "roadsight-train-a-smoke", {
-            "run": "smoke", "init_weights": CFG["train_A"]["model"],
-            "train": "nonindia_train.txt", "val": "nonindia_val.txt",
-            "names": names, "train_cfg": cfg, "resume": False,
+            "run": "smoke",
+            "init_weights": CFG["train_A"]["model"],
+            "train": "nonindia_train.txt",
+            "val": "nonindia_val.txt",
+            "names": names,
+            "train_cfg": cfg,
+            "resume": False,
             "forbid_prefixes": ["India__"],
             "ultralytics": ULTRALYTICS_PIN,
         }
@@ -86,9 +102,13 @@ def job_for(kind: str) -> tuple[str, dict]:
         cfg = dict(CFG["train_A"])
         cfg.pop("model")
         return "roadsight-train-a", {
-            "run": "model_a", "init_weights": CFG["train_A"]["model"],
-            "train": "nonindia_train.txt", "val": "nonindia_val.txt",
-            "names": names, "train_cfg": cfg, "resume": False,
+            "run": "model_a",
+            "init_weights": CFG["train_A"]["model"],
+            "train": "nonindia_train.txt",
+            "val": "nonindia_val.txt",
+            "names": names,
+            "train_cfg": cfg,
+            "resume": False,
             # Model A's whole claim is that it never saw India (D055).
             "forbid_prefixes": ["India__"],
             "ultralytics": ULTRALYTICS_PIN,
@@ -99,8 +119,11 @@ def job_for(kind: str) -> tuple[str, dict]:
             "run": "model_b",
             # A's best.pt, reached through kernel_sources rather than re-uploaded.
             "init_weights": "export/model_a/best.pt",
-            "train": ["india_train.txt", "nonindia_replay.txt"], "val": "india_val.txt",
-            "names": names, "train_cfg": cfg, "resume": False,
+            "train": ["india_train.txt", "nonindia_replay.txt"],
+            "val": "india_val.txt",
+            "names": names,
+            "train_cfg": cfg,
+            "resume": False,
             # No India guard here: Model B trains on india_train by design. The
             # held-out sets are not on Kaggle at all, so they cannot be reached.
             "ultralytics": ULTRALYTICS_PIN,
@@ -111,8 +134,11 @@ def job_for(kind: str) -> tuple[str, dict]:
         return "roadsight-train-p", {
             "run": "model_p",
             "init_weights": "export/model_b/best.pt",
-            "train": "p_train.txt", "val": "p_val.txt",
-            "names": {"0": "pothole"}, "train_cfg": cfg, "resume": False,
+            "train": "p_train.txt",
+            "val": "p_val.txt",
+            "names": {"0": "pothole"},
+            "train_cfg": cfg,
+            "resume": False,
             "anchor": "p_train.txt",
             "ultralytics": ULTRALYTICS_PIN,
         }
@@ -124,8 +150,9 @@ def main() -> int:
     sources = sys.argv[2:]
     slug, job = job_for(kind)
 
-    needed = [POTHOLE_DATASET, WEIGHTS_DATASET] if slug.endswith("-p") \
-        else [DATASET, WEIGHTS_DATASET]
+    needed = (
+        [POTHOLE_DATASET, WEIGHTS_DATASET] if slug.endswith("-p") else [DATASET, WEIGHTS_DATASET]
+    )
     for ds in needed:
         if not dataset_ready(ds):
             raise SystemExit(f"refusing to push: dataset {ds} is not ready yet")
@@ -136,8 +163,9 @@ def main() -> int:
 
     target = build(job, slug, sources)
     print(f"built {target}\n{json.dumps(job, indent=2)}", flush=True)
-    result = subprocess.run(["kaggle", "kernels", "push", "-p", str(target)],
-                            capture_output=True, text=True)
+    result = subprocess.run(
+        ["kaggle", "kernels", "push", "-p", str(target)], capture_output=True, text=True
+    )
     print(result.stdout or result.stderr, flush=True)
     print(f"\nwatch: kaggle kernels status {KAGGLE_USER}/{slug}")
     return result.returncode

@@ -65,8 +65,11 @@ def top_pairs(corr: np.ndarray, left: list[str], right: list[str], k: int):
 def main() -> int:
     print("=== check 1: india_train x india_heldout (exhaustive) ===", flush=True)
     train = split_names("india_train")
-    held = sorted(set(split_names("india_val")) | set(split_names("india_cal"))
-                  | set(split_names("india_test")))
+    held = sorted(
+        set(split_names("india_val"))
+        | set(split_names("india_cal"))
+        | set(split_names("india_test"))
+    )
     a, b = vectors(train, "india_train"), vectors(held, "india_heldout_all")
     corr = a @ b.T
     c1_max = float(corr.max())
@@ -83,7 +86,7 @@ def main() -> int:
     non = split_names("nonindia_train")
     c2_max, c2_bad, best = -1.0, 0, []
     for start in range(0, len(non), NONINDIA_CHUNK):
-        names = non[start:start + NONINDIA_CHUNK]
+        names = non[start : start + NONINDIA_CHUNK]
         nb = vectors(names, f"nonindia_train_{start // NONINDIA_CHUNK}")
         block = ia @ nb.T
         c2_max = max(c2_max, float(block.max()))
@@ -98,10 +101,18 @@ def main() -> int:
 
     payload = {
         "same_scene_corr": SAME_SCENE_CORR,
-        "india_internal": {"pairs": len(train) * len(held), "max_corr": round(c1_max, 4),
-                           "count_over_threshold": c1_bad, "top20": c1_top},
-        "india_vs_nonindia": {"pairs": len(india) * len(non), "max_corr": round(c2_max, 4),
-                              "count_over_threshold": c2_bad, "top10": best[:10]},
+        "india_internal": {
+            "pairs": len(train) * len(held),
+            "max_corr": round(c1_max, 4),
+            "count_over_threshold": c1_bad,
+            "top20": c1_top,
+        },
+        "india_vs_nonindia": {
+            "pairs": len(india) * len(non),
+            "max_corr": round(c2_max, 4),
+            "count_over_threshold": c2_bad,
+            "top10": best[:10],
+        },
         "verdict": "CLEAN" if (c1_bad == 0 and c2_bad == 0) else "LEAK",
     }
     out = repo_root() / "results" / "T2"

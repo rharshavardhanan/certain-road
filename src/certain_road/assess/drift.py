@@ -91,8 +91,7 @@ def run_stream(
     cusum: bool = False,
 ) -> tuple[int | None, list[float]]:
     """Feed `stream`; return (index of first alarm or None, log-martingale trace)."""
-    m = DriftMartingale(reference, eps=eps, alarm_threshold=alarm_threshold, seed=seed,
-                        cusum=cusum)
+    m = DriftMartingale(reference, eps=eps, alarm_threshold=alarm_threshold, seed=seed, cusum=cusum)
     trace, alarm = [], None
     for i, score in enumerate(stream):
         m.update(score)

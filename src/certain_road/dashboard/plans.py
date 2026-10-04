@@ -21,13 +21,20 @@ from certain_road.survey.allocation import (
 
 
 def _segments(net: dict, field: str) -> list[Segment]:
-    return [Segment(segment_id=s["id"], vision_estimated_pci=float(s[field]),
-                    cost=float(s["cost"]), traffic_weight=float(s["traffic"]))
-            for s in net["segments"]]
+    return [
+        Segment(
+            segment_id=s["id"],
+            vision_estimated_pci=float(s[field]),
+            cost=float(s["cost"]),
+            traffic_weight=float(s["traffic"]),
+        )
+        for s in net["segments"]
+    ]
 
 
-def two_plans(net: dict, budget_fraction: float, *, condition: str = "observed_pci",
-              worst_k: int) -> dict:
+def two_plans(
+    net: dict, budget_fraction: float, *, condition: str = "observed_pci", worst_k: int
+) -> dict:
     """The optimiser's plan and the worst-first plan at `budget_fraction` of total cost.
 
     `condition` is the observed field the plans rank on ("observed_pci" or the
@@ -48,14 +55,21 @@ def two_plans(net: dict, budget_fraction: float, *, condition: str = "observed_p
     def describe(chosen: list[int]) -> dict:
         picked = set(chosen)
         got = sum(benefit[i] for i in picked)
-        return {"chosen": sorted(picked),
-                "cost": sum(cost[i] for i in picked),
-                "true_benefit": got,
-                "share_of_oracle": got / oracle_benefit if oracle_benefit else 1.0,
-                "worst_repaired": sum(1 for i in worst if i in picked),
-                "worst_deferred": [i for i in worst if i not in picked]}
+        return {
+            "chosen": sorted(picked),
+            "cost": sum(cost[i] for i in picked),
+            "true_benefit": got,
+            "share_of_oracle": got / oracle_benefit if oracle_benefit else 1.0,
+            "worst_repaired": sum(1 for i in worst if i in picked),
+            "worst_deferred": [i for i in worst if i not in picked],
+        }
 
-    return {"budget": budget, "budget_fraction": budget_fraction, "worst_k": len(worst),
-            "worst": worst, "condition": condition,
-            "optimiser": describe(allocate_optimal(observed, budget)),
-            "worst_first": describe(allocate_greedy_worst_first(observed, budget))}
+    return {
+        "budget": budget,
+        "budget_fraction": budget_fraction,
+        "worst_k": len(worst),
+        "worst": worst,
+        "condition": condition,
+        "optimiser": describe(allocate_optimal(observed, budget)),
+        "worst_first": describe(allocate_greedy_worst_first(observed, budget)),
+    }

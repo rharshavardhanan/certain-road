@@ -18,9 +18,9 @@ import cv2
 import numpy as np
 
 AUDIT_HAMMING = 6
-GROUP_HAMMING = 12          # strictly looser, so grouping is a superset
-SAME_SCENE_CORR = 0.93      # calibrated by inspection: 0.94+ is visibly the same
-                            # location, 0.915- is a different scene sharing a layout
+GROUP_HAMMING = 12  # strictly looser, so grouping is a superset
+SAME_SCENE_CORR = 0.93  # calibrated by inspection: 0.94+ is visibly the same
+# location, 0.915- is a different scene sharing a layout
 POPCOUNT = np.array([bin(i).count("1") for i in range(256)], dtype=np.uint8)
 CHUNK = 512
 
@@ -52,7 +52,7 @@ def hamming_pairs(
     """Index pairs within `max_distance`. `same_set` yields each pair once."""
     found = []
     for start in range(0, len(left), CHUNK):
-        block = left[start:start + CHUNK]
+        block = left[start : start + CHUNK]
         xor = np.bitwise_xor(block[:, None], right[None, :])
         dist = POPCOUNT[xor.view(np.uint8).reshape(*xor.shape, 8)].sum(-1)
         for i, j in zip(*np.where(dist <= max_distance), strict=True):

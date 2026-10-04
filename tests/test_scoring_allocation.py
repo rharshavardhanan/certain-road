@@ -30,8 +30,20 @@ CAM = Camera(f=935.5, cx=640.0, cy=360.0, cam_h=1.3, pitch=math.radians(10.0))
 
 def test_bands_cover_every_score_without_gaps():
     assert [band(s) for s in (100, 86, 85, 71, 70, 56, 55, 41, 40, 26, 25, 11, 10, 0)] == [
-        "Good", "Good", "Satisfactory", "Satisfactory", "Fair", "Fair", "Poor", "Poor",
-        "Very Poor", "Very Poor", "Serious", "Serious", "Failed", "Failed",
+        "Good",
+        "Good",
+        "Satisfactory",
+        "Satisfactory",
+        "Fair",
+        "Fair",
+        "Poor",
+        "Poor",
+        "Very Poor",
+        "Very Poor",
+        "Serious",
+        "Serious",
+        "Failed",
+        "Failed",
     ]
 
 
@@ -99,12 +111,13 @@ def test_segments_follow_cumulative_distance():
 
 # --- allocation --------------------------------------------------------------
 
+
 def knapsack_trap():
     """One cheap-but-not-worst pair beats the single worst segment."""
     return [
-        Segment(0, vision_estimated_pci=10, cost=100),   # priority 90
-        Segment(1, vision_estimated_pci=20, cost=50),    # priority 80
-        Segment(2, vision_estimated_pci=25, cost=50),    # priority 75
+        Segment(0, vision_estimated_pci=10, cost=100),  # priority 90
+        Segment(1, vision_estimated_pci=20, cost=50),  # priority 80
+        Segment(2, vision_estimated_pci=25, cost=50),  # priority 75
     ]
 
 
@@ -118,9 +131,11 @@ def test_optimal_beats_greedy_on_the_knapsack_trap():
 
 def test_no_policy_ever_exceeds_the_budget():
     segments = [Segment(i, vision_estimated_pci=i % 100, cost=10 + i) for i in range(40)]
-    for chosen in (allocate_optimal(segments, 200.0),
-                   allocate_greedy_worst_first(segments, 200.0),
-                   allocate_random(segments, 200.0, seed=3)):
+    for chosen in (
+        allocate_optimal(segments, 200.0),
+        allocate_greedy_worst_first(segments, 200.0),
+        allocate_random(segments, 200.0, seed=3),
+    ):
         assert total_cost(segments, chosen) <= 200.0
 
 
@@ -159,6 +174,7 @@ def test_bands_cover_continuous_scores_between_the_integer_edges():
 #
 # The module docstring promised it; nothing implemented it. The unit travels with
 # the value so a dashboard can never compare a percentage with a count.
+
 
 def test_segment_distress_is_vision_density_when_every_footprint_is_known():
     value, unit = segment_distress([1.75, 1.75], segment_m=50, lane_width_m=3.5)

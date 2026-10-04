@@ -83,7 +83,7 @@ def split_india(
                 out[key].append(name)
                 break
         else:
-            out[order[-1]].append(name)          # rounding remainder -> test (T2.3)
+            out[order[-1]].append(name)  # rounding remainder -> test (T2.3)
     return {k: sorted(v) for k, v in out.items()}
 
 

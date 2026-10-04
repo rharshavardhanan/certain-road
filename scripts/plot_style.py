@@ -21,7 +21,7 @@ SLOTS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300"]
 
 def figure(width: float = 8.0, height: float = 5.0, **kw):
     fig, ax = plt.subplots(figsize=(width, height), facecolor=SURFACE, **kw)
-    for a in (ax if hasattr(ax, "__iter__") else [ax]):
+    for a in ax if hasattr(ax, "__iter__") else [ax]:
         style_axes(a)
     return fig, ax
 

@@ -24,8 +24,9 @@ POLL_S = 600
 
 
 def status(slug: str) -> str:
-    out = subprocess.run(["kaggle", "kernels", "status", f"{USER}/{slug}"],
-                         capture_output=True, text=True)
+    out = subprocess.run(
+        ["kaggle", "kernels", "status", f"{USER}/{slug}"], capture_output=True, text=True
+    )
     return (out.stdout + out.stderr).strip()
 
 
@@ -42,8 +43,7 @@ def main() -> int:
             break
         time.sleep(POLL_S)
 
-    subprocess.run(["kaggle", "kernels", "output", f"{USER}/{slug}", "-p", str(dest)],
-                   check=False)
+    subprocess.run(["kaggle", "kernels", "output", f"{USER}/{slug}", "-p", str(dest)], check=False)
     for found in dest.rglob("status.json"):
         print("\n" + json.dumps(json.loads(found.read_text()), indent=2))
     for found in dest.rglob("results.csv"):
@@ -51,8 +51,7 @@ def main() -> int:
         print(f"\n{found.name}: {len(lines) - 1} epochs")
         print("\n".join(lines[:1] + lines[-3:]))
     for found in dest.rglob("*.log"):
-        print(f"\n--- {found.name} (tail) ---\n" + "\n".join(
-            found.read_text().splitlines()[-30:]))
+        print(f"\n--- {found.name} (tail) ---\n" + "\n".join(found.read_text().splitlines()[-30:]))
     return 0
 
 

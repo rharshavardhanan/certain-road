@@ -27,8 +27,7 @@ def dataset(tmp_path):
     paths, boxes = [], []
     for i in range(6):
         stem = f"Dummy__{i:03d}"
-        Image.fromarray(np.zeros((200, 200, 3), np.uint8)).save(
-            tmp_path / "images" / f"{stem}.jpg")
+        Image.fromarray(np.zeros((200, 200, 3), np.uint8)).save(tmp_path / "images" / f"{stem}.jpg")
         cls = i % 3
         cx, cy, w, h = 0.5, 0.5, 0.2, 0.2
         (tmp_path / "labels" / f"{stem}.txt").write_text(f"{cls} {cx} {cy} {w} {h}\n")
@@ -39,8 +38,10 @@ def dataset(tmp_path):
 
 def write_preds(tmp_path, boxes, *, offset: int):
     """Perfect predictions, with `offset` added to the class id as ultralytics does."""
-    records = [{"image_id": stem, "category_id": cls + offset,
-                "bbox": [x, y, w, h], "score": 0.9} for stem, cls, x, y, w, h in boxes]
+    records = [
+        {"image_id": stem, "category_id": cls + offset, "bbox": [x, y, w, h], "score": 0.9}
+        for stem, cls, x, y, w, h in boxes
+    ]
     path = tmp_path / "predictions.json"
     path.write_text(json.dumps(records))
     return path
@@ -75,8 +76,15 @@ def test_forgetting_the_offset_scores_near_zero(dataset):
     tmp_path, paths, boxes = dataset
     gt, stem_to_id = yolo_to_coco_gt(paths, tmp_path / "labels", NAMES)
     raw = json.loads(write_preds(tmp_path, boxes, offset=1).read_text())
-    unshifted = [{"image_id": stem_to_id[r["image_id"]], "category_id": r["category_id"],
-                  "bbox": r["bbox"], "score": r["score"]} for r in raw]
+    unshifted = [
+        {
+            "image_id": stem_to_id[r["image_id"]],
+            "category_id": r["category_id"],
+            "bbox": r["bbox"],
+            "score": r["score"],
+        }
+        for r in raw
+    ]
     assert coco_eval(gt, unshifted, NAMES)["map50"] < 0.4
 
 
@@ -99,8 +107,9 @@ def test_zero_indexed_input_is_rejected_not_silently_shifted(dataset):
 def test_classes_below_the_reliability_floor_are_flagged(dataset):
     tmp_path, paths, boxes = dataset
     gt, stem_to_id = yolo_to_coco_gt(paths, tmp_path / "labels", NAMES)
-    result = coco_eval(gt, load_predictions(
-        write_preds(tmp_path, boxes, offset=1), stem_to_id, len(NAMES)), NAMES)
+    result = coco_eval(
+        gt, load_predictions(write_preds(tmp_path, boxes, offset=1), stem_to_id, len(NAMES)), NAMES
+    )
     # two instances per class, far under 100
     assert all(v["unreliable"] for v in result["per_class"].values())
     assert result["per_class"]["pothole"]["instances"] == 2

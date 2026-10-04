@@ -25,8 +25,13 @@ from dataclasses import dataclass
 from certain_road.core.geometry import ground_point, haversine_m
 
 BANDS = [
-    (86, 100, "Good"), (71, 85, "Satisfactory"), (56, 70, "Fair"), (41, 55, "Poor"),
-    (26, 40, "Very Poor"), (11, 25, "Serious"), (0, 10, "Failed"),
+    (86, 100, "Good"),
+    (71, 85, "Satisfactory"),
+    (56, 70, "Fair"),
+    (41, 55, "Poor"),
+    (26, 40, "Very Poor"),
+    (11, 25, "Serious"),
+    (0, 10, "Failed"),
 ]
 
 
@@ -67,9 +72,7 @@ def cumulative_distance_m(lats: list[float], lons: list[float]) -> list[float]:
     return out
 
 
-def box_footprint_m2(
-    x1: float, y1: float, x2: float, y2: float, camera: Camera
-) -> float | None:
+def box_footprint_m2(x1: float, y1: float, x2: float, y2: float, camera: Camera) -> float | None:
     """Ground area of a detection, from the inverse-perspective map of its base.
 
     Width comes from the two bottom corners; depth from the bottom edge to the
@@ -77,14 +80,30 @@ def box_footprint_m2(
     projects above the horizon has no ground intersection — and failure returns
     None rather than a guess, so the caller can fall back to counting.
     """
-    left = ground_point(x1, y2, f=camera.f, cx=camera.cx, cy=camera.cy,
-                        cam_h=camera.cam_h, pitch=camera.pitch)
-    right = ground_point(x2, y2, f=camera.f, cx=camera.cx, cy=camera.cy,
-                         cam_h=camera.cam_h, pitch=camera.pitch)
-    far = ground_point((x1 + x2) / 2, y1, f=camera.f, cx=camera.cx, cy=camera.cy,
-                       cam_h=camera.cam_h, pitch=camera.pitch)
-    near = ground_point((x1 + x2) / 2, y2, f=camera.f, cx=camera.cx, cy=camera.cy,
-                        cam_h=camera.cam_h, pitch=camera.pitch)
+    left = ground_point(
+        x1, y2, f=camera.f, cx=camera.cx, cy=camera.cy, cam_h=camera.cam_h, pitch=camera.pitch
+    )
+    right = ground_point(
+        x2, y2, f=camera.f, cx=camera.cx, cy=camera.cy, cam_h=camera.cam_h, pitch=camera.pitch
+    )
+    far = ground_point(
+        (x1 + x2) / 2,
+        y1,
+        f=camera.f,
+        cx=camera.cx,
+        cy=camera.cy,
+        cam_h=camera.cam_h,
+        pitch=camera.pitch,
+    )
+    near = ground_point(
+        (x1 + x2) / 2,
+        y2,
+        f=camera.f,
+        cx=camera.cx,
+        cy=camera.cy,
+        cam_h=camera.cam_h,
+        pitch=camera.pitch,
+    )
     if left is None or right is None or far is None or near is None:
         return None
     width = abs(left[1] - right[1])
@@ -92,9 +111,7 @@ def box_footprint_m2(
     return width * depth
 
 
-def vision_density(
-    footprint_m2: float, *, segment_m: float, lane_width_m: float
-) -> float:
+def vision_density(footprint_m2: float, *, segment_m: float, lane_width_m: float) -> float:
     """Projected distress footprint as a percentage of the nominal lane area."""
     area = segment_m * lane_width_m
     return 0.0 if area <= 0 else footprint_m2 / area * 100.0
@@ -118,8 +135,9 @@ def segment_distress(
     """
     if all(f is not None for f in footprints_m2):
         area = float(sum(f for f in footprints_m2 if f is not None))
-        return vision_density(area, segment_m=segment_m, lane_width_m=lane_width_m), \
-            VISION_DENSITY_UNIT
+        return vision_density(
+            area, segment_m=segment_m, lane_width_m=lane_width_m
+        ), VISION_DENSITY_UNIT
     return len(footprints_m2) / segment_m * 100.0, COUNT_UNIT
 
 

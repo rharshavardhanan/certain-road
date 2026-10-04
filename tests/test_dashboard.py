@@ -107,17 +107,26 @@ def test_the_allocation_view_shows_both_plans_and_says_whose_recall_it_used(tmp_
     demo = tmp_path / "results/T12/demo_network.json"
     demo.parent.mkdir(parents=True)
     net = network([(10.0, 10.0, 400.0)] + [(60.0, 60.0, 100.0)] * 4)
-    net |= {"seed": 0, "alpha": 0.5, "tau": 0.117,
-            "recall": {"linear_crack": 0.36, "alligator_crack": 0.64, "pothole": 0.53}}
+    net |= {
+        "seed": 0,
+        "alpha": 0.5,
+        "tau": 0.117,
+        "recall": {"linear_crack": 0.36, "alligator_crack": 0.64, "pothole": 0.53},
+    }
     demo.write_text(json.dumps(net))
     page = build_page(tmp_path, STAMP, worst_k=1)
     assert "Optimiser" in page and "Worst-first" in page
     assert 'id="opt-worst"' in page and 'id="wf-worst"' in page
-    assert "potholes included &mdash; at Model B&#x27;s recall" in page or \
-        "potholes included &mdash; at Model B's recall" in page
+    assert (
+        "potholes included &mdash; at Model B&#x27;s recall" in page
+        or "potholes included &mdash; at Model B's recall" in page
+    )
     assert "P's recall is not used here" in page or "P&#x27;s recall is not used here" in page
-    data = json.loads(page.split('<script id="plan-data" type="application/json">')[1]
-                      .split("</script>")[0].replace("<\\/", "</"))
+    data = json.loads(
+        page.split('<script id="plan-data" type="application/json">')[1]
+        .split("</script>")[0]
+        .replace("<\\/", "</")
+    )
     at50 = data["positions"]["observed_pci"]["50"]
     assert at50["optimiser"]["worst"] == 0 and at50["worst_first"]["worst"] == 1
 
@@ -135,15 +144,36 @@ def test_figure_alt_text_states_the_drift_results_from_the_data(tmp_path):
     t11.mkdir(parents=True)
     for png in ("martingale_traces.png", "delay_hist.png"):
         (t11 / png).write_bytes(b"\x89PNG\r\n")
-    shift = {"detected": 197, "alarmed_in_null_prefix": 3, "never_alarmed": 0,
-             "delay_frames": {"median": 77.0, "p90": 121.2}}
-    (t11 / "drift.json").write_text(json.dumps({
-        "n_streams": 200,
-        "plain": {"statistic": "plain", "alarm_threshold": 100, "null_false_alarm_rate": 0.005,
-                  "shift": {"detected": 6, "alarmed_in_null_prefix": 1, "never_alarmed": 193,
-                            "delay_frames": {"median": 1248.5}}},
-        "cusum": {"statistic": "cusum", "alarm_threshold": 10000,
-                  "null_false_alarm_rate": 0.005, "shift": shift}}))
+    shift = {
+        "detected": 197,
+        "alarmed_in_null_prefix": 3,
+        "never_alarmed": 0,
+        "delay_frames": {"median": 77.0, "p90": 121.2},
+    }
+    (t11 / "drift.json").write_text(
+        json.dumps(
+            {
+                "n_streams": 200,
+                "plain": {
+                    "statistic": "plain",
+                    "alarm_threshold": 100,
+                    "null_false_alarm_rate": 0.005,
+                    "shift": {
+                        "detected": 6,
+                        "alarmed_in_null_prefix": 1,
+                        "never_alarmed": 193,
+                        "delay_frames": {"median": 1248.5},
+                    },
+                },
+                "cusum": {
+                    "statistic": "cusum",
+                    "alarm_threshold": 10000,
+                    "null_false_alarm_rate": 0.005,
+                    "shift": shift,
+                },
+            }
+        )
+    )
     page = build_page(tmp_path, STAMP, worst_k=20)
     assert "the plain martingale alarms in 6 of 200 streams" in page
     assert "197 of 200 streams alarm after India begins, median 77 India frames" in page

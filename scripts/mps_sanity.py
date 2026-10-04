@@ -36,16 +36,31 @@ def run(device: str, *, do_val: bool) -> dict:
     t0 = time.time()
     YOLO("yolov8s.pt").train(
         data=str(repo_root() / "configs" / "data" / "model_a.yaml"),
-        epochs=1, fraction=FRACTION, batch=16, imgsz=640, seed=0, deterministic=True,
-        device=device, workers=4, val=do_val, plots=False, save=False,
-        project=str(repo_root() / "runs" / "t4"), name=f"sanity_{device}", exist_ok=True,
+        epochs=1,
+        fraction=FRACTION,
+        batch=16,
+        imgsz=640,
+        seed=0,
+        deterministic=True,
+        device=device,
+        workers=4,
+        val=do_val,
+        plots=False,
+        save=False,
+        project=str(repo_root() / "runs" / "t4"),
+        name=f"sanity_{device}",
+        exist_ok=True,
     )
     wall = time.time() - t0
     df = pd.read_csv(out / "results.csv")
     df.columns = df.columns.str.strip()
-    return {"device": device, "wall_s": round(wall, 1), "validated": do_val,
-            "losses": {k: float(df[k].iloc[-1]) for k in LOSSES if k in df.columns},
-            "epoch_time_s": float(df["time"].iloc[-1]) if "time" in df.columns else None}
+    return {
+        "device": device,
+        "wall_s": round(wall, 1),
+        "validated": do_val,
+        "losses": {k: float(df[k].iloc[-1]) for k in LOSSES if k in df.columns},
+        "epoch_time_s": float(df["time"].iloc[-1]) if "time" in df.columns else None,
+    }
 
 
 def time_full_val() -> float:
@@ -55,8 +70,14 @@ def time_full_val() -> float:
     t0 = time.time()
     YOLO("yolov8s.pt").val(
         data=str(repo_root() / "configs" / "data" / "model_a.yaml"),
-        imgsz=640, batch=16, device="mps", verbose=False, plots=False,
-        project=str(repo_root() / "runs" / "t4"), name="val_timing", exist_ok=True,
+        imgsz=640,
+        batch=16,
+        device="mps",
+        verbose=False,
+        plots=False,
+        project=str(repo_root() / "runs" / "t4"),
+        name="val_timing",
+        exist_ok=True,
     )
     return time.time() - t0
 
@@ -74,17 +95,24 @@ def main() -> int:
             continue
         rel = abs(a - b) / max(abs(a), abs(b)) if max(abs(a), abs(b)) else 0.0
         worst = max(worst, rel)
-        checks[key] = {"mps": round(a, 5), "cpu": round(b, 5),
-                       "rel_diff": round(rel, 5),
-                       "ok": a > 0 and b > 0 and rel < TOLERANCE}
+        checks[key] = {
+            "mps": round(a, 5),
+            "cpu": round(b, 5),
+            "rel_diff": round(rel, 5),
+            "ok": a > 0 and b > 0 and rel < TOLERANCE,
+        }
 
     passed = all(c.get("ok") for c in checks.values())
 
     # fraction 0.02 -> full epoch: scale train time, then add one full val.
     mps_train_full = results[0]["wall_s"] / FRACTION
     payload = {
-        "fraction": FRACTION, "tolerance": TOLERANCE, "pass": passed,
-        "worst_rel_diff": round(worst, 5), "checks": checks, "runs": results,
+        "fraction": FRACTION,
+        "tolerance": TOLERANCE,
+        "pass": passed,
+        "worst_rel_diff": round(worst, 5),
+        "checks": checks,
+        "runs": results,
         "full_val_s": round(val_s, 1),
         "projected_mps_epoch_s": round(mps_train_full + val_s, 1),
         "projected_model_a_40ep_h": round((mps_train_full + val_s) * 40 / 3600, 2),

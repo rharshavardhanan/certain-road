@@ -35,8 +35,9 @@ def yolo_to_coco_gt(
         stem = Path(path).stem
         with Image.open(path) as im:
             width, height = im.size
-        images.append({"id": stem_to_id[stem], "file_name": Path(path).name,
-                       "width": width, "height": height})
+        images.append(
+            {"id": stem_to_id[stem], "file_name": Path(path).name, "width": width, "height": height}
+        )
         label = labels_dir / f"{stem}.txt"
         if not label.exists():
             continue
@@ -47,19 +48,23 @@ def yolo_to_coco_gt(
             # normalised centre/size -> absolute top-left x, y, w, h
             w, h = float(bw) * width, float(bh) * height
             x, y = float(cx) * width - w / 2, float(cy) * height - h / 2
-            annotations.append({
-                "id": ann_id, "image_id": stem_to_id[stem], "category_id": int(cls),
-                "bbox": [x, y, w, h], "area": w * h, "iscrowd": 0})
+            annotations.append(
+                {
+                    "id": ann_id,
+                    "image_id": stem_to_id[stem],
+                    "category_id": int(cls),
+                    "bbox": [x, y, w, h],
+                    "area": w * h,
+                    "iscrowd": 0,
+                }
+            )
             ann_id += 1
 
     categories = [{"id": k, "name": v} for k, v in sorted(class_names.items())]
-    return {"images": images, "annotations": annotations,
-            "categories": categories}, stem_to_id
+    return {"images": images, "annotations": annotations, "categories": categories}, stem_to_id
 
 
-def load_predictions(
-    json_path: Path, stem_to_id: dict[str, int], num_classes: int
-) -> list[dict]:
+def load_predictions(json_path: Path, stem_to_id: dict[str, int], num_classes: int) -> list[dict]:
     """Read an ultralytics `predictions.json` and shift it onto our class ids.
 
     **Ultralytics writes 1-indexed `category_id` for any non-COCO dataset.**
@@ -87,7 +92,8 @@ def load_predictions(
         raise ValueError(
             f"category_id {sorted(cats)} outside the expected 1..{num_classes} "
             f"that ultralytics writes for a non-COCO dataset (val.py:90). "
-            "The convention may have changed; re-check before trusting any number.")
+            "The convention may have changed; re-check before trusting any number."
+        )
 
     out = []
     for record in raw:
@@ -97,9 +103,14 @@ def load_predictions(
         bbox = record["bbox"]
         if len(bbox) != 4:
             raise ValueError(f"expected COCO xywh bbox, got {bbox!r}")
-        out.append({"image_id": stem_to_id[stem],
-                    "category_id": int(record["category_id"]) - 1,  # -> our 0-indexed ids
-                    "bbox": [float(v) for v in bbox], "score": float(record["score"])})
+        out.append(
+            {
+                "image_id": stem_to_id[stem],
+                "category_id": int(record["category_id"]) - 1,  # -> our 0-indexed ids
+                "bbox": [float(v) for v in bbox],
+                "score": float(record["score"]),
+            }
+        )
     return out
 
 
@@ -116,10 +127,20 @@ def coco_eval(gt: dict, preds: list[dict], class_names: dict[int, str]) -> dict:
         counts[ann["category_id"]] = counts.get(ann["category_id"], 0) + 1
 
     if not preds:
-        return {"per_class": {v: {"ap50": 0.0, "ap50_95": 0.0, "instances": counts.get(k, 0),
-                                  "unreliable": counts.get(k, 0) < MIN_RELIABLE_INSTANCES}
-                              for k, v in class_names.items()},
-                "map50": 0.0, "map50_95": 0.0, "note": "no predictions"}
+        return {
+            "per_class": {
+                v: {
+                    "ap50": 0.0,
+                    "ap50_95": 0.0,
+                    "instances": counts.get(k, 0),
+                    "unreliable": counts.get(k, 0) < MIN_RELIABLE_INSTANCES,
+                }
+                for k, v in class_names.items()
+            },
+            "map50": 0.0,
+            "map50_95": 0.0,
+            "note": "no predictions",
+        }
 
     with contextlib.redirect_stdout(io.StringIO()):
         coco_gt = COCO()
@@ -144,6 +165,8 @@ def coco_eval(gt: dict, preds: list[dict], class_names: dict[int, str]) -> dict:
         }
     aps50 = [v["ap50"] for v in per_class.values()]
     aps = [v["ap50_95"] for v in per_class.values()]
-    return {"per_class": per_class,
-            "map50": float(np.mean(aps50)) if aps50 else 0.0,
-            "map50_95": float(np.mean(aps)) if aps else 0.0}
+    return {
+        "per_class": per_class,
+        "map50": float(np.mean(aps50)) if aps50 else 0.0,
+        "map50_95": float(np.mean(aps)) if aps else 0.0,
+    }

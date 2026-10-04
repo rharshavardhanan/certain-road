@@ -85,14 +85,20 @@ def main() -> int:
     write_list(sorted(india_val), POOL / "p_val.txt")
     write_list(sorted(bph_val), POOL / "p_bph_val.txt")
 
-    held = {Path(x).stem for s in ("india_cal", "india_test")
-            for x in (YOLO_DIR / f"{s}.txt").read_text().splitlines() if x.strip()}
+    held = {
+        Path(x).stem
+        for s in ("india_cal", "india_test")
+        for x in (YOLO_DIR / f"{s}.txt").read_text().splitlines()
+        if x.strip()
+    }
     present = {p.stem for p in (POOL / "images").glob("*.jpg")}
     assert not (present & held), "held-out India reached the pothole pool"
 
     def boxes(names):
-        return sum(len([r for r in (POOL / "labels" / f"{n}.txt").read_text().splitlines()
-                        if r.strip()]) for n in names)
+        return sum(
+            len([r for r in (POOL / "labels" / f"{n}.txt").read_text().splitlines() if r.strip()])
+            for n in names
+        )
 
     manifest = {
         "classes": {0: "pothole"},

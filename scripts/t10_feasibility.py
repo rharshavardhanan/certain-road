@@ -66,8 +66,12 @@ def per_image_matched(split, pred_json, channel=POTHOLE):
             continue
         with Image.open(YOLO_DIR / "images" / f"{s}.jpg") as im:
             w, h = im.size
-        gb = np.array([[(cx - bw / 2) * w, (cy - bh / 2) * h,
-                        (cx + bw / 2) * w, (cy + bh / 2) * h] for cx, cy, bw, bh in g])
+        gb = np.array(
+            [
+                [(cx - bw / 2) * w, (cy - bh / 2) * h, (cx + bw / 2) * w, (cy + bh / 2) * h]
+                for cx, cy, bw, bh in g
+            ]
+        )
         p = preds.get(s, [])
         if p:
             pb = np.array([[x, y, x + bw, y + bh] for x, y, bw, bh, _ in p])
@@ -81,21 +85,34 @@ def per_image_matched(split, pred_json, channel=POTHOLE):
 def main() -> int:
     locked = repo_root() / "results" / "LOCKED"
     sources = {
-        "A_nonindia_val": ("nonindia_val",
-                           next((repo_root() / "results" / "T6_A_nonindia_val" / "val")
-                                .glob("predictions.json"))),
-        "A_india_cal": ("india_cal", next((locked / "A_india_full_run" / "val")
-                                          .glob("predictions.json"))),
-        "A_india_test": ("india_test", next((locked / "A_india_full_run" / "val")
-                                            .glob("predictions.json"))),
-        "B_india_cal": ("india_cal", next((locked / "B_india_heldout_run" / "val")
-                                          .glob("predictions.json"))),
-        "B_india_test": ("india_test", next((locked / "B_india_heldout_run" / "val")
-                                            .glob("predictions.json"))),
-        "P_india_cal": ("india_cal", next((locked / "P_india_heldout_run" / "val")
-                                          .glob("predictions.json"))),
-        "P_india_test": ("india_test", next((locked / "P_india_heldout_run" / "val")
-                                            .glob("predictions.json"))),
+        "A_nonindia_val": (
+            "nonindia_val",
+            next((repo_root() / "results" / "T6_A_nonindia_val" / "val").glob("predictions.json")),
+        ),
+        "A_india_cal": (
+            "india_cal",
+            next((locked / "A_india_full_run" / "val").glob("predictions.json")),
+        ),
+        "A_india_test": (
+            "india_test",
+            next((locked / "A_india_full_run" / "val").glob("predictions.json")),
+        ),
+        "B_india_cal": (
+            "india_cal",
+            next((locked / "B_india_heldout_run" / "val").glob("predictions.json")),
+        ),
+        "B_india_test": (
+            "india_test",
+            next((locked / "B_india_heldout_run" / "val").glob("predictions.json")),
+        ),
+        "P_india_cal": (
+            "india_cal",
+            next((locked / "P_india_heldout_run" / "val").glob("predictions.json")),
+        ),
+        "P_india_test": (
+            "india_test",
+            next((locked / "P_india_heldout_run" / "val").glob("predictions.json")),
+        ),
     }
     # Model P is 1-class; its pothole channel is 0, not 2.
     channels = {"P_india_cal": 0, "P_india_test": 0}
@@ -109,13 +126,16 @@ def main() -> int:
         floor = empirical_risk(m, FLOOR_TAU)
         n = len(m)
         report["sources"][tag] = {
-            "split": split, "images_with_pothole": n,
+            "split": split,
+            "images_with_pothole": n,
             "miss_rate_floor": round(floor, 4),
             "finite_sample_floor": round((floor * n + 1) / (n + 1), 4),
             "min_certifiable_alpha": round((floor * n + 1) / (n + 1), 4),
         }
-        print(f"   floor {floor:.4f}  min certifiable alpha "
-              f"{(floor * n + 1) / (n + 1):.4f}  (n={n})", flush=True)
+        print(
+            f"   floor {floor:.4f}  min certifiable alpha {(floor * n + 1) / (n + 1):.4f}  (n={n})",
+            flush=True,
+        )
 
     # Risk vs alpha across the whole feasible range, not a fixed habit list.
     # The tau grid must start at FLOOR_TAU. It used to start at 0.01 while the
@@ -133,10 +153,14 @@ def main() -> int:
         rows = []
         for alpha in np.arange(0.02, 0.96, 0.02):
             tau = crc_threshold(cal, float(alpha), grid)
-            rows.append({"alpha": round(float(alpha), 3),
-                         "tau": None if tau is None else round(tau, 3),
-                         "test_risk": None if tau is None else round(empirical_risk(test, tau), 4),
-                         "feasible": tau is not None})
+            rows.append(
+                {
+                    "alpha": round(float(alpha), 3),
+                    "tau": None if tau is None else round(tau, 3),
+                    "test_risk": None if tau is None else round(empirical_risk(test, tau), 4),
+                    "feasible": tau is not None,
+                }
+            )
         curves[f"{tag}_india_cal_to_test"] = rows
         feas = [r for r in rows if r["feasible"]]
         # The curve steps alpha coarsely; resolve the boundary finely so the
@@ -148,19 +172,26 @@ def main() -> int:
                 break
         floor_alpha = report["sources"][f"{tag}_india_cal"]["min_certifiable_alpha"]
         report["sources"][f"{tag}_india_cal"]["feasible_from_alpha"] = fine
-        print(f"\n{tag}: feasible from alpha {fine} (floor predicts {floor_alpha}); "
-              f"{len(rows) - len(feas)}/{len(rows)} coarse alphas infeasible")
+        print(
+            f"\n{tag}: feasible from alpha {fine} (floor predicts {floor_alpha}); "
+            f"{len(rows) - len(feas)}/{len(rows)} coarse alphas infeasible"
+        )
 
     # The violation: calibrate on non-India, deploy on India.
     non = matched["A_nonindia_val"]
     viol = []
     for alpha in (0.05, 0.10, 0.20, 0.30, 0.50):
         tau = crc_threshold(non, alpha, grid)
-        viol.append({"alpha": alpha, "tau_from_nonindia": None if tau is None else round(tau, 3),
-                     "risk_on_nonindia": None if tau is None
-                     else round(empirical_risk(non, tau), 4),
-                     "risk_on_india_test": None if tau is None else
-                     round(empirical_risk(matched["A_india_test"], tau), 4)})
+        viol.append(
+            {
+                "alpha": alpha,
+                "tau_from_nonindia": None if tau is None else round(tau, 3),
+                "risk_on_nonindia": None if tau is None else round(empirical_risk(non, tau), 4),
+                "risk_on_india_test": None
+                if tau is None
+                else round(empirical_risk(matched["A_india_test"], tau), 4),
+            }
+        )
     report["risk_vs_alpha"] = curves
     report["transfer_violation_A"] = viol
 
@@ -169,8 +200,10 @@ def main() -> int:
     (out / "feasibility.json").write_text(json.dumps(report, indent=2))
     print("\n=== A calibrated on non-India, evaluated on india_test ===")
     for v in viol:
-        print(f"  alpha {v['alpha']:.2f}  tau {v['tau_from_nonindia']}  "
-              f"risk nonIN {v['risk_on_nonindia']}  risk India {v['risk_on_india_test']}")
+        print(
+            f"  alpha {v['alpha']:.2f}  tau {v['tau_from_nonindia']}  "
+            f"risk nonIN {v['risk_on_nonindia']}  risk India {v['risk_on_india_test']}"
+        )
     return 0
 
 

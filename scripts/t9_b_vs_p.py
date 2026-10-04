@@ -56,8 +56,9 @@ MATCH_RECALL = 0.8
 PONLY = {0: "pothole"}
 
 
-def predictions_for(tag: str, weights: Path, root: Path, list_name: str,
-                    names: dict[int, str]) -> Path:
+def predictions_for(
+    tag: str, weights: Path, root: Path, list_name: str, names: dict[int, str]
+) -> Path:
     """Run the frozen eval block and return the predictions.json path.
 
     Cached: 772 images on CPU is minutes, and re-running it cannot change the
@@ -74,19 +75,39 @@ def predictions_for(tag: str, weights: Path, root: Path, list_name: str,
     run_dir.mkdir(parents=True, exist_ok=True)
     data_yaml = run_dir / "data.yaml"
     with open(data_yaml, "w") as fh:
-        yaml.safe_dump({"path": str(root.resolve()), "train": f"{list_name}.txt",
-                        "val": f"{list_name}.txt", "names": names}, fh, sort_keys=False)
+        yaml.safe_dump(
+            {
+                "path": str(root.resolve()),
+                "train": f"{list_name}.txt",
+                "val": f"{list_name}.txt",
+                "names": names,
+            },
+            fh,
+            sort_keys=False,
+        )
     YOLO(str(weights)).val(
-        data=str(data_yaml), split="val", save_json=True, plots=False,
-        project=str(run_dir), name="val", exist_ok=True, verbose=False,
-        conf=EVAL["conf"], iou=EVAL["iou"], max_det=EVAL["max_det"],
-        imgsz=EVAL["imgsz"], rect=EVAL["rect"], half=EVAL["half"], device=EVAL["device"],
+        data=str(data_yaml),
+        split="val",
+        save_json=True,
+        plots=False,
+        project=str(run_dir),
+        name="val",
+        exist_ok=True,
+        verbose=False,
+        conf=EVAL["conf"],
+        iou=EVAL["iou"],
+        max_det=EVAL["max_det"],
+        imgsz=EVAL["imgsz"],
+        rect=EVAL["rect"],
+        half=EVAL["half"],
+        device=EVAL["device"],
     )
     return next(run_dir.glob("val/predictions.json"))
 
 
-def pothole_detections(pred_json: Path, keep: int, num_classes: int,
-                       stems: set[str]) -> dict[str, list[tuple]]:
+def pothole_detections(
+    pred_json: Path, keep: int, num_classes: int, stems: set[str]
+) -> dict[str, list[tuple]]:
     """(x, y, w, h, score) per stem, restricted to the pothole channel.
 
     Ultralytics writes 1-indexed `category_id` for non-COCO data (val.py:90), so
@@ -97,8 +118,10 @@ def pothole_detections(pred_json: Path, keep: int, num_classes: int,
     raw = json.loads(pred_json.read_text())
     cats = {int(r["category_id"]) for r in raw}
     if raw and not cats <= set(range(1, num_classes + 1)):
-        raise ValueError(f"category_id {sorted(cats)} outside 1..{num_classes} "
-                         "(val.py:90 convention); re-check before trusting this")
+        raise ValueError(
+            f"category_id {sorted(cats)} outside 1..{num_classes} "
+            "(val.py:90 convention); re-check before trusting this"
+        )
     out: dict[str, list[tuple]] = defaultdict(list)
     for r in raw:
         if int(r["category_id"]) - 1 != keep:
@@ -122,8 +145,11 @@ def label_by_image(dets: dict[str, list[tuple]], gt: dict[str, np.ndarray]):
         if not d:
             out[stem] = []
             continue
-        ious = (iou_matrix(np.array([[x, y, x + w, y + h] for x, y, w, h, _ in d]), boxes)
-                if len(boxes) else None)
+        ious = (
+            iou_matrix(np.array([[x, y, x + w, y + h] for x, y, w, h, _ in d]), boxes)
+            if len(boxes)
+            else None
+        )
         taken: set[int] = set()
         rows = []
         for i, rec in enumerate(d):
@@ -186,9 +212,15 @@ def _fa_at(recall: np.ndarray, fa: np.ndarray, target: float) -> float | None:
     return float(fa[hit[0]]) if len(hit) else None
 
 
-def bootstrap_delta(b_img: dict, p_img: dict, gt_counts: dict[str, int],
-                    units: list[list[str]], recalls: list[float],
-                    draws: int = 2000, seed: int = 0) -> dict:
+def bootstrap_delta(
+    b_img: dict,
+    p_img: dict,
+    gt_counts: dict[str, int],
+    units: list[list[str]],
+    recalls: list[float],
+    draws: int = 2000,
+    seed: int = 0,
+) -> dict:
     """Paired bootstrap: pothole AP50, and false alarms at matched recall.
 
     Paired, so both models are scored on the same resample each draw and the
@@ -228,16 +260,23 @@ def bootstrap_delta(b_img: dict, p_img: dict, gt_counts: dict[str, int],
     def summary(v: np.ndarray, favour_negative: bool) -> dict:
         lo, hi = np.percentile(v, [2.5, 97.5])
         share = float((v < 0).mean()) if favour_negative else float((v > 0).mean())
-        return {"draws": int(len(v)), "mean_delta": round(float(v.mean()), 4),
-                "ci95": [round(float(lo), 4), round(float(hi), 4)],
-                "share_favouring_P": round(share, 4),
-                "separates_from_zero": bool(lo > 0 or hi < 0)}
+        return {
+            "draws": int(len(v)),
+            "mean_delta": round(float(v.mean()), 4),
+            "ci95": [round(float(lo), 4), round(float(hi), 4)],
+            "share_favouring_P": round(share, 4),
+            "separates_from_zero": bool(lo > 0 or hi < 0),
+        }
 
-    return {"pothole_ap50": summary(ap_delta, favour_negative=False),
-            # Fewer false alarms is better, so a NEGATIVE delta favours P.
-            "false_alarms_at_matched_recall": {
-                f"{r:.1f}": summary(np.array(fa_delta[r]), favour_negative=True)
-                for r in recalls if fa_delta[r]}}
+    return {
+        "pothole_ap50": summary(ap_delta, favour_negative=False),
+        # Fewer false alarms is better, so a NEGATIVE delta favours P.
+        "false_alarms_at_matched_recall": {
+            f"{r:.1f}": summary(np.array(fa_delta[r]), favour_negative=True)
+            for r in recalls
+            if fa_delta[r]
+        },
+    }
 
 
 def sweep(labelled, n_gt: int, n_images: int) -> np.ndarray:
@@ -255,23 +294,34 @@ def at_conf(rows: np.ndarray, conf: float) -> dict:
     keep = rows[rows[:, 0] >= conf]
     if not len(keep):
         return {"conf": conf, "recall": 0.0, "false_alarms_per_image": 0.0, "detections": 0}
-    return {"conf": conf, "recall": round(float(keep[-1, 1]), 4),
-            "false_alarms_per_image": round(float(keep[-1, 2]), 4),
-            "detections": int(len(keep))}
+    return {
+        "conf": conf,
+        "recall": round(float(keep[-1, 1]), 4),
+        "false_alarms_per_image": round(float(keep[-1, 2]), 4),
+        "detections": int(len(keep)),
+    }
 
 
 def at_recall(rows: np.ndarray, target: float) -> dict:
     hit = np.nonzero(rows[:, 1] >= target)[0]
     if not len(hit):
         best = float(rows[-1, 1]) if len(rows) else 0.0
-        return {"target_recall": target, "reachable": False,
-                "max_recall": round(best, 4),
-                "false_alarms_per_image_at_max_recall":
-                    round(float(rows[-1, 2]), 4) if len(rows) else 0.0}
+        return {
+            "target_recall": target,
+            "reachable": False,
+            "max_recall": round(best, 4),
+            "false_alarms_per_image_at_max_recall": round(float(rows[-1, 2]), 4)
+            if len(rows)
+            else 0.0,
+        }
     i = int(hit[0])
-    return {"target_recall": target, "reachable": True,
-            "conf": round(float(rows[i, 0]), 4), "recall": round(float(rows[i, 1]), 4),
-            "false_alarms_per_image": round(float(rows[i, 2]), 4)}
+    return {
+        "target_recall": target,
+        "reachable": True,
+        "conf": round(float(rows[i, 0]), 4),
+        "recall": round(float(rows[i, 1]), 4),
+        "false_alarms_per_image": round(float(rows[i, 2]), 4),
+    }
 
 
 def scene_units(stems: list[str], groups_json: Path | None) -> list[list[str]]:
@@ -293,8 +343,11 @@ def scene_units(stems: list[str], groups_json: Path | None) -> list[list[str]]:
             seen.update(unit)
     units += [[s] for s in stems if s not in seen]
     sizes = sorted((len(u) for u in units), reverse=True)
-    print(f"bootstrap units: {len(units)} scene groups over {len(stems)} images "
-          f"(largest {sizes[0]}, grouped {sum(x for x in sizes if x > 1)})", flush=True)
+    print(
+        f"bootstrap units: {len(units)} scene groups over {len(stems)} images "
+        f"(largest {sizes[0]}, grouped {sum(x for x in sizes if x > 1)})",
+        flush=True,
+    )
     return units
 
 
@@ -305,13 +358,23 @@ def main() -> int:
     ap.add_argument("--split", default=SPLIT)
     ap.add_argument("--b-preds", type=Path, help="locked predictions.json; skips inference")
     ap.add_argument("--p-preds", type=Path, help="locked predictions.json; skips inference")
-    ap.add_argument("--gt-root", type=Path, default=POTHOLE_DIR,
-                    help="root holding pothole-only images/ and labels/")
-    ap.add_argument("--groups", type=Path,
-                    default=repo_root() / "results/T2/india_scene_groups.json",
-                    help="scene groups for the bootstrap; omit for image-level")
-    ap.add_argument("--image-level-too", action="store_true",
-                    help="also report the image-level bootstrap, for comparison")
+    ap.add_argument(
+        "--gt-root",
+        type=Path,
+        default=POTHOLE_DIR,
+        help="root holding pothole-only images/ and labels/",
+    )
+    ap.add_argument(
+        "--groups",
+        type=Path,
+        default=repo_root() / "results/T2/india_scene_groups.json",
+        help="scene groups for the bootstrap; omit for image-level",
+    )
+    ap.add_argument(
+        "--image-level-too",
+        action="store_true",
+        help="also report the image-level bootstrap, for comparison",
+    )
     ap.add_argument("--out", default="B_vs_P_india_val.json")
     args = ap.parse_args()
 
@@ -334,8 +397,9 @@ def main() -> int:
         for line in lab.read_text().splitlines() if lab.exists() else []:
             if line.strip():
                 _, cx, cy, bw, bh = map(float, line.split())
-                rows.append([(cx - bw / 2) * w, (cy - bh / 2) * h,
-                             (cx + bw / 2) * w, (cy + bh / 2) * h])
+                rows.append(
+                    [(cx - bw / 2) * w, (cy - bh / 2) * h, (cx + bw / 2) * w, (cy + bh / 2) * h]
+                )
         gt_boxes[s] = np.array(rows) if rows else np.zeros((0, 4))
         n_gt += len(rows)
 
@@ -343,9 +407,15 @@ def main() -> int:
         "B": (args.b_weights, args.b_preds, YOLO_DIR, split, NAMES, POTHOLE),
         "P": (args.p_weights, args.p_preds, POTHOLE_DIR, "p_val", PONLY, 0),
     }
-    report = {"split": split, "images": len(stems), "pothole_instances": n_gt,
-              "eval_settings": EVAL, "iou_match": IOU_MATCH,
-              "gt": f"pothole-only, {gt_root}", "models": {}}
+    report = {
+        "split": split,
+        "images": len(stems),
+        "pothole_instances": n_gt,
+        "eval_settings": EVAL,
+        "iou_match": IOU_MATCH,
+        "gt": f"pothole-only, {gt_root}",
+        "models": {},
+    }
 
     conf_key = f"at_conf_{EVAL['report_conf']}"
     recall_key = f"at_recall_{MATCH_RECALL}"
@@ -358,9 +428,11 @@ def main() -> int:
         if given:
             print(f"{tag}: locked predictions {given}", flush=True)
         dets = pothole_detections(pj, channel, len(names), keep)
-        coco_preds = [{"image_id": stem_to_id[s], "category_id": 0,
-                       "bbox": list(b[:4]), "score": b[4]}
-                      for s, bs in dets.items() for b in bs]
+        coco_preds = [
+            {"image_id": stem_to_id[s], "category_id": 0, "bbox": list(b[:4]), "score": b[4]}
+            for s, bs in dets.items()
+            for b in bs
+        ]
         coco = coco_eval(gt_coco, coco_preds, PONLY)
         per_image[tag] = label_by_image(dets, gt_boxes)
         curves[tag] = sweep(label_detections(dets, gt_boxes), n_gt, len(stems))
@@ -373,9 +445,12 @@ def main() -> int:
             "weights": str(weights),
             "pothole_ap50": round(ref, 4),
             "pothole_ap50_95": round(coco["per_class"]["pothole"]["ap50_95"], 4),
-            "ap50_self_check": {"own": round(own, 4), "pycocotools": round(ref, 4),
-                                "abs_delta": round(abs(own - ref), 4),
-                                "ok": abs(own - ref) <= 0.01},
+            "ap50_self_check": {
+                "own": round(own, 4),
+                "pycocotools": round(ref, 4),
+                "abs_delta": round(abs(own - ref), 4),
+                "ok": abs(own - ref) <= 0.01,
+            },
             "total_detections": int(sum(len(v) for v in dets.values())),
             conf_key: at_conf(curves[tag], EVAL["report_conf"]),
             recall_key: at_recall(curves[tag], MATCH_RECALL),
@@ -394,35 +469,40 @@ def main() -> int:
     # the operating point a crew would actually run at.
     grid = [r for r in (0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9) if r <= both_max]
     report["false_alarms_per_image_at_matched_recall"] = {
-        f"{r:.1f}": {t: at_recall(curves[t], r).get("false_alarms_per_image")
-                     for t in spec} for r in grid}
+        f"{r:.1f}": {t: at_recall(curves[t], r).get("false_alarms_per_image") for t in spec}
+        for r in grid
+    }
 
     units = scene_units(stems, args.groups if args.groups and args.groups.exists() else None)
-    report["bootstrap_units"] = {"kind": "scene_groups" if args.groups else "images",
-                                 "count": len(units)}
+    report["bootstrap_units"] = {
+        "kind": "scene_groups" if args.groups else "images",
+        "count": len(units),
+    }
     report["bootstrap_P_minus_B"] = bootstrap_delta(
-        per_image["B"], per_image["P"], gt_counts, units, grid)
+        per_image["B"], per_image["P"], gt_counts, units, grid
+    )
     if args.image_level_too:
         report["bootstrap_P_minus_B_image_level"] = bootstrap_delta(
-            per_image["B"], per_image["P"], gt_counts, [[s] for s in stems], grid)
+            per_image["B"], per_image["P"], gt_counts, [[s] for s in stems], grid
+        )
 
     (OUT / args.out).write_text(json.dumps(report, indent=2))
 
     b, p = report["models"]["B"], report["models"]["P"]
-    print(f"\n=== B vs P on {split}, pothole only "
-          f"({len(stems)} images, {n_gt} pothole boxes) ===")
+    print(f"\n=== B vs P on {split}, pothole only ({len(stems)} images, {n_gt} pothole boxes) ===")
     print(f"{'':<34}{'B':>10}{'P':>10}{'delta':>10}")
-    for key, label in (("pothole_ap50", "pothole AP50"),
-                       ("pothole_ap50_95", "pothole AP50-95")):
+    for key, label in (("pothole_ap50", "pothole AP50"), ("pothole_ap50_95", "pothole AP50-95")):
         print(f"{label:<34}{b[key]:>10.4f}{p[key]:>10.4f}{p[key] - b[key]:>+10.4f}")
     for m in ("recall", "false_alarms_per_image"):
         bv, pv = b[conf_key][m], p[conf_key][m]
         label = f"{m} @conf {EVAL['report_conf']}"
         print(f"{label:<34}{bv:>10.4f}{pv:>10.4f}{pv - bv:>+10.4f}")
     rk = recall_key
-    print(f"\nmatched recall {MATCH_RECALL}: "
-          f"B {'reachable' if b[rk]['reachable'] else 'NOT reachable'}, "
-          f"P {'reachable' if p[rk]['reachable'] else 'NOT reachable'}")
+    print(
+        f"\nmatched recall {MATCH_RECALL}: "
+        f"B {'reachable' if b[rk]['reachable'] else 'NOT reachable'}, "
+        f"P {'reachable' if p[rk]['reachable'] else 'NOT reachable'}"
+    )
     print(json.dumps({"B": b[rk], "P": p[rk]}, indent=2))
     print("\nfalse alarms per image at matched recall:")
     print(f"{'recall':<12}{'B':>10}{'P':>10}{'P - B':>10}")
@@ -433,28 +513,41 @@ def main() -> int:
     bs = report["bootstrap_P_minus_B"]
     ap = bs["pothole_ap50"]
     kind = report["bootstrap_units"]["kind"]
-    print(f"\npaired bootstrap over {report['bootstrap_units']['count']} {kind}, "
-          f"{ap['draws']} draws (P - B):")
-    print(f"  pothole AP50   {ap['mean_delta']:+.4f}  95% CI "
-          f"[{ap['ci95'][0]:+.4f}, {ap['ci95'][1]:+.4f}]  P ahead "
-          f"{ap['share_favouring_P']:.1%}  separates={ap['separates_from_zero']}")
+    print(
+        f"\npaired bootstrap over {report['bootstrap_units']['count']} {kind}, "
+        f"{ap['draws']} draws (P - B):"
+    )
+    print(
+        f"  pothole AP50   {ap['mean_delta']:+.4f}  95% CI "
+        f"[{ap['ci95'][0]:+.4f}, {ap['ci95'][1]:+.4f}]  P ahead "
+        f"{ap['share_favouring_P']:.1%}  separates={ap['separates_from_zero']}"
+    )
     print("  false alarms/image at matched recall (negative favours P):")
     for r, v in bs["false_alarms_at_matched_recall"].items():
-        print(f"    recall {r}  {v['mean_delta']:+.3f}  95% CI "
-              f"[{v['ci95'][0]:+.3f}, {v['ci95'][1]:+.3f}]  P ahead "
-              f"{v['share_favouring_P']:.1%}  separates={v['separates_from_zero']}")
+        print(
+            f"    recall {r}  {v['mean_delta']:+.3f}  95% CI "
+            f"[{v['ci95'][0]:+.3f}, {v['ci95'][1]:+.3f}]  P ahead "
+            f"{v['share_favouring_P']:.1%}  separates={v['separates_from_zero']}"
+        )
     if "bootstrap_P_minus_B_image_level" in report:
         im = report["bootstrap_P_minus_B_image_level"]["pothole_ap50"]
-        print(f"  [image-level, for comparison] AP50 {im['mean_delta']:+.4f} "
-              f"95% CI [{im['ci95'][0]:+.4f}, {im['ci95'][1]:+.4f}]")
+        print(
+            f"  [image-level, for comparison] AP50 {im['mean_delta']:+.4f} "
+            f"95% CI [{im['ci95'][0]:+.4f}, {im['ci95'][1]:+.4f}]"
+        )
     for t in ("B", "P"):
         c = report["models"][t]["ap50_self_check"]
-        print(f"  AP50 self-check {t}: own {c['own']:.4f} vs pycocotools "
-              f"{c['pycocotools']:.4f} (delta {c['abs_delta']:.4f}, ok={c['ok']})")
+        print(
+            f"  AP50 self-check {t}: own {c['own']:.4f} vs pycocotools "
+            f"{c['pycocotools']:.4f} (delta {c['abs_delta']:.4f}, ok={c['ok']})"
+        )
 
     print(f"\nhighest recall both reach: {both_max:.4f}")
-    print(json.dumps({"B": b["at_highest_common_recall"],
-                      "P": p["at_highest_common_recall"]}, indent=2))
+    print(
+        json.dumps(
+            {"B": b["at_highest_common_recall"], "P": p["at_highest_common_recall"]}, indent=2
+        )
+    )
     print(f"\nwritten: {OUT / args.out}")
     return 0
 

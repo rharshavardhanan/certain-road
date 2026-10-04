@@ -22,15 +22,20 @@ def write_list(root: Path, name: str, entries: list[str]) -> None:
 def test_clean_training_list_passes(tmp_path):
     write_list(tmp_path, "nonindia_train.txt", ["Japan__Japan_1", "Norway__Norway_2"])
     assert_no_forbidden_prefix(
-        tmp_path, {"train": "nonindia_train.txt", "forbid_prefixes": ["India__"]})
+        tmp_path, {"train": "nonindia_train.txt", "forbid_prefixes": ["India__"]}
+    )
 
 
 def test_a_single_india_entry_stops_the_run(tmp_path):
-    write_list(tmp_path, "nonindia_train.txt",
-               ["Japan__Japan_1", "India__India_000259", "Norway__Norway_2"])
+    write_list(
+        tmp_path,
+        "nonindia_train.txt",
+        ["Japan__Japan_1", "India__India_000259", "Norway__Norway_2"],
+    )
     with pytest.raises(SystemExit, match="REFUSING TO TRAIN"):
         assert_no_forbidden_prefix(
-            tmp_path, {"train": "nonindia_train.txt", "forbid_prefixes": ["India__"]})
+            tmp_path, {"train": "nonindia_train.txt", "forbid_prefixes": ["India__"]}
+        )
 
 
 def test_every_list_is_checked_not_just_the_first(tmp_path):
@@ -39,15 +44,15 @@ def test_every_list_is_checked_not_just_the_first(tmp_path):
     write_list(tmp_path, "dirty.txt", ["India__India_000259"])
     with pytest.raises(SystemExit, match="REFUSING TO TRAIN"):
         assert_no_forbidden_prefix(
-            tmp_path, {"train": ["clean.txt", "dirty.txt"], "forbid_prefixes": ["India__"]})
+            tmp_path, {"train": ["clean.txt", "dirty.txt"], "forbid_prefixes": ["India__"]}
+        )
 
 
 def test_no_forbidden_prefixes_means_no_guard(tmp_path):
     """Model B legitimately trains on india_train; the guard must not fire."""
     write_list(tmp_path, "india_train.txt", ["India__India_000259"])
     assert_no_forbidden_prefix(tmp_path, {"train": "india_train.txt"})
-    assert_no_forbidden_prefix(
-        tmp_path, {"train": "india_train.txt", "forbid_prefixes": []})
+    assert_no_forbidden_prefix(tmp_path, {"train": "india_train.txt", "forbid_prefixes": []})
 
 
 def test_prefix_match_is_anchored_to_the_filename(tmp_path):
@@ -66,9 +71,15 @@ def test_prefix_match_is_anchored_to_the_filename(tmp_path):
 PJOB = {"train": "p_train.txt", "val": "p_val.txt", "names": {"0": "pothole"}}
 
 
-def make_pool(root: Path, name: str, stems: list[str], *,
-              images: bool = True, labels: bool = True,
-              boxes: str = "0 0.5 0.5 0.2 0.2\n") -> None:
+def make_pool(
+    root: Path,
+    name: str,
+    stems: list[str],
+    *,
+    images: bool = True,
+    labels: bool = True,
+    boxes: str = "0 0.5 0.5 0.2 0.2\n",
+) -> None:
     """Write a miniature YOLO pool; omit either side to simulate a partial upload."""
     from PIL import Image
 
@@ -87,7 +98,11 @@ def test_complete_pool_passes_with_counts(tmp_path):
     make_pool(tmp_path, "p_val.txt", ["v1"])
     report = preflight_dataset(tmp_path, PJOB)
     assert report["p_train.txt"] == {
-        "role": "train", "listed": 3, "images_present": 3, "labels_present": 3}
+        "role": "train",
+        "listed": 3,
+        "images_present": 3,
+        "labels_present": 3,
+    }
     assert report["scan"] == {"pairs": 4, "missing": 0, "empty": 0, "corrupt": 0}
 
 
@@ -95,8 +110,9 @@ def test_labels_without_images_is_refused(tmp_path):
     """The exact failure that killed a Model P run."""
     make_pool(tmp_path, "p_train.txt", ["a", "b", "c"], images=False)
     make_pool(tmp_path, "p_val.txt", ["v1"])
-    with pytest.raises(SystemExit,
-                       match=r"lists 3 entries but the mount has 0 images and 3 labels"):
+    with pytest.raises(
+        SystemExit, match=r"lists 3 entries but the mount has 0 images and 3 labels"
+    ):
         preflight_dataset(tmp_path, PJOB)
 
 

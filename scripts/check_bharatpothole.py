@@ -23,13 +23,19 @@ from certain_road.perception.dataset.dedupe import norm_vec  # noqa: E402
 CFG = yaml.safe_load((repo_root() / "configs" / "project.yaml").read_text())
 YOLO_DIR = repo_root() / CFG["paths"]["yolo"]
 BPH = repo_root() / "data/raw/bharatpothole/BharatPotHole/BharatPotHole"
-DUPLICATE_CORR = 0.98          # D066: cross-dataset means "same file", not "same scene"
+DUPLICATE_CORR = 0.98  # D066: cross-dataset means "same file", not "same scene"
 CHUNK = 1500
 
 
 def india_heldout_vectors():
-    stems = sorted({Path(x).stem for s in ("india_cal", "india_test")
-                    for x in (YOLO_DIR / f"{s}.txt").read_text().splitlines() if x.strip()})
+    stems = sorted(
+        {
+            Path(x).stem
+            for s in ("india_cal", "india_test")
+            for x in (YOLO_DIR / f"{s}.txt").read_text().splitlines()
+            if x.strip()
+        }
+    )
     mat = np.empty((len(stems), 128 * 128), dtype=np.float32)
     for i, s in enumerate(stems):
         mat[i] = norm_vec(YOLO_DIR / "images" / f"{s}.jpg")
@@ -46,7 +52,7 @@ def main() -> int:
         print(f"BharatPotHole/{split}: {len(paths)} images ...", flush=True)
         best_overall, hits = -1.0, []
         for start in range(0, len(paths), CHUNK):
-            block = paths[start:start + CHUNK]
+            block = paths[start : start + CHUNK]
             mat = np.empty((len(block), 128 * 128), dtype=np.float32)
             for i, p in enumerate(block):
                 mat[i] = norm_vec(p)
@@ -54,16 +60,24 @@ def main() -> int:
             best_overall = max(best_overall, float(corr.max()))
             rows, cols = np.where(corr >= DUPLICATE_CORR)
             for r, c in zip(rows, cols, strict=True):
-                hits.append({"bph": block[int(r)].stem, "india": held_stems[int(c)],
-                             "corr": round(float(corr[r, c]), 4)})
+                hits.append(
+                    {
+                        "bph": block[int(r)].stem,
+                        "india": held_stems[int(c)],
+                        "corr": round(float(corr[r, c]), 4),
+                    }
+                )
             del corr
         report["splits"][split] = {
-            "images": len(paths), "pairs": len(paths) * len(held_stems),
-            "max_corr": round(best_overall, 4), "duplicates": hits,
+            "images": len(paths),
+            "pairs": len(paths) * len(held_stems),
+            "max_corr": round(best_overall, 4),
+            "duplicates": hits,
             "duplicate_count": len(hits),
         }
-        print(f"   max {best_overall:.4f}   duplicates >= {DUPLICATE_CORR}: {len(hits)}",
-              flush=True)
+        print(
+            f"   max {best_overall:.4f}   duplicates >= {DUPLICATE_CORR}: {len(hits)}", flush=True
+        )
 
     out = repo_root() / "results" / "T9"
     out.mkdir(parents=True, exist_ok=True)

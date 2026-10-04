@@ -30,8 +30,12 @@ def test_a_perfect_detector_scores_full_recall_and_no_false_alarms():
     boxes = {"a": gt([0, 0, 10, 10]), "b": gt([5, 5, 15, 15])}
     dets = {"a": [box(0, 0, 10, 10, 0.9)], "b": [box(5, 5, 10, 10, 0.8)]}
     rows = sweep(label_detections(dets, boxes), n_gt=2, n_images=2)
-    assert at_conf(rows, 0.25) == {"conf": 0.25, "recall": 1.0,
-                                   "false_alarms_per_image": 0.0, "detections": 2}
+    assert at_conf(rows, 0.25) == {
+        "conf": 0.25,
+        "recall": 1.0,
+        "false_alarms_per_image": 0.0,
+        "detections": 2,
+    }
 
 
 def test_a_second_box_on_the_same_pothole_is_a_false_alarm():
@@ -74,14 +78,19 @@ def test_no_detection_above_the_threshold_is_zero_recall_not_a_crash():
     boxes = {"a": gt([0, 0, 10, 10])}
     dets = {"a": [box(0, 0, 10, 10, 0.01)]}
     rows = sweep(label_detections(dets, boxes), n_gt=1, n_images=1)
-    assert at_conf(rows, 0.25) == {"conf": 0.25, "recall": 0.0,
-                                   "false_alarms_per_image": 0.0, "detections": 0}
+    assert at_conf(rows, 0.25) == {
+        "conf": 0.25,
+        "recall": 0.0,
+        "false_alarms_per_image": 0.0,
+        "detections": 0,
+    }
 
 
 def test_matched_recall_reports_the_threshold_where_recall_first_crosses():
     boxes = {s: gt([0, 0, 10, 10]) for s in "abcde"}
-    dets = {s: [box(0, 0, 10, 10, c)]
-            for s, c in zip("abcde", [0.9, 0.8, 0.7, 0.6, 0.5], strict=True)}
+    dets = {
+        s: [box(0, 0, 10, 10, c)] for s, c in zip("abcde", [0.9, 0.8, 0.7, 0.6, 0.5], strict=True)
+    }
     rows = sweep(label_detections(dets, boxes), n_gt=5, n_images=5)
     point = at_recall(rows, 0.8)
     assert point["reachable"] is True
@@ -107,8 +116,7 @@ def test_recall_never_decreases_as_the_threshold_drops():
     for i in range(40):
         s = f"i{i}"
         boxes[s] = gt([0, 0, 10, 10])
-        dets[s] = [box(0, 0, 10, 10, float(rng.random())),
-                   box(50, 50, 10, 10, float(rng.random()))]
+        dets[s] = [box(0, 0, 10, 10, float(rng.random())), box(50, 50, 10, 10, float(rng.random()))]
     rows = sweep(label_detections(dets, boxes), n_gt=40, n_images=40)
     assert np.all(np.diff(rows[:, 1]) >= 0)
     assert np.all(np.diff(rows[:, 2]) >= 0)

@@ -72,27 +72,39 @@ def classify(alarms: list[int | None]) -> dict:
     """Shift-stream outcomes: early (inside the null prefix), missed, or a delay."""
     delays = [a - PREFIX + 1 for a in alarms if a is not None and a >= PREFIX]
     d = np.array(delays)
-    return {"detected": len(delays),
-            "alarmed_in_null_prefix": sum(1 for a in alarms if a is not None and a < PREFIX),
-            "never_alarmed": sum(1 for a in alarms if a is None),
-            "delay_frames": {"median": float(np.median(d)), "mean": round(float(d.mean()), 2),
-                             "p90": float(np.percentile(d, 90)), "min": int(d.min()),
-                             "max": int(d.max())} if len(d) else None,
-            "delays": [int(x) for x in d]}
+    return {
+        "detected": len(delays),
+        "alarmed_in_null_prefix": sum(1 for a in alarms if a is not None and a < PREFIX),
+        "never_alarmed": sum(1 for a in alarms if a is None),
+        "delay_frames": {
+            "median": float(np.median(d)),
+            "mean": round(float(d.mean()), 2),
+            "p90": float(np.percentile(d, 90)),
+            "min": int(d.min()),
+            "max": int(d.max()),
+        }
+        if len(d)
+        else None,
+        "delays": [int(x) for x in d],
+    }
 
 
 def main() -> int:
-    non = frame_scores(repo_root() / "results/T6_A_nonindia_val/val/predictions.json",
-                       "nonindia_val")
-    india = frame_scores(repo_root() / "results/LOCKED/A_india_full_run/val/predictions.json",
-                         "india_full")
+    non = frame_scores(
+        repo_root() / "results/T6_A_nonindia_val/val/predictions.json", "nonindia_val"
+    )
+    india = frame_scores(
+        repo_root() / "results/LOCKED/A_india_full_run/val/predictions.json", "india_full"
+    )
     rng = np.random.default_rng(0)
     order = rng.permutation(len(non))
     half = len(non) // 2
     reference, null_pool = non[order[:half]], non[order[half:]]
-    print(f"reference {len(reference)}, null pool {len(null_pool)}, India {len(india)}; "
-          f"median score non-India {np.median(non):.3f} vs India {np.median(india):.3f}",
-          flush=True)
+    print(
+        f"reference {len(reference)}, null pool {len(null_pool)}, India {len(india)}; "
+        f"median score non-India {np.median(non):.3f} vs India {np.median(india):.3f}",
+        flush=True,
+    )
     budget = 1.0 / THRESHOLD
     grid = [float(c) for c in D["cusum_threshold_grid"]]
 
@@ -102,8 +114,9 @@ def main() -> int:
         stream = null_pool[np.random.default_rng(1000 + k).permutation(len(null_pool))]
         alarm, _ = run_stream(reference, stream, eps=EPS, alarm_threshold=THRESHOLD, seed=k)
         plain_null.append(alarm)
-        _, tr = run_stream(reference, stream, eps=EPS, alarm_threshold=THRESHOLD, seed=k,
-                           cusum=True)
+        _, tr = run_stream(
+            reference, stream, eps=EPS, alarm_threshold=THRESHOLD, seed=k, cusum=True
+        )
         for c in grid:
             cusum_null[c].append(first_crossing(tr, np.log(c)))
     plain_far = sum(a is not None for a in plain_null) / N_STREAMS
@@ -111,8 +124,9 @@ def main() -> int:
     chosen = next((c for c in grid if cusum_far[c] <= budget), None)
     print(f"null, plain: rate {plain_far:.3f} (Ville bound {budget:.3f})")
     for c in grid:
-        print(f"null, CUSUM C={c:g}: rate {cusum_far[c]:.3f}"
-              f"{'   <- chosen' if c == chosen else ''}")
+        print(
+            f"null, CUSUM C={c:g}: rate {cusum_far[c]:.3f}{'   <- chosen' if c == chosen else ''}"
+        )
     if chosen is None:
         raise SystemExit("no CUSUM threshold in the grid meets the null budget; widen the grid")
 
@@ -122,10 +136,12 @@ def main() -> int:
         r = np.random.default_rng(5000 + k)
         prefix = null_pool[r.choice(len(null_pool), PREFIX, replace=False)]
         stream = np.concatenate([prefix, india[r.permutation(len(india))]])
-        a_plain, tr_plain = run_stream(reference, stream, eps=EPS, alarm_threshold=THRESHOLD,
-                                       seed=10_000 + k)
-        _, tr_cusum = run_stream(reference, stream, eps=EPS, alarm_threshold=chosen,
-                                 seed=10_000 + k, cusum=True)
+        a_plain, tr_plain = run_stream(
+            reference, stream, eps=EPS, alarm_threshold=THRESHOLD, seed=10_000 + k
+        )
+        _, tr_cusum = run_stream(
+            reference, stream, eps=EPS, alarm_threshold=chosen, seed=10_000 + k, cusum=True
+        )
         plain_alarms.append(a_plain)
         cusum_alarms.append(first_crossing(tr_cusum, np.log(chosen)))
         if k < N_TRACES:
@@ -133,17 +149,32 @@ def main() -> int:
             traces["cusum"].append(tr_cusum)
 
     report = {
-        "model": "A", "eps": EPS, "topk": TOPK, "n_streams": N_STREAMS, "null_prefix": PREFIX,
-        "reference_frames": len(reference), "null_pool_frames": len(null_pool),
-        "india_frames": len(india), "false_alarm_budget": budget,
-        "median_frame_score": {"nonindia": round(float(np.median(non)), 4),
-                               "india": round(float(np.median(india)), 4)},
-        "plain": {"statistic": "power martingale (spec)", "alarm_threshold": THRESHOLD,
-                  "null_false_alarm_rate": plain_far, "shift": classify(plain_alarms)},
-        "cusum": {"statistic": "power martingale with CUSUM reset (D078)",
-                  "null_false_alarm_rate_by_threshold": {f"{c:g}": v for c, v in cusum_far.items()},
-                  "alarm_threshold": chosen, "null_false_alarm_rate": cusum_far[chosen],
-                  "shift": classify(cusum_alarms)},
+        "model": "A",
+        "eps": EPS,
+        "topk": TOPK,
+        "n_streams": N_STREAMS,
+        "null_prefix": PREFIX,
+        "reference_frames": len(reference),
+        "null_pool_frames": len(null_pool),
+        "india_frames": len(india),
+        "false_alarm_budget": budget,
+        "median_frame_score": {
+            "nonindia": round(float(np.median(non)), 4),
+            "india": round(float(np.median(india)), 4),
+        },
+        "plain": {
+            "statistic": "power martingale (spec)",
+            "alarm_threshold": THRESHOLD,
+            "null_false_alarm_rate": plain_far,
+            "shift": classify(plain_alarms),
+        },
+        "cusum": {
+            "statistic": "power martingale with CUSUM reset (D078)",
+            "null_false_alarm_rate_by_threshold": {f"{c:g}": v for c, v in cusum_far.items()},
+            "alarm_threshold": chosen,
+            "null_false_alarm_rate": cusum_far[chosen],
+            "shift": classify(cusum_alarms),
+        },
     }
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "drift.json").write_text(json.dumps(report, indent=2))
@@ -153,35 +184,55 @@ def main() -> int:
     for key in ("plain", "cusum"):
         sh = report[key]["shift"]
         f = sh["delay_frames"]
-        tail = (f"; delay median {f['median']:g}, p90 {f['p90']:g}, range {f['min']}-{f['max']}"
-                if f else "")
-        print(f"shift, {key}: detected {sh['detected']}/{N_STREAMS}, early "
-              f"{sh['alarmed_in_null_prefix']}, never {sh['never_alarmed']}{tail}")
+        tail = (
+            f"; delay median {f['median']:g}, p90 {f['p90']:g}, range {f['min']}-{f['max']}"
+            if f
+            else ""
+        )
+        print(
+            f"shift, {key}: detected {sh['detected']}/{N_STREAMS}, early "
+            f"{sh['alarmed_in_null_prefix']}, never {sh['never_alarmed']}{tail}"
+        )
     return 0
 
 
 def write_markdown(report: dict) -> None:
-    md = ["# T11 - drift alarm (conformal test martingale), Model A", "",
-          f"eps {report['eps']}; frame score 1 - mean(top-{report['topk']} confidences); "
-          f"reference bag {report['reference_frames']} non-India frames; shift streams are "
-          f"{report['null_prefix']} null frames then India. False-alarm budget "
-          f"{report['false_alarm_budget']:.3f}.", "",
-          "| statistic | threshold | null false-alarm rate | detected | early | never | "
-          "median delay | p90 delay |", "|---|---|---|---|---|---|---|---|"]
+    md = [
+        "# T11 - drift alarm (conformal test martingale), Model A",
+        "",
+        f"eps {report['eps']}; frame score 1 - mean(top-{report['topk']} confidences); "
+        f"reference bag {report['reference_frames']} non-India frames; shift streams are "
+        f"{report['null_prefix']} null frames then India. False-alarm budget "
+        f"{report['false_alarm_budget']:.3f}.",
+        "",
+        "| statistic | threshold | null false-alarm rate | detected | early | never | "
+        "median delay | p90 delay |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
     for key in ("plain", "cusum"):
         r, sh = report[key], report[key]["shift"]
         f = sh["delay_frames"]
-        md.append(f"| {r['statistic']} | {r['alarm_threshold']:g} | "
-                  f"{r['null_false_alarm_rate']:.3f} | {sh['detected']}/{report['n_streams']} | "
-                  f"{sh['alarmed_in_null_prefix']} | {sh['never_alarmed']} | "
-                  f"{f['median']:g} | {f['p90']:g} |" if f else
-                  f"| {r['statistic']} | {r['alarm_threshold']:g} | "
-                  f"{r['null_false_alarm_rate']:.3f} | 0/{report['n_streams']} | "
-                  f"{sh['alarmed_in_null_prefix']} | {sh['never_alarmed']} | - | - |")
-    md += ["", "CUSUM null false-alarm rate by threshold (selection rule: smallest within budget):",
-           "", "| threshold | rate |", "|---|---|"]
-    md += [f"| {c} | {v:.3f} |" for c, v in
-           report["cusum"]["null_false_alarm_rate_by_threshold"].items()]
+        md.append(
+            f"| {r['statistic']} | {r['alarm_threshold']:g} | "
+            f"{r['null_false_alarm_rate']:.3f} | {sh['detected']}/{report['n_streams']} | "
+            f"{sh['alarmed_in_null_prefix']} | {sh['never_alarmed']} | "
+            f"{f['median']:g} | {f['p90']:g} |"
+            if f
+            else f"| {r['statistic']} | {r['alarm_threshold']:g} | "
+            f"{r['null_false_alarm_rate']:.3f} | 0/{report['n_streams']} | "
+            f"{sh['alarmed_in_null_prefix']} | {sh['never_alarmed']} | - | - |"
+        )
+    md += [
+        "",
+        "CUSUM null false-alarm rate by threshold (selection rule: smallest within budget):",
+        "",
+        "| threshold | rate |",
+        "|---|---|",
+    ]
+    md += [
+        f"| {c} | {v:.3f} |"
+        for c, v in report["cusum"]["null_false_alarm_rate_by_threshold"].items()
+    ]
     md += ["", "Generated by `scripts/exp_drift.py`; interpretation in `docs/DECISIONS.md`."]
     (OUT / "drift.md").write_text("\n".join(md) + "\n")
 
@@ -194,45 +245,72 @@ def plot(report: dict, traces: dict) -> None:
     horizon = PREFIX + 1500
 
     fig, axes = plt.subplots(1, 2, figsize=(11, 4.6), facecolor=SURFACE, sharex=True)
-    panels = (("plain", report["plain"]["alarm_threshold"], "Spec: plain power martingale"),
-              ("cusum", report["cusum"]["alarm_threshold"], "D078: with CUSUM reset"))
+    panels = (
+        ("plain", report["plain"]["alarm_threshold"], "Spec: plain power martingale"),
+        ("cusum", report["cusum"]["alarm_threshold"], "D078: with CUSUM reset"),
+    )
     for ax, (key, c, name) in zip(axes, panels, strict=True):
         style_axes(ax)
         for tr in traces[key]:
-            ax.plot(range(1, min(len(tr), horizon) + 1), tr[:horizon], color=SLOTS[0],
-                    linewidth=1.1, alpha=0.7)
+            ax.plot(
+                range(1, min(len(tr), horizon) + 1),
+                tr[:horizon],
+                color=SLOTS[0],
+                linewidth=1.1,
+                alpha=0.7,
+            )
         log_c = float(np.log(c))
         ax.axvline(PREFIX + 0.5, color=MUTED, linewidth=1, linestyle=(0, (4, 3)))
         ax.axhline(log_c, color=MUTED, linewidth=1, linestyle=(0, (4, 3)))
         lo, hi = ax.get_ylim()
         ax.text(PREFIX + 15, hi - 0.07 * (hi - lo), "India begins", color=MUTED, fontsize=8)
-        ax.text(horizon * 0.98, log_c + 0.02 * (hi - lo), f"alarm at M = {c:g}", color=MUTED,
-                fontsize=8, ha="right", va="bottom")
+        ax.text(
+            horizon * 0.98,
+            log_c + 0.02 * (hi - lo),
+            f"alarm at M = {c:g}",
+            color=MUTED,
+            fontsize=8,
+            ha="right",
+            va="bottom",
+        )
         ax.set_xlim(0, horizon)
         ax.set_xlabel("frame")
         ax.set_title(name, loc="left", fontsize=10, color=INK_2)
     axes[0].set_ylabel("log martingale")
-    fig.suptitle(f"{N_TRACES} streams of Model A scores: {PREFIX} non-India frames, then India",
-                 x=0.01, ha="left", fontsize=12)
+    fig.suptitle(
+        f"{N_TRACES} streams of Model A scores: {PREFIX} non-India frames, then India",
+        x=0.01,
+        ha="left",
+        fontsize=12,
+    )
     save(fig, OUT / "martingale_traces.png")
 
     if not delay:
         return
     fig, ax = figure()
     d = report["cusum"]["shift"]["delays"]
-    counts, _, _ = ax.hist(d, bins=range(0, max(d) + 11, 10), color=SLOTS[0],
-                           edgecolor="#fcfcfb", linewidth=1.5)
+    counts, _, _ = ax.hist(
+        d, bins=range(0, max(d) + 11, 10), color=SLOTS[0], edgecolor="#fcfcfb", linewidth=1.5
+    )
     ax.axvline(delay["median"], color=MUTED, linewidth=1, linestyle=(0, (4, 3)))
     ax.set_ylim(0, max(counts) * 1.12)
-    ax.text(delay["median"] + 3, max(counts) * 1.04, f"median {delay['median']:g} frames",
-            color=INK_2, fontsize=8)
+    ax.text(
+        delay["median"] + 3,
+        max(counts) * 1.04,
+        f"median {delay['median']:g} frames",
+        color=INK_2,
+        fontsize=8,
+    )
     ax.set_xlabel("India frames seen before the alarm")
     ax.set_ylabel("streams")
     sh = report["cusum"]["shift"]
-    title(ax, f"CUSUM detection delay over {report['n_streams']} shifted streams",
-          f"Threshold {report['cusum']['alarm_threshold']:g}. "
-          f"{sh['alarmed_in_null_prefix']} alarmed inside the null prefix, "
-          f"{sh['never_alarmed']} never.")
+    title(
+        ax,
+        f"CUSUM detection delay over {report['n_streams']} shifted streams",
+        f"Threshold {report['cusum']['alarm_threshold']:g}. "
+        f"{sh['alarmed_in_null_prefix']} alarmed inside the null prefix, "
+        f"{sh['never_alarmed']} never.",
+    )
     save(fig, OUT / "delay_hist.png")
 
 
