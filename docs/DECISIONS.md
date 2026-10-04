@@ -100,6 +100,7 @@ Current design spec: [`design.md`](design.md)
 | D078 | T11: the spec's plain martingale is blind to a shift after 500 in-domain frames; a CUSUM reset at matched null false-alarm rate detects 197/200 with median delay 77 frames | Accepted |
 | D079 | T12: conformal robustness changes repair decisions and helps modestly; maximising benefit defers the worst roads, so the dashboard must report both objectives | Accepted |
 | D083 | T16: the dashboard stays one offline HTML file (D020 over the spec); the optimiser's and worst-first's plans always side by side; T12 numbers carry the Model B recall caveat | Accepted |
+| D084 | The locked Model P run's 2,312 absolute symlinks stay as committed (results/LOCKED is never rewritten); a test pins them and every home-directory path, so nothing new can depend on one machine | Accepted |
 
 ---
 
@@ -2979,3 +2980,62 @@ table, and dark mode would glare. Round two: two hand-written alt texts
 contradicted `drift.json`, the brand broke at 390 px, and one lede ran into a
 Source line. All were fixed; the last three were verified by screenshot and test
 rather than re-scored by the reviewer.
+
+## D084 — The locked run's absolute symlinks stay; a test pins them and every home-directory path
+
+**2026-10-04 · Accepted · release cleanup · `results/LOCKED/` is never rewritten · uses D040**
+
+### What is committed
+
+`results/LOCKED/P_india_heldout_run/gt_root/images/` holds 2,312 symlinks, committed
+in `ac77039` (D074). `scripts/eval_locked.py` built them for the 1-class case with
+`symlink_to(....resolve())`, so every target is an absolute path into this
+machine's `data/yolo/images/`. On any other clone they point at nothing.
+
+### Options
+
+| | Touches LOCKED | On a fresh clone |
+|---|---|---|
+| **A. Leave as committed** | no | dangle, as now |
+| B. Rewrite as relative links into `data/yolo/images/` | 2,312 blobs | still dangle (`data/` is gitignored), but inside the repo |
+| C. Untrack and gitignore | 2,312 deletions | nothing to dangle |
+
+**Chosen: A** (the user, 2026-10-04). The rule that `results/LOCKED/` is never
+modified outranks tidiness, and none of the three makes the images available on a
+clone, because they live in gitignored `data/`. The links carry nothing the run
+lacks without them:
+
+- `gt_root/india_heldout.txt` lists the same 2,312 images;
+- the 2,312 derived labels are committed as regular files;
+- the scores are in `P_india_heldout.json` and `val/predictions.json`.
+
+The images were inputs to a one-shot evaluation, never its outputs.
+
+### The guard
+
+`tests/test_repo_hygiene.py` fails if either of these holds:
+
+- a committed symlink has an absolute target or climbs out of the repository, other
+  than exactly these 2,312;
+- a committed file contains a home-directory path (one under `/Users` or `/home`),
+  other than 19 pinned files.
+
+Of the 19, 10 are provenance under `results/`: 4 in LOCKED, including the run's
+`labels.cache`, and 6 verification and open-evaluation records. The other 9 are the
+`configs/data/*.yaml` that `scripts/build_pool.py` writes with an absolute `path:`.
+Those 9 stay absolute because `scripts/mps_sanity.py` passes `model_a.yaml` to
+ultralytics unresolved, and ultralytics resolves a relative `path` against its own
+`datasets_dir` (D040). Making them relative first needs that consumer to resolve the
+path itself, as `certain_road.perception.train` does. That change is not made here.
+
+Changing a pin, including fixing one, means editing the test, so the change shows in
+review.
+
+### Open
+
+- **`eval_locked.py` still writes absolute links.** A future 1-class locked run would
+  add more and fail the guard. Linking relatively is a small change to the
+  evaluation script. It is recorded here so the next locked run doesn't discover it
+  by failing CI.
+- **`configs/data/*.yaml`** become relative only after `mps_sanity.py` resolves them
+  (above).
