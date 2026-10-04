@@ -6,11 +6,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # scripts/repo_map.py reads the whole git history
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
       - run: uv sync --all-extras --dev
-      - run: uv run ruff check .
-      - run: uv run ruff format --check .
-      - run: uv run lint-imports
-      - run: uv run pytest
+      - run: uv run python scripts/check_repo.py
