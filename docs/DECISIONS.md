@@ -3421,7 +3421,7 @@ reverses only the cut.
 **2026-10-05 · Accepted**
 
 The MuJoCo demo's road textures are 49 photos in `data/raw/trial_textures/` (gitignored),
-listed with their sources in `data/raw/trial_textures/SOURCES.md`. They are not the user's
+listed with their sources in `docs/texture-provenance.md`. They are not the user's
 own photos. The 18 potholes come from QR4Change (Pune, Mendeley doi:10.17632/zndzygc3p3.2).
 The 31 crack and asphalt photos come from BD-N6 (Bangladesh NH-N6, Zenodo
 doi:10.5281/zenodo.18072573 and .18114226). Both are CC BY 4.0, so both must be credited
