@@ -82,3 +82,18 @@ camera_effects:
   vignette: 0.12
   contrast: 1.06
   jpeg_quality: 72
+
+# Step 2: the drive loop (sim/mujoco/drive.py).
+drive:
+  # 27 per 5 m sample = 30 fps at 20 km/h: the rate D075's 3-of-5 rule was set on. At 10 fps
+  # ByteTrack loses IDs between frames and confirmation collapsed (potholes 0/8 against 4/8).
+  frames_per_sample: 27
+  end_margin_m: 15             # stop before the road ends, so the view never runs off it
+  # 1/250 s at 20 km/h moves 2 cm per exposure, so one render is the true image; screenshots
+  # keep camera_effects' sub-frames.
+  render: {supersample: 2, blur_subframes: 1}
+  classes_from:                # D082: potholes from P only, cracks from B only, never summed
+    P: [pothole]
+    B: [linear_crack, alligator_crack]
+  colours_bgr: {pothole: [40, 40, 230], linear_crack: [0, 215, 255], alligator_crack: [0, 140, 255],
+                confirmed: [60, 200, 60]}

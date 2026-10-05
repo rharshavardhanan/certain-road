@@ -16,6 +16,8 @@ import numpy as np
 
 from sim.mujoco.scene import camera_quat
 
+NOISE_PAD = 64  # px of slack around the noise bank, for the random offset
+
 
 class Camera:
     def __init__(self, model: mujoco.MjModel, cam: dict, cfg: dict, seed: int, drive_y: float):
@@ -32,6 +34,14 @@ class Camera:
         rr = ((xx - w / 2) ** 2 + (yy - h / 2) ** 2) / ((w / 2) ** 2 + (h / 2) ** 2)
         self.vig = (1 - self.fx["vignette"] * rr)[..., None].astype(np.float32)
         self.rng = np.random.default_rng([seed, 37])
+        # sensor noise: one seeded bank, sliced at a random offset per frame, because
+        # drawing 2.7 M normals every frame cost 14 ms of a 33 ms budget
+        pad = NOISE_PAD
+        self.noise = self.rng.normal(0, self.fx["sensor_noise"], (h + pad, w + pad, 3)).astype(
+            np.float32
+        )
+        lut = (np.arange(256) / 255.0 - 0.5) * self.fx["contrast"] + 0.5
+        self.lut = (np.clip(lut, 0, 1) * 255).round().astype(np.uint8)
 
     def _noise(self, row, x):
         t = x / self.fx["noise_corr_m"]
@@ -53,20 +63,25 @@ class Camera:
         return cv2.resize(big, (self.cam["w"], self.cam["h"]), interpolation=cv2.INTER_AREA)
 
     def frame(self, x: float) -> np.ndarray:
-        """RGB uint8 at distance x along the road, as the detector receives it."""
+        """BGR uint8 at distance x along the road, as the detector receives it.
+
+        BGR because ultralytics reads a numpy image as BGR, as OpenCV does.
+        """
         fx = self.fx
         n = fx["blur_subframes"]
         travel = self.cam["speed_mps"] * fx["exposure_s"]
-        acc = np.zeros((self.cam["h"], self.cam["w"], 3), np.float32)
-        for k in range(n):
-            acc += self._raw(x + travel * (k / max(1, n - 1) - 0.5))
-        img = acc / n / 255.0
-        img = np.clip((img - 0.5) * fx["contrast"] + 0.5, 0, 1) * self.vig
-        img = img * 255 + self.rng.normal(0, fx["sensor_noise"], img.shape)
-        img = np.clip(img, 0, 255).astype(np.uint8)
-        ok, enc = cv2.imencode(
-            ".jpg",
-            cv2.cvtColor(img, cv2.COLOR_RGB2BGR),
-            [cv2.IMWRITE_JPEG_QUALITY, fx["jpeg_quality"]],
-        )
-        return cv2.cvtColor(cv2.imdecode(enc, cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB)
+        if n == 1:
+            img = self._raw(x)
+        else:
+            acc = np.zeros((self.cam["h"], self.cam["w"], 3), np.float32)
+            for k in range(n):
+                acc += self._raw(x + travel * (k / (n - 1) - 0.5))
+            img = (acc / n).round().astype(np.uint8)
+        img = cv2.LUT(img, self.lut).astype(np.float32)
+        img *= self.vig
+        oy, ox = (int(v) for v in self.rng.integers(0, NOISE_PAD, 2))
+        img += self.noise[oy : oy + img.shape[0], ox : ox + img.shape[1]]
+        np.clip(img, 0, 255, out=img)
+        bgr = cv2.cvtColor(img.astype(np.uint8), cv2.COLOR_RGB2BGR)
+        ok, enc = cv2.imencode(".jpg", bgr, [cv2.IMWRITE_JPEG_QUALITY, fx["jpeg_quality"]])
+        return cv2.imdecode(enc, cv2.IMREAD_COLOR)

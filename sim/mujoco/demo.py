@@ -2,13 +2,16 @@
 
     uv run python -m sim.mujoco.demo --preset poor --seed 0 --screenshot runs/mujoco/step1.png
     uv run python -m sim.mujoco.demo --preset poor --seed 0 --ground-truth runs/mujoco/gt.json
+    uv run python -m sim.mujoco.demo --preset poor --seed 0 --drive [--headless] [--until-m 120]
 
-Step 1 of the build: the scene and one camera frame. The live loop comes next.
+`--drive` runs the drive loop with the real detectors (sim/mujoco/drive.py) and writes
+runs/mujoco/<preset>_seed<seed>/: ground_truth.json, detections.jsonl, drive_summary.json.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import time
 from pathlib import Path
 
@@ -60,6 +63,9 @@ def main() -> None:
     ap.add_argument("--ground-truth", type=Path)
     ap.add_argument("--screenshot", type=Path)
     ap.add_argument("--at", type=float, help="metres along the road; default: the busiest view")
+    ap.add_argument("--drive", action="store_true", help="run the drive loop with live detection")
+    ap.add_argument("--headless", action="store_true", help="no window; write the logs only")
+    ap.add_argument("--until-m", type=float, help="stop the drive early, for a quick check")
     args = ap.parse_args()
     road, cfg = make_road(args.preset, args.seed)
     counts = {c: sum(i.cls == c for i in road.instances) for c in road_mod.CLASSES}
@@ -80,11 +86,46 @@ def main() -> None:
         x = args.at if args.at is not None else (showcase_view(road) or busiest_view(road))
         img = camera.frame(x)
         args.screenshot.parent.mkdir(parents=True, exist_ok=True)
-        cv2.imwrite(str(args.screenshot), cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+        cv2.imwrite(str(args.screenshot), img)  # Camera.frame returns BGR
         print(
             f"scene built in {t1 - t0:.1f} s; frame at {x:.0f} m in {time.time() - t1:.2f} s "
             f"-> {args.screenshot} {img.shape[1]}x{img.shape[0]}"
         )
+
+    if args.drive:
+        from certain_road.core.paths import repo_root
+        from sim.mujoco.drive import run
+
+        out = repo_root() / cfg["out_dir"] / f"{args.preset}_seed{args.seed}"
+        show = None if args.headless else live_window(cfg)
+        summary = run(road, cfg, out, show=show, until_m=args.until_m)
+        print(json.dumps(summary, indent=1))
+
+
+def live_window(cfg: dict):
+    """The step-2 view: the camera frame, boxes by class, confirmed tracks in green."""
+    colours = {k: tuple(v) for k, v in cfg["drive"]["colours_bgr"].items()}
+    name = "certain-road survey demo"
+    cv2.namedWindow(name, cv2.WINDOW_NORMAL)
+
+    def show(rec, bgr, drv) -> bool:
+        img = bgr.copy()
+        g = int(drv.horizon)
+        cv2.line(img, (0, g), (img.shape[1], g), (200, 200, 200), 1)
+        for d in rec.dets:
+            c = colours["confirmed"] if d.confirmed else colours[d.cls]
+            p1, p2 = (int(d.x1), int(d.y1)), (int(d.x2), int(d.y2))
+            cv2.rectangle(img, p1, p2, c, 3 if d.confirmed else 2)
+            label = f"{d.model} {d.cls.replace('_crack', '')} {d.score:.2f}"
+            cv2.putText(
+                img, label, (p1[0], max(16, p1[1] - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, c, 2
+            )
+        hud = f"{rec.x_m:6.1f} m   frame {rec.frame}   {'SURVEY SAMPLE' if rec.sampled else ''}"
+        cv2.putText(img, hud, (16, 36), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
+        cv2.imshow(name, img)
+        return cv2.waitKey(1) not in (27, ord("q"))
+
+    return show
 
 
 if __name__ == "__main__":

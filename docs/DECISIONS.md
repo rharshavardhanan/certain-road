@@ -108,6 +108,7 @@ Current design spec: [`design.md`](design.md)
 | D085 | Conformal prediction, cut by D051 under sprint pressure, was reinstated by the RoadSight spec adopted at T0 (a23bf6a), which made the certified miss rate the core claim; no separate decision recorded the reversal | Accepted |
 | D086 | Simulator textures are QR4Change and BD-N6 photos (CC BY 4.0), never used in training; audited clean by norm_vec (max 0.8887) and ORB crop matching (max 8 inliers) | Accepted |
 | D087 | A MuJoCo demo simulator for the DA-2 review (`sim/mujoco/`): synthetic road from the D086 photos, real detectors and survey code, design camera; not T13 | Accepted |
+| D088 | The MuJoCo demo detects at 30 fps, the rate D075's 3-of-5 rule was set on; at 10 fps confirmation collapsed. Gate at the design detect range; the survey still scores 5 m samples (D006) | Accepted |
 
 ---
 
@@ -3488,4 +3489,48 @@ avoidance, and T13 stays not run.
 **Step-1 probe** on the showcase frame, at conf 0.25: Model P found all three driving-lane
 potholes (0.50–0.62), the one at 10.8 m included. Model B found the 5.5 m alligator patch
 (0.79) but not the one at 9.8 m.
+
+## D088 — The demo's drive loop runs at 30 fps
+
+**2026-10-05 · Accepted · extends D087 · applies D075 and D082 · keeps D006 for the survey**
+
+`sim/mujoco/drive.py` drives the design camera at 20 km/h. On every frame, Model P and Model
+B each track with ByteTrack under `configs/eval/video.yaml`, with D082's channel rule:
+potholes come from P only, cracks from B only, and B's pothole channel is discarded. A track
+is confirmed by D075's `confirm_step`, imported from `scripts/eval_video.py` rather than
+copied.
+
+**The frame rate is 30 fps, because confirmation depends on it.** D075's rule (the same ID in
+3 of the last 5 frames) was set on 30 fps video. A first loop ran at 10 fps, which is real
+time on this Mac. There, near damage moves far between frames, ByteTrack loses the ID, and
+almost nothing confirms. Over the same 150 m of the poor preset, seed 0:
+
+| | linear crack | alligator crack | pothole |
+|---|---|---|---|
+| 10 fps, confirmed | 0/3 | 2/7 | 0/8 |
+| 30 fps, confirmed | 1/3 | 6/7 | 4/8 |
+| detected in any frame (both rates) | 2/3 | 6–7/7 | 5/8 |
+
+30 fps costs real time. The two models take about 24 ms a frame, so the full 512 m road runs
+at 0.65× real time (142.8 s against 92.1 s). The drive is still simulated at 20 km/h, and
+only the playback is slower.
+
+**The gate is geometric.** The video lane gates at a hand-set fraction of frame height,
+because downloaded footage has no camera model. The simulator has the design camera, so its
+gate is the row where `edge.detect_range_m` (12 m) meets the road, from
+`core.geometry.project`.
+
+**The survey keeps D006.** Every 27th frame is a survey sample, one every
+`edge.sample_every_m`. Step 3 scores only those, with no tracker involved. Tracks feed the
+live view and step 4's recall against ground truth.
+
+**Full poor road, seed 0, at 30 fps.** These are rough per-instance figures; step 4 scores them
+properly. A hit is a confirmed track of the right class overlapping the instance's projected
+box (IoU above 0.1).
+
+- Linear cracks: 13 of 27 hit.
+- Alligator cracks: 21 of 24.
+- Potholes: 18 of 27.
+- Confirmed tracks that never matched an instance of their own class: 1 linear, 11
+  alligator, 14 pothole. Most of the pothole ones are Model P firing on alligator patches.
 

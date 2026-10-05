@@ -165,12 +165,42 @@ pothole shading with sky sheen. Probe on the final frame: Model P finds the 10 m
 
 ---
 
-## Step 2 — drive loop with live detection (after approval)
+## Step 2 — drive loop with live detection
 
-**Goal** At 20 km/h the camera samples every 5 m (`edge.sample_every_m`). Model P and Model
-B run on every sampled frame and are never summed (D082). Confirmed tracks are drawn green.
-**Done when** a poor-preset run completes, and per-frame detections are logged to
-`runs/mujoco/<run>/detections.jsonl`.
+### Task 2.1 — the drive loop
+
+**Goal** The camera drives the road at 20 km/h, one frame every 5/9 m (10 fps of simulated
+time), so every 9th frame is a 5 m survey sample (`edge.sample_every_m`, D006). On each
+frame, Model P and Model B track with ByteTrack (`configs/eval/video.yaml`) under D082:
+potholes from P only, cracks from B only, B's pothole channel discarded. A track is
+confirmed by D075's `confirm_step` (3 of 5 frames). The gate is the row where
+`edge.detect_range_m` (12 m) meets the road, computed with `core.geometry`, rather than the
+hand-set 0.45 the video lane needs for footage with no camera model.
+
+**Why** Step 3's survey and step 4's scoring consume these detections. A live view proves
+the real models run in the loop.
+
+**Files** `sim/mujoco/drive.py`, `sim/mujoco/demo.py`, `configs/sim/mujoco.yaml`,
+`tests/test_mujoco_drive.py`
+
+**Steps**
+- [x] Tests first: the D082 channel rule, and the gate row agreeing with
+  `core.geometry.project` at 12 m.
+- [x] The loop yields one record per frame (position, sampled flag, detections with track,
+  confirmed flag) and writes `runs/mujoco/<preset>_seed<seed>/detections.jsonl`.
+- [x] Frames go to ultralytics as BGR. The step-1 probe passed RGB and its numbers are
+  re-measured here.
+- [x] A live window (class colours, confirmed tracks green), with `--headless` to skip it.
+- [x] Time the frame budget and tune `drive` render settings to keep it near real time.
+
+**Record (2026-10-05):** at 10 fps (one frame every 5/9 m) confirmation collapsed, so the
+loop runs at 30 fps: 27 frames per 5 m sample (D088). The full poor road completes: 2,766
+frames, 103 samples, 142.8 s, so 0.65× real time. The step-1 probe's RGB input was
+re-measured as BGR; P scored 0.59/0.54/0.51 and B 0.76, against 0.62/0.55/0.50 and 0.79.
+
+**Done when** `uv run python -m sim.mujoco.demo --preset poor --seed 0 --drive --headless`
+completes and writes `detections.jsonl`; `uv run pytest tests/test_mujoco_drive.py -q`
+passes.
 
 ## Step 3 — survey panel
 
