@@ -103,10 +103,15 @@ def chip(img, ink, x, y, s, fill, text_rgb, size="chip", weight="Semibold", pad=
     return x + w
 
 
+def look_note(cfg: dict) -> str:
+    return "" if cfg.get("look", "v1") == "v1" else f", look {cfg['look']}"
+
+
 def honesty(road: Road, cfg: dict) -> str:
     """The line every render carries: what is simulated, what is real, and the texture credits."""
     return (
-        f"Simulated {road.preset} road, seed {road.seed} · real Model P and Model B · "
+        f"Simulated {road.preset} road, seed {road.seed}{look_note(cfg)} · "
+        "real Model P and Model B · "
         f"real certain_road.survey scoring and allocation · {cfg['credits']}"
     )
 

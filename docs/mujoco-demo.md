@@ -15,13 +15,16 @@ the texture photos in `data/raw/trial_textures/`. Both are gitignored.
 uv run python -m sim.mujoco.demo --preset poor --seed 0
 ```
 
-This opens one 1920×1080 window, drives the road and ends on the result screen, which stays
+It draws the road in **look v2**, with 3D potholes, surface marks and harsher light (D092).
+`--look v1` runs the simulator exactly as it was at the `demo-v1` tag, as the fallback. This
+opens one 1920×1080 window, drives the road and ends on the result screen, which stays
 until a key is pressed. Esc or q during the drive stops it early.
 
 | Flag | Effect |
 |---|---|
 | `--preset good\|moderate\|poor\|mixed\|random` | The kind of road. `random` draws from india_train's damage mix in `results/T2/split_audit.json` |
 | `--seed N` | The same seed gives the same road, byte for byte |
+| `--look v1\|v2` | v2 (default): 3D potholes, repair patches, oil stains, dust, trees and their shadows. v1: the `demo-v1` simulator, unchanged |
 | `--record out.mp4` | Also records the screen in real time, then holds the result screen for 10 s |
 | `--headless` | No window. With `--record`, renders a recording without a display |
 | `--budget-frac 0.3` | Repair budget as a share of the cost of repairing every segment |
@@ -29,7 +32,7 @@ until a key is pressed. Esc or q during the drive stops it early.
 | `--screenshot f.png --at 196` | One camera frame at 196 m along the road |
 
 On an Apple Silicon Mac the drive runs at about 0.6× real time: a 527 m road takes about
-2.5 minutes. Each run writes these files to `runs/mujoco/<preset>_seed<seed>/`:
+2.5 minutes. Each run writes these files to `runs/mujoco/<preset>_seed<seed>_v2/` (v1: no suffix):
 `ground_truth.json`, `detections.jsonl` (every frame), `survey.json` (segments and the drift
 trace), `drive_summary.json`, `end.json` and `end_screen.png`.
 
@@ -112,6 +115,30 @@ What the table shows:
 
 Two runs of poor, seed 0, gave identical ground truth, segments, drift trace and end-screen
 numbers (D090). A recording of that run is `runs/mujoco/poor_seed0.mp4`: 102 s, 1920×1080.
+
+## Look v2 against v1, seed 0
+
+v2 changes how the road is drawn and lit, never the road: the ground truth is identical, so
+the two compare directly. Measured once after v2 was built, and not adjusted afterwards.
+
+| Preset | Pothole recall, v1 → v2 | Alligator recall | Linear recall | Pothole false alarms/km | Drift alarm |
+|---|---|---|---|---|---|
+| good | no instance | no instance | 0/2 → 0/2 | 0 → 0 | 65 → 80 m |
+| moderate | 1/3 → 2/3 | 2/2 → 2/2 | 9/17 → 10/17 | 11.7 → 7.8 | 65 → 80 m |
+| poor | 16/28 → 15/28 | 22/24 → 21/24 | 14/27 → 15/27 | 35.1 → 43.0 | 150 m → none |
+| mixed | 5/16 → 8/16 | 17/18 → 17/18 | 1/10 → 1/10 | 29.3 → 37.1 | 65 → 80 m |
+| random | 5/13 → 4/13 | 11/12 → 11/12 | 1/13 → 2/13 | 29.3 → 25.4 | 145 → 150 m |
+
+- **Realism did not make potholes easier to find.** Pooled over the four damaged roads,
+  pothole recall is 27/60 under v1 and 29/60 under v2. That is within what one run per preset
+  can resolve.
+- **The new marks raised no false alarm.** On poor and mixed, in both looks, every confirmed
+  pothole track that matched no pothole sits on an alligator patch or a linear crack. None
+  sits on a tree shadow, a repair patch, an oil stain or bare road.
+- **The drift alarm still comes in the clean opening stretch** on good, moderate and mixed
+  (D089).
+
+A recording of poor under v2 is `runs/mujoco/poor_seed0_v2.mp4`.
 
 ## Credits
 

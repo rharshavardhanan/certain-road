@@ -16,6 +16,7 @@ import numpy as np
 import yaml
 
 from certain_road.core.paths import repo_root
+from sim.mujoco import relief
 from sim.mujoco.road import Road
 from sim.mujoco.surface import Baker
 
@@ -120,7 +121,11 @@ def build(road: Road, cfg: dict) -> tuple[mujoco.MjModel, dict]:
         mat = _tex(spec, f"road{k}", baker.tile(k))
         spec.worldbody.add_geom(
             type=mujoco.mjtGeom.mjGEOM_MESH,
-            meshname=_quad(spec, f"q{k}", k * tm, (k + 1) * tm, -w2, w2),
+            meshname=(
+                relief.tile_mesh(spec, f"q{k}", road, cfg, k * tm, (k + 1) * tm, w2)
+                if "relief" in cfg  # look v2: sunk under its potholes
+                else _quad(spec, f"q{k}", k * tm, (k + 1) * tm, -w2, w2)
+            ),
             material=mat,
             contype=0,
             conaffinity=0,
@@ -156,7 +161,7 @@ def build(road: Road, cfg: dict) -> tuple[mujoco.MjModel, dict]:
     gm.texrepeat = [60, 60]
     spec.worldbody.add_geom(
         type=mujoco.mjtGeom.mjGEOM_PLANE,
-        pos=[L / 2, 0, -0.01],
+        pos=[L / 2, 0, sc.get("ground_z", -0.01)],  # v2 lowers it below the potholes
         size=[L, 200, 1],
         material=ground,
         contype=0,
@@ -218,6 +223,39 @@ def build(road: Road, cfg: dict) -> tuple[mujoco.MjModel, dict]:
             contype=0,
             conaffinity=0,
         )
+    tc = sc.get("trees")
+    if tc:  # look v2: trees on both verges, from their own random stream
+        trng = np.random.default_rng([road.seed, 47])
+        edge = w2 + kb["width_m"]
+        x = trng.uniform(0, 15)
+        while x < L + 40:
+            side = 1 if trng.random() < tc["left_share"] else -1
+            ty = side * (edge + trng.uniform(*tc["offset_m"]))
+            th, tr = trng.uniform(*tc["trunk_h_m"]), trng.uniform(*tc["trunk_r_m"])
+            spec.worldbody.add_geom(
+                type=mujoco.mjtGeom.mjGEOM_CYLINDER,
+                pos=[x, ty, th / 2],
+                size=[tr, th / 2],
+                rgba=[*tc["trunk_rgb"], 1],
+                contype=0,
+                conaffinity=0,
+            )
+            cr = trng.uniform(*tc["canopy_r_m"])
+            # the canopy leans over the road, as roadside trees grow toward the light
+            cx, cy = x, ty - side * tc["lean"] * cr
+            for _ in range(int(trng.integers(*tc["canopy_blobs"]))):
+                g = np.array(tc["greens"][int(trng.integers(len(tc["greens"])))])
+                r = trng.uniform(*tc["blob_r_m"])
+                off = trng.normal(0, 1, 3) * np.array(tc["canopy_spread"]) * cr
+                spec.worldbody.add_geom(
+                    type=mujoco.mjtGeom.mjGEOM_ELLIPSOID,
+                    pos=[cx + off[0], cy + off[1], th + 0.5 * cr + off[2]],
+                    size=[r, r * trng.uniform(0.7, 1.2), r * trng.uniform(0.5, 0.8)],
+                    rgba=[*(g * trng.uniform(0.85, 1.15)).clip(0, 1), 1],
+                    contype=0,
+                    conaffinity=0,
+                )
+            x += trng.exponential(100 / tc["per_100m"])
     # the vehicle: camera and the sun travel with it, so the shadow box stays on the view
     veh = spec.worldbody.add_body(name="vehicle", mocap=True, pos=[0, road.drive_lane_y, 0])
     veh.add_camera(

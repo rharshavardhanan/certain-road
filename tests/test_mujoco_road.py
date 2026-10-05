@@ -8,9 +8,10 @@ import json
 import math
 
 import numpy as np
+import yaml
 
 from certain_road.core.paths import repo_root
-from sim.mujoco.road import CLASSES, Road, generate, load_config
+from sim.mujoco.road import CLASSES, CONFIG, Road, generate, load_config
 
 # (name, aspect, natural px/m or 0, crop long px, crop short px)
 FAKE = {
@@ -77,3 +78,12 @@ def test_random_preset_draws_india_train_class_mix():
         for i in generate("random", seed, FAKE).instances:
             got[CLASSES.index(i.cls)] += 1
     assert np.abs(got / got.sum() - want).max() < 0.08
+
+
+def test_looks_overlay_the_base_config_and_never_change_the_road():
+    base = yaml.safe_load(CONFIG.read_text())
+    assert load_config() == base
+    assert {k: v for k, v in load_config("v1").items() if k != "look"} == base
+    v2 = load_config("v2")
+    assert {k for k in v2 if v2[k] != base.get(k)} <= {"surface", "scene", "relief", "look"}
+    assert generate("poor", 3, FAKE, v2).to_json() == generate("poor", 3, FAKE, base).to_json()

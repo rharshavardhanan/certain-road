@@ -24,8 +24,8 @@ from sim.mujoco import textures
 PRESETS = ("good", "moderate", "poor", "mixed", "random")
 
 
-def make_road(preset: str, seed: int) -> tuple[road_mod.Road, dict]:
-    cfg = road_mod.load_config()
+def make_road(preset: str, seed: int, look: str | None = None) -> tuple[road_mod.Road, dict]:
+    cfg = road_mod.load_config(look)
     cat = textures.catalogue(cfg["surface"]["flatten_sigma_frac"])
     return road_mod.generate(preset, seed, cat, cfg), cfg
 
@@ -61,6 +61,10 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--preset", choices=PRESETS, default="poor")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument(
+        "--look",
+        help="v1: the simulator at the demo-v1 tag; v2: 3D potholes, surface detail, harsher light",
+    )
     ap.add_argument("--ground-truth", type=Path)
     ap.add_argument("--screenshot", type=Path)
     ap.add_argument("--at", type=float, help="metres along the road; default: the busiest view")
@@ -74,7 +78,8 @@ def main() -> None:
     args = ap.parse_args()
     # The plain command drives: the brief's `--preset poor --seed 0` opens and runs.
     args.drive = args.drive or not (args.screenshot or args.ground_truth or args.end_only)
-    road, cfg = make_road(args.preset, args.seed)
+    look = args.look or road_mod.load_config()["default_look"]
+    road, cfg = make_road(args.preset, args.seed, look)
     counts = {c: sum(i.cls == c for i in road.instances) for c in road_mod.CLASSES}
     print(
         f"{args.preset} seed {args.seed}: {road.length_m:.0f} m, "
@@ -104,7 +109,8 @@ def main() -> None:
         from sim.mujoco.evaluate import summarise
         from sim.mujoco.screen import render_end
 
-        out = repo_root() / cfg["out_dir"] / f"{args.preset}_seed{args.seed}"
+        tag = "" if look == "v1" else f"_{look}"  # v1 keeps the run directories it always had
+        out = repo_root() / cfg["out_dir"] / f"{args.preset}_seed{args.seed}{tag}"
         live = None
         if not args.headless or args.record or args.still:
             live = Live(road, cfg, window=not args.headless, record=args.record)

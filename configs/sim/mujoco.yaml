@@ -150,3 +150,37 @@ end:
 credits: >-
   Textures CC BY 4.0: QR4Change, Maske et al. 2025 (potholes); BD-N6, Hossain et al.
   (cracks, asphalt)
+
+# Looks (D092): overlays on everything above, chosen with --look. v1 is the simulator at the
+# demo-v1 tag, kept as the fallback; it must render byte-identical frames. v2 adds 3D
+# potholes (relief), surface detail and harsher light with tree shadows. A look never
+# changes the road or its ground truth.
+default_look: v2   # all five presets run under v2 (D092); --look v1 is the fallback
+looks:
+  v1: {}
+  v2:
+    # 3D potholes (relief.py): the mesh sinks under the baker's own outline. Real potholes
+    # on Indian roads run about 4-10 cm deep. Walls run from alpha 0.2 to 0.8 of the outline.
+    relief: {depth_m: [0.04, 0.10], wall_alpha: [0.2, 0.8], floor_roughness: 0.35,
+             fine_m: 0.035, coarse_m: 0.8, margin_m: 0.1}
+    # the geometry now shades the hole, so the painted wall shadow goes and the painted
+    # depth darkening drops to what a wet, dirty floor adds
+    surface:
+      pothole_wall_shade: 0.0
+      pothole_depth_shade: 0.08
+      # marks real roads carry that are not damage: patched repairs (darker, smoother fresh
+      # asphalt with a seam), oil stains down the lane centres, and dust off the verges
+      detail: {patches_per_100m: 2.0, patch_length_m: [0.8, 3.0], patch_width_m: [0.6, 1.6],
+               patch_darken: [0.72, 0.86], patch_smooth_px: 1.5, seam_darken: 0.25,
+               stains_per_100m: 5.0, stain_radius_m: [0.12, 0.4], stain_darken: [0.1, 0.25],
+               dust_band_m: 0.6, dust_alpha: 0.45, dust_rgb: [0.58, 0.51, 0.42]}
+    scene:
+      ground_z: -0.15           # the ground plane must sit below the deepest pothole
+      sun_diffuse: 1.0          # a harsher sun with less fill: darker, harder shadows
+      ambient: 0.30
+      # trees, mostly on the left verge, where the sun lays their shadows across the
+      # driving lane; hard shadow edges on asphalt are a real-world false-alarm trap
+      trees: {per_100m: 3.0, left_share: 0.7, offset_m: [0.5, 3.0], trunk_h_m: [3.0, 4.5],
+              trunk_r_m: [0.12, 0.22], canopy_r_m: [1.6, 2.8], canopy_blobs: [16, 27],
+              blob_r_m: [0.5, 1.0], canopy_spread: [0.32, 0.32, 0.2], lean: 0.35, trunk_rgb: [0.30, 0.25, 0.20],
+              greens: [[0.22, 0.27, 0.14], [0.27, 0.31, 0.16], [0.18, 0.22, 0.12], [0.31, 0.32, 0.19]]}

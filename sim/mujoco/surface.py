@@ -26,6 +26,23 @@ def _smoothstep(t):
     return t * t * (3 - 2 * t)
 
 
+def stamp_alpha(seed: int, inst, sc: dict) -> tuple[np.ndarray, int, int]:
+    """A damage patch's feathered, irregular ellipse, at twice the bake resolution.
+
+    Shared with relief.py, which sinks the road mesh under the same outline.
+    """
+    ppm = sc["px_per_m"]
+    tw = max(8, int(inst.length_m * ppm * 2))
+    th = max(4, int(inst.width_m * ppm * 2))
+    rng = np.random.default_rng([seed, 17, inst.id])
+    uu, vv = np.meshgrid(np.linspace(-1, 1, tw), np.linspace(-1, 1, th))
+    noise = cv2.resize(
+        rng.random((6, 6)).astype(np.float32), (tw, th), interpolation=cv2.INTER_CUBIC
+    )
+    r = np.sqrt(uu**2 + vv**2) * (1 + sc["edge_noise"] * (noise - 0.5))
+    return _smoothstep((1 - r) / sc["feather"]).astype(np.float32), tw, th
+
+
 class Baker:
     def __init__(self, road: Road, cfg: dict):
         self.road, self.cfg, self.sc = road, cfg, cfg["surface"]
@@ -41,6 +58,7 @@ class Baker:
         self.lattice = rng.normal(
             0, 1, (int(self.width / self.lattice_m) + 3, int(road.length_m / self.lattice_m) + 3)
         )
+        self.marks = self._place_marks() if self.sc.get("detail") else []
 
     def _prepare_asphalt(self) -> list[np.ndarray]:
         lvl = self.sc["asphalt_level"]
@@ -136,17 +154,8 @@ class Baker:
         patch = textures.crop(spec, sc["flatten_sigma_frac"])
         if patch.shape[0] > patch.shape[1]:
             patch = np.rot90(patch).copy()
-        # resample to twice the bake resolution before the warp
-        tw = max(8, int(inst.length_m * self.ppm * 2))
-        th = max(4, int(inst.width_m * self.ppm * 2))
+        alpha, tw, th = stamp_alpha(self.road.seed, inst, sc)
         patch = cv2.resize(patch, (tw, th), interpolation=cv2.INTER_AREA)
-        rng = np.random.default_rng([self.road.seed, 17, inst.id])
-        uu, vv = np.meshgrid(np.linspace(-1, 1, tw), np.linspace(-1, 1, th))
-        noise = cv2.resize(
-            rng.random((6, 6)).astype(np.float32), (tw, th), interpolation=cv2.INTER_CUBIC
-        )
-        r = np.sqrt(uu**2 + vv**2) * (1 + sc["edge_noise"] * (noise - 0.5))
-        alpha = _smoothstep((1 - r) / sc["feather"]).astype(np.float32)
         # tile px -> patch px
         a = inst.angle_rad
         ca, sa = math.cos(a), math.sin(a)
@@ -228,9 +237,83 @@ class Baker:
                 wp = 0.5 * wp + 0.5 * cv2.erode(wp, np.ones((3, 3), np.uint8))
         img[y0:y1, x0:x1] = base * (1 - wa[..., None]) + np.clip(wp, 0, 1) * wa[..., None]
 
+    def _place_marks(self) -> list[dict]:
+        """Look v2: where the repair patches and oil stains go, from their own random stream."""
+        dc, rng = self.sc["detail"], np.random.default_rng([self.road.seed, 41])
+        dl, km = self.road.drive_lane_y, self.road.length_m / 100
+        out = []
+        for _ in range(rng.poisson(dc["patches_per_100m"] * km)):
+            lane = dl if rng.random() < 0.7 else -dl
+            out.append(
+                {
+                    "kind": "patch",
+                    "x": rng.uniform(0, self.road.length_m),
+                    "y": lane + rng.choice([-0.9, 0.9]) + rng.normal(0, 0.25),
+                    "l": rng.uniform(*dc["patch_length_m"]),
+                    "w": rng.uniform(*dc["patch_width_m"]),
+                    "a": rng.normal(0, 0.06),
+                    "dark": rng.uniform(*dc["patch_darken"]),
+                }
+            )
+        for _ in range(rng.poisson(dc["stains_per_100m"] * km)):
+            lane = dl if rng.random() < 0.6 else -dl
+            out.append(
+                {
+                    "kind": "stain",
+                    "x": rng.uniform(0, self.road.length_m),
+                    "y": lane + rng.normal(0, 0.2),
+                    "r": rng.uniform(*dc["stain_radius_m"]),
+                    "dark": rng.uniform(*dc["stain_darken"]),
+                    "lobes": rng.normal(0, 0.5, (3, 2)),
+                }
+            )
+        return out
+
+    def _detail(self, img, k):
+        """Look v2: repair patches, oil stains and dust off the verges. Marks, not damage."""
+        dc = self.sc["detail"]
+        x, y = self._coords(k)
+        gx, gy = np.meshgrid(x, y)
+        x0m, x1m = x[0], x[-1]
+        soft = cv2.GaussianBlur(img, (0, 0), dc["patch_smooth_px"])
+        for mk in self.marks:
+            reach = mk.get("l", 2 * mk.get("r", 0)) + 0.5
+            if mk["x"] + reach < x0m or mk["x"] - reach > x1m:
+                continue
+            if mk["kind"] == "patch":
+                ca, sa = math.cos(mk["a"]), math.sin(mk["a"])
+                u = (gx - mk["x"]) * ca + (gy - mk["y"]) * sa
+                v = -(gx - mk["x"]) * sa + (gy - mk["y"]) * ca
+                edge = np.maximum(np.abs(u) - mk["l"] / 2, np.abs(v) - mk["w"] / 2)
+                inside = _smoothstep(-edge * self.ppm / 2 + 0.5).astype(np.float32)
+                seam = np.exp(-((edge * self.ppm / 2) ** 2)).astype(np.float32)
+                fresh = (0.6 * soft + 0.4 * img) * mk["dark"]
+                img = img * (1 - inside[..., None]) + fresh * inside[..., None]
+                img = img * (1 - dc["seam_darken"] * seam[..., None])
+            else:
+                dist = np.full(gx.shape, np.inf, np.float32)
+                for ox, oy in mk["lobes"]:
+                    c = (gx - mk["x"] - ox * mk["r"]) ** 2 + (gy - mk["y"] - oy * mk["r"]) ** 2
+                    dist = np.minimum(dist, c.astype(np.float32))
+                blob = np.exp(-dist / (mk["r"] ** 2)).astype(np.float32)
+                img = img * (1 - mk["dark"] * blob[..., None])
+        # dust off the verges, thickest at the kerb, patchy along the road
+        band = dc["dust_band_m"]
+        edge = _smoothstep((np.abs(y) - (self.width / 2 - band)) / band)
+        rng = np.random.default_rng([self.road.seed, 43, k])
+        along = cv2.resize(
+            rng.random((2, 12)).astype(np.float32), (self.tile_w, 2), interpolation=cv2.INTER_CUBIC
+        )
+        side = np.where(y[:, None] > 0, along[1][None, :], along[0][None, :])
+        a = (dc["dust_alpha"] * edge[:, None] * (0.5 + 0.5 * side)).astype(np.float32)
+        dust = np.array(dc["dust_rgb"], np.float32)
+        return img * (1 - a[..., None]) + dust * a[..., None]
+
     def tile(self, k: int) -> np.ndarray:
         img = self._base(k)
         img = self._shade(img, k)
+        if self.sc.get("detail"):  # look v2
+            img = self._detail(img, k)
         img = self._damage(img, k)
         img = self._markings(img, k)
         return (np.clip(img, 0, 1) * 255).astype(np.uint8)

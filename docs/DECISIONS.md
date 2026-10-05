@@ -112,6 +112,7 @@ Current design spec: [`design.md`](design.md)
 | D089 | The demo's survey counts D006's ROI, the 5 m strip of the driving lane 3–8 m ahead, scored by certain_road.survey; the reference PCI takes the same path. The real drift monitor fires on clean road, not on the mixed preset's bad stretch, so that moment is captioned as a band drop | Accepted |
 | D090 | The demo's end screen scores confirmed tracks against ground truth (IoU > 0.1, both lanes) and runs both real allocators on D079's pricing, scored on D079's two objectives. Same seed, same result | Accepted |
 | D091 | Only damaged segments can be among the end screen's true worst N; all five presets run, and the drift alarm fires at 65–150 m on every road | Accepted |
+| D092 | The demo's look v2 adds 3D potholes, surface marks and harsher light with tree shadows, and is the default; v1 stays byte-identical as the fallback. Measured once: detection barely moves, and no false alarm comes from the new marks | Accepted |
 
 ---
 
@@ -3650,3 +3651,41 @@ and a road with none shows "no damaged segment".
 records the drift alarm position for every preset, measured in the drive itself: 65 m on
 good, moderate and mixed, 145 m on random and 150 m on poor. Every alarm comes before any bad
 stretch, which is D089's finding on every road.
+
+## D092 — The demo's look v2: 3D potholes, surface marks and harsher light; v1 kept
+
+**2026-10-05 · Accepted · extends D087**
+
+The user asked for a road as close to a real one as possible, with today's simulator kept
+as the fallback. `--look v1|v2` picks an overlay from `looks:` in `configs/sim/mujoco.yaml`.
+v1 is the simulator at the `demo-v1` tag. Hashes of poor and mixed frames at four positions
+are byte-identical to the tag's, rechecked after each change. v2 is now the default.
+
+**v2 changes how the road is drawn, never the road.** A test checks that the ground truth is
+the same in both looks.
+
+- **3D potholes** (`sim/mujoco/relief.py`). Each road tile is a grid mesh, sunk 4–10 cm under
+  each pothole and shaped by the baker's own outline. The scene's sun therefore lights and
+  shadows real walls. The painted wall shadow is off and the painted depth darkening reduced,
+  because the geometry now does that work. The ground plane drops to −15 cm; at −1 cm the
+  holes showed it through.
+- **Surface marks.** Repair patches, oil stains and dust off the verges, drawn from their own
+  random stream. They are not damage and are not in the ground truth.
+- **Light.** A harsher sun (diffuse 1.0, ambient 0.30), and trees, mostly on the left verge,
+  whose hard shadows cross the driving lane.
+
+These use plain geometry, procedural tints and the existing photos. There is no new texture
+source.
+
+**Measured once, after v2 was built, and not adjusted.** The table is in
+`docs/mujoco-demo.md`. Pooled over the four damaged presets, pothole recall is 27/60 under v1
+and 29/60 under v2. Alligator is 52/56 and 51/56, and linear 25/69 and 28/69. Pothole false
+alarms per km fall on two roads and rise on two. At one run per preset, realism did not make
+the damage easier to find.
+
+**The pothole false alarms are crack confusion, not the new marks.** On poor and mixed, in
+both looks, every confirmed pothole track that matched no pothole sits on an alligator patch
+or a linear crack. None sits on a tree shadow, a repair patch, an oil stain or bare road.
+
+**Drift.** v2 moves the alarm to 80 m on good, moderate and mixed, and to 150 m on random,
+and removes it on poor. The clean opening stretch still sets it off, so D089 stands.

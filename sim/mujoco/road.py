@@ -23,8 +23,27 @@ CLASSES = ("linear_crack", "alligator_crack", "pothole")
 CONFIG = repo_root() / "configs/sim/mujoco.yaml"
 
 
-def load_config() -> dict:
-    return yaml.safe_load(CONFIG.read_text())
+def _overlay(base: dict, over: dict) -> dict:
+    out = dict(base)
+    for k, v in over.items():
+        out[k] = (
+            _overlay(base[k], v) if isinstance(v, dict) and isinstance(base.get(k), dict) else v
+        )
+    return out
+
+
+def load_config(look: str | None = None) -> dict:
+    """The simulator config, with a look's overlay applied (`looks:` in the file).
+
+    No look, or `v1`, is the base config: the simulator as committed at the `demo-v1` tag.
+    A look changes only how the road is drawn and lit, never the road itself.
+    """
+    cfg = yaml.safe_load(CONFIG.read_text())
+    if look is None:
+        return cfg
+    out = _overlay(cfg, cfg["looks"][look])
+    out["look"] = look
+    return out
 
 
 @dataclass(frozen=True)
