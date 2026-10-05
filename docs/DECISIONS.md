@@ -107,6 +107,7 @@ Current design spec: [`design.md`](design.md)
 | D084 | The locked Model P run's 2,312 absolute symlinks stay as committed (results/LOCKED is never rewritten); eval_locked.py now links relatively; a test pins every escaping link and home-directory path, and configs/data stays absolute by decision | Accepted |
 | D085 | Conformal prediction, cut by D051 under sprint pressure, was reinstated by the RoadSight spec adopted at T0 (a23bf6a), which made the certified miss rate the core claim; no separate decision recorded the reversal | Accepted |
 | D086 | Simulator textures are QR4Change and BD-N6 photos (CC BY 4.0), never used in training; audited clean by norm_vec (max 0.8887) and ORB crop matching (max 8 inliers) | Accepted |
+| D087 | A MuJoCo demo simulator for the DA-2 review (`sim/mujoco/`): synthetic road from the D086 photos, real detectors and survey code, design camera; not T13 | Accepted |
 
 ---
 
@@ -3443,4 +3444,48 @@ therefore evidence against crops, not proof, and provenance carries the rest.
 
 Which textures the simulator uses is a separate curation choice (blur, glare, class): it is
 recorded in `configs/sim/textures.yaml`, not here.
+
+## D087 — A MuJoCo demo simulator: synthetic road, real models and survey code
+
+**2026-10-05 · Accepted · for the DA-2 review · not T13**
+
+`sim/mujoco/` renders a seeded two-lane road, 400–600 m long, in five presets (good,
+moderate, poor, mixed, random). The road is built from the trial photos audited in D086.
+It is seen through the design camera from the `sim:` block of `configs/project.yaml`: 1.3 m
+high, 10° down, HFOV 1.2 rad, 1280×720. `configs/sim/robot.yaml` describes the indoor robot
+and is not used. Each road writes its ground truth (class, centre, true extent, texture) as
+JSON, and the same preset and seed give byte-identical ground truth
+(`tests/test_mujoco_road.py`).
+
+**What is real and what is simulated.** Real: the detectors (Model P for potholes, Model B for
+cracks, never summed, per D082), the `core.geometry` IPM, and `survey` scoring and
+allocation. The simulator calls them and reimplements none of them. Simulated: the road, its
+damage layout, the light, and the camera's motion and sensor. Every number the demo shows is
+a measurement on a synthetic road. It is never reported beside real-data results without
+that label, and nothing is written to `results/`.
+
+**How the damage is drawn, and the limits of each choice.**
+
+- **Baked into the road texture tiles.** MuJoCo has no decals. Baking makes each instance
+  perspective-correct on the road plane by construction, lit by the scene's sun.
+- **Real sizes.** Potholes are 0.3–1.2 m across. Crack photos keep their photographed scale,
+  about 2,000 px/m, estimated from the size of the aggregate. Linear cracks are enlarged
+  1.0–1.6× and alligator areas 1.4–2.2×, because real alligator areas run 1.5–3 m.
+- **Visibility fixes.** At step 1 the damage first rendered as invisible smudges.
+  - A mean colour match averaged each patch back to plain asphalt, so the match now uses the
+    clean surface between the cracks (a percentile).
+  - MuJoCo's isotropic mipmaps erase thin cracks at grazing angles, so frames are rendered 3×
+    and downsampled, and crack lines are deepened.
+  - Potholes are shaded as depressions, aligned to the sun. Standing water gets a sky sheen.
+    That sheen is right only for grazing views, which are the only views this camera has.
+- **Keep left**, as in India. The vehicle drives the left lane.
+- **`mujoco` is a main dependency**, so the documented command works after a plain
+  `uv sync`.
+
+**Not T13.** T13 is the Webots detect-and-avoid trial matrix. This demo makes no claim about
+avoidance, and T13 stays not run.
+
+**Step-1 probe** on the showcase frame, at conf 0.25: Model P found all three driving-lane
+potholes (0.50–0.62), the one at 10.8 m included. Model B found the 5.5 m alligator patch
+(0.79) but not the one at 9.8 m.
 

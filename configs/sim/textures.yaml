@@ -1,0 +1,84 @@
+# Textures for the MuJoCo demo (sim/mujoco/textures.py).
+#
+# The photos live in data/raw/trial_textures/ (gitignored), copied from
+# indian_road_textures.zip. They are NOT the user's own photos. Both datasets are
+# CC BY 4.0 and must be credited wherever the demo is shown or published:
+#   QR4Change: Maske Y., Jakate S., Thakare C., Lokhande S. (2025). Urban Civic Issues
+#     Image Dataset: Potholes and Garbage. Mendeley Data V2, doi:10.17632/zndzygc3p3.2.
+#     Pune, Maharashtra, India.
+#   BD-N6: Hossain M.N., Aman N., Antor N.R., Tasnim N., Azam M.Z., et al. Flexible
+#     Pavement Distress Image Dataset ... National Highway N6, Bangladesh, Parts 1 & 2.
+#     Zenodo, doi:10.5281/zenodo.18072573 and doi:10.5281/zenodo.18114226.
+#
+# Every entry below was set by eye from a coordinate-grid contact sheet. `crop` is
+# [x0, y0, x1, y1] as fractions of the image (x right, y down). The ground-truth class
+# of a placed instance is the class written here, never the folder name: the
+# "2_linear_cracks" folder was drawn from BD-N6's alligator category, and two of its
+# images show network cracking, so they are excluded rather than relabelled.
+
+root: data/raw/trial_textures
+
+# BD-N6 photos are near-vertical smartphone shots. Aggregate stones of roughly 10 mm
+# span about 20 px at the delivered 3000 px long side, so 2000 px/m. Placed at that
+# scale (randomised within the range in mujoco.yaml), cracks keep a true width and the
+# grain keeps a true size. The QR4Change pothole photos are oblique with no usable
+# scale, so potholes take their size from the design footprint instead.
+natural_px_per_m: {bd_n6: 2000}
+sources: {1_potholes_india_pune: qr4change, 2_linear_cracks: bd_n6, 3_alligator_cracks: bd_n6,
+          4_plain_asphalt: bd_n6}
+
+asphalt:   # the road base: tiled, flattened and levelled (surface.py)
+  - {file: 4_plain_asphalt/plain_01.jpg}
+  - {file: 4_plain_asphalt/plain_02.jpg}
+  - {file: 4_plain_asphalt/plain_03.jpg}
+  - {file: 4_plain_asphalt/plain_04.jpg}
+
+damage:
+  # --- potholes: QR4Change, Pune; monsoon, mostly water-filled -------------------
+  - {file: 1_potholes_india_pune/potholes_01.jpg, cls: pothole, crop: [0.18, 0.42, 0.82, 0.68]}
+  - {file: 1_potholes_india_pune/potholes_02.jpg, cls: pothole, usable: false, note: frame-filling flood with sky glare and vegetation}
+  - {file: 1_potholes_india_pune/potholes_03.jpg, cls: pothole, usable: false, note: motion blur}
+  - {file: 1_potholes_india_pune/potholes_04.jpg, cls: pothole, crop: [0.15, 0.03, 0.95, 0.45]}
+  - {file: 1_potholes_india_pune/potholes_05.jpg, cls: pothole, crop: [0.60, 0.40, 1.00, 0.66]}
+  - {file: 1_potholes_india_pune/potholes_06.jpg, cls: pothole, crop: [0.12, 0.52, 0.52, 0.80]}
+  - {file: 1_potholes_india_pune/potholes_07.jpg, cls: pothole, crop: [0.02, 0.32, 0.62, 0.56]}
+  - {file: 1_potholes_india_pune/potholes_08.jpg, cls: pothole, usable: false, note: a pole reflected in the puddle}
+  - {file: 1_potholes_india_pune/potholes_09.jpg, cls: pothole, crop: [0.32, 0.58, 0.95, 0.95]}
+  - {file: 1_potholes_india_pune/potholes_10.jpg, cls: pothole, crop: [0.00, 0.32, 0.60, 0.78]}
+  - {file: 1_potholes_india_pune/potholes_11.jpg, cls: pothole, crop: [0.00, 0.34, 0.38, 0.68]}
+  - {file: 1_potholes_india_pune/potholes_12.jpg, cls: pothole, crop: [0.28, 0.34, 0.52, 0.56]}
+  - {file: 1_potholes_india_pune/potholes_13.jpg, cls: pothole, crop: [0.12, 0.48, 1.00, 0.97]}
+  - {file: 1_potholes_india_pune/potholes_14.jpg, cls: pothole, crop: [0.00, 0.36, 0.42, 0.66]}
+  - {file: 1_potholes_india_pune/potholes_15.jpg, cls: pothole, crop: [0.45, 0.60, 1.00, 1.00]}
+  - {file: 1_potholes_india_pune/potholes_16.jpg, cls: pothole, usable: false, note: motion blur}
+  - {file: 1_potholes_india_pune/potholes_17.jpg, cls: pothole, usable: false, note: strong sky glare on the water}
+  - {file: 1_potholes_india_pune/potholes_18.jpg, cls: pothole, crop: [0.20, 0.45, 0.90, 0.72]}
+  # --- linear cracks: BD-N6 Part 2; the long side of each crop runs along the crack
+  - {file: 2_linear_cracks/linear_01.jpg, cls: linear_crack, crop: [0.35, 0.25, 0.75, 0.95]}
+  - {file: 2_linear_cracks/linear_02.jpg, cls: linear_crack, usable: false, note: network cracking, not linear}
+  - {file: 2_linear_cracks/linear_03.jpg, cls: linear_crack, crop: [0.40, 0.18, 0.88, 0.95]}
+  - {file: 2_linear_cracks/linear_04.jpg, cls: linear_crack, usable: false, note: network cracking, not linear}
+  - {file: 2_linear_cracks/linear_05.jpg, cls: linear_crack, crop: [0.55, 0.15, 0.88, 0.95]}
+  - {file: 2_linear_cracks/linear_06.jpg, cls: linear_crack, crop: [0.00, 0.62, 1.00, 0.88]}
+  - {file: 2_linear_cracks/linear_07.jpg, cls: linear_crack, crop: [0.00, 0.62, 1.00, 0.90]}
+  - {file: 2_linear_cracks/linear_08.jpg, cls: linear_crack, crop: [0.00, 0.68, 1.00, 0.88]}
+  - {file: 2_linear_cracks/linear_09.jpg, cls: linear_crack, usable: false, note: crack too faint to label}
+  - {file: 2_linear_cracks/linear_10.jpg, cls: linear_crack, usable: false, note: crack too faint to label}
+  - {file: 2_linear_cracks/linear_11.jpg, cls: linear_crack, crop: [0.22, 0.45, 0.80, 0.97]}
+  - {file: 2_linear_cracks/linear_12.jpg, cls: linear_crack, crop: [0.00, 0.60, 0.60, 0.78]}
+  # --- alligator cracks: BD-N6 Part 2 -----------------------------------------
+  - {file: 3_alligator_cracks/alligator_01.jpg, cls: alligator_crack, crop: [0.05, 0.05, 0.95, 0.95]}
+  - {file: 3_alligator_cracks/alligator_02.jpg, cls: alligator_crack, crop: [0.05, 0.05, 0.95, 0.95]}
+  - {file: 3_alligator_cracks/alligator_03.jpg, cls: alligator_crack, crop: [0.05, 0.05, 0.95, 0.95]}
+  - {file: 3_alligator_cracks/alligator_04.jpg, cls: alligator_crack, crop: [0.05, 0.05, 0.95, 0.95]}
+  - {file: 3_alligator_cracks/alligator_05.jpg, cls: alligator_crack, crop: [0.05, 0.05, 0.95, 0.95]}
+  - {file: 3_alligator_cracks/alligator_06.jpg, cls: alligator_crack, usable: false, note: cracks too faint to label}
+  - {file: 3_alligator_cracks/alligator_07.jpg, cls: alligator_crack, crop: [0.00, 0.25, 0.62, 1.00]}
+  - {file: 3_alligator_cracks/alligator_08.jpg, cls: alligator_crack, crop: [0.05, 0.05, 0.95, 0.95]}
+  - {file: 3_alligator_cracks/alligator_09.jpg, cls: alligator_crack, usable: false, note: cracks too faint to label}
+  - {file: 3_alligator_cracks/alligator_10.jpg, cls: alligator_crack, usable: false, note: cracks too faint, and a wet stain}
+  - {file: 3_alligator_cracks/alligator_11.jpg, cls: alligator_crack, usable: false, note: mostly a kerb edge, few cracks}
+  - {file: 3_alligator_cracks/alligator_12.jpg, cls: alligator_crack, crop: [0.00, 0.00, 0.80, 0.80]}
+  - {file: 3_alligator_cracks/alligator_13.jpg, cls: alligator_crack, crop: [0.05, 0.05, 0.95, 0.95]}
+  - {file: 3_alligator_cracks/alligator_14.jpg, cls: alligator_crack, crop: [0.05, 0.05, 0.95, 0.95]}
+  - {file: 3_alligator_cracks/alligator_15.jpg, cls: alligator_crack, crop: [0.05, 0.05, 0.95, 0.95]}
