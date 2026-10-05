@@ -106,6 +106,7 @@ Current design spec: [`design.md`](design.md)
 | D083 | T16: the dashboard stays one offline HTML file (D020 over the spec); the optimiser's and worst-first's plans always side by side; T12 numbers carry the Model B recall caveat | Accepted |
 | D084 | The locked Model P run's 2,312 absolute symlinks stay as committed (results/LOCKED is never rewritten); eval_locked.py now links relatively; a test pins every escaping link and home-directory path, and configs/data stays absolute by decision | Accepted |
 | D085 | Conformal prediction, cut by D051 under sprint pressure, was reinstated by the RoadSight spec adopted at T0 (a23bf6a), which made the certified miss rate the core claim; no separate decision recorded the reversal | Accepted |
+| D086 | Simulator textures are QR4Change and BD-N6 photos (CC BY 4.0), never used in training; audited clean by norm_vec (max 0.8887) and ORB crop matching (max 8 inliers) | Accepted |
 
 ---
 
@@ -3414,3 +3415,32 @@ intact.
 
 **What of D051 still stands.** Its ADAS-inspired driving behaviours. This entry
 reverses only the cut.
+
+## D086 — Simulator textures: provenance and leak audit
+
+**2026-10-05 · Accepted**
+
+The MuJoCo demo's road textures are 49 photos in `data/raw/trial_textures/` (gitignored),
+listed with their sources in `data/raw/trial_textures/SOURCES.md`. They are not the user's
+own photos. The 18 potholes come from QR4Change (Pune, Mendeley doi:10.17632/zndzygc3p3.2).
+The 31 crack and asphalt photos come from BD-N6 (Bangladesh NH-N6, Zenodo
+doi:10.5281/zenodo.18072573 and .18114226). Both are CC BY 4.0, so both must be credited
+wherever a render is shown.
+
+**No model ever trained on either dataset.** Neither appears in any config, split, job,
+upload manifest, script or earlier decision. No QR4Change image exists under `data/` outside
+the texture folder. The only Mendeley dataset in this log is `tp95cdvgm8` (D039, NO-GO).
+
+**The audit**, with the method unchanged:
+
+- Copies (D063/D066 `norm_vec`, threshold 0.93), against `india_train`, `nonindia_train` and
+  BharatPotHole `train`: no pair at or above 0.93; the maximum is 0.8887.
+- Crops (ORB with a RANSAC homography, flag at 30 inliers, against each texture's 20 nearest
+  training images): at most 8 inliers; nothing flagged.
+
+All 49 are clean. The crop check's positive control caught 9 of 10 real crops. It is
+therefore evidence against crops, not proof, and provenance carries the rest.
+
+Which textures the simulator uses is a separate curation choice (blur, glare, class): it is
+recorded in `configs/sim/textures.yaml`, not here.
+
