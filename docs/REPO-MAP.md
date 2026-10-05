@@ -1,8 +1,8 @@
 # Repository map
 
-Generated 2026-10-05 16:07:45 +0530
+Generated 2026-10-05 20:49:25 +0530
 
-Commit `a6e7317` on `workspace-cleanup`; 0 paths differ from it in the working tree.
+Commit `fcdbf90` on `workspace-cleanup`; 1 paths differ from it in the working tree.
 
 Do not edit by hand — rerun scripts/repo_map.py
 
@@ -46,7 +46,7 @@ Quoted from `docs/design.md`:
 >
 > The novelty is the **integration and the decision**, not the detector.
 
-Evidence at build time, beside the quotes' own status lines: 133 commits from 2026-08-06 to 2026-10-05; Python files: 1 in `kaggle/`, 35 in `scripts/`, 11 in `sim/`, 51 in `src/`, 47 in `tests/`.
+Evidence at build time, beside the quotes' own status lines: 134 commits from 2026-08-06 to 2026-10-05; Python files: 1 in `kaggle/`, 35 in `scripts/`, 12 in `sim/`, 51 in `src/`, 49 in `tests/`.
 
 ## 2. Pipeline
 
@@ -203,7 +203,7 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `configs/eval/video.yaml` | 40 | 2026-10-04 | 2026-10-04 | D075 — per-pothole confirmation on road video (scripts/eval_video.py). | read-only lane |
 | `configs/project.yaml` | 115 | 2026-09-22 | 2026-09-28 | RoadSight project configuration. |  |
 | `configs/repo_map.yaml` | 103 | 2026-10-04 | 2026-10-04 | scripts/repo_map.py -> docs/REPO-MAP.md. |  |
-| `configs/sim/mujoco.yaml` | 138 | 2026-10-05 | 2026-10-05 | MuJoCo live survey demo (sim/mujoco). |  |
+| `configs/sim/mujoco.yaml` | 152 | 2026-10-05 | 2026-10-05 | MuJoCo live survey demo (sim/mujoco). |  |
 | `configs/sim/robot.yaml` | 23 | 2026-09-05 | 2026-09-05 | Simulated robot and camera geometry. |  |
 | `configs/sim/textures.yaml` | 84 | 2026-10-05 | 2026-10-05 | Textures for the MuJoCo demo (sim/mujoco/textures.py). |  |
 | `configs/train/yolov8n.yaml` | 24 | 2026-08-07 | 2026-08-07 | YOLOv8n on the RDD2022 India subset (D025). |  |
@@ -244,7 +244,9 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `tests/test_metrics_coco.py` | 122 | 2026-09-22 | 2026-10-04 | T6 — the class-id offset is the bug that would not announce itself. |  |
 | `tests/test_mujoco_camera.py` | 81 | 2026-10-05 | 2026-10-05 | The MuJoCo camera is the design camera, and it agrees with core.geometry's IPM. |  |
 | `tests/test_mujoco_drive.py` | 45 | 2026-10-05 | 2026-10-05 | The drive loop's rules: D082's channels, the gate row, and the 5 m survey samples. |  |
+| `tests/test_mujoco_evaluate.py` | 101 | 2026-10-05 | 2026-10-05 | The end screen's numbers: detection against ground truth, and the repair plan. |  |
 | `tests/test_mujoco_road.py` | 79 | 2026-10-05 | 2026-10-05 | The MuJoCo demo's road generator: reproducible, round-trips, and clusters its damage. |  |
+| `tests/test_mujoco_screen.py` | 62 | 2026-10-05 | 2026-10-05 | The live and end screens render their edge cases rather than crash mid-demo. |  |
 | `tests/test_mujoco_survey.py` | 132 | 2026-10-05 | 2026-10-05 | The live survey: D006's ROI counts each instance once, and scores come from certain_road.survey. |  |
 | `tests/test_operating_points.py` | 123 | 2026-09-22 | 2026-10-04 | The B-vs-P comparison turns on numbers no eyeball can check. |  |
 | `tests/test_perception_evaluate.py` | 271 | 2026-09-05 | 2026-09-05 | Tests for `certain_road.perception.evaluate`. |  |
@@ -430,7 +432,7 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `docs/CHALLENGES.md` | 203 | 2026-10-05 | 2026-10-05 | Challenges |  |
 | `docs/DA2-EVIDENCE.md` | 351 | 2026-10-05 | 2026-10-05 | DA-2 evidence |  |
 | `docs/DA2-SCOPE-CHANGE.md` | 101 | 2026-10-05 | 2026-10-05 | Scope change, DA-1 to DA-2 |  |
-| `docs/DECISIONS.md` | 3585 | 2026-08-06 | 2026-10-05 | Decision log |  |
+| `docs/DECISIONS.md` | 3634 | 2026-08-06 | 2026-10-05 | Decision log |  |
 | `docs/MENTOR-WALKTHROUGH.md` | 1403 | 2026-09-05 | 2026-09-22 | certain-road — a walkthrough |  |
 | `docs/ONBOARDING.md` | 66 | 2026-10-04 | 2026-10-04 | Onboarding |  |
 | `docs/colab-training-guide.md` | 220 | 2026-09-07 | 2026-09-07 | Training on Colab (T4) |  |
@@ -439,6 +441,7 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `docs/datasets/water-pothole-viability.md` | 136 | 2026-09-22 | 2026-09-22 | Water-pothole dataset — viability verdict |  |
 | `docs/design.md` | 630 | 2026-09-22 | 2026-09-22 | certain-road — Design Specification |  |
 | `docs/detector-benchmark.md` | 79 | 2026-09-06 | 2026-09-06 | Detector benchmark — India test set |  |
+| `docs/mujoco-demo.md` | 96 | uncommitted | uncommitted | The MuJoCo survey demo | untracked |
 | `docs/superpowers/plans/2026-08-15-detector-evaluation-harness.md` | 270 | 2026-08-15 | 2026-08-15 | Detector Evaluation Harness Implementation Plan |  |
 | `docs/superpowers/plans/2026-09-05-day5-corridor-sim.md` | 146 | 2026-09-05 | 2026-09-05 | Day 5 (hardware-free) — driving corridor + simulator core |  |
 | `docs/superpowers/plans/2026-09-05-robot-sprint.md` | 433 | 2026-09-05 | 2026-09-05 | CertainRoad Robot — 15-Day Sprint Plan |  |
@@ -453,7 +456,7 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `docs/superpowers/plans/2026-10-03-t17-results.md` | 35 | 2026-10-03 | 2026-10-03 | T17 results report |  |
 | `docs/superpowers/plans/2026-10-04-cleanup.md` | 195 | 2026-10-04 | 2026-10-04 | Release-readiness cleanup |  |
 | `docs/superpowers/plans/2026-10-04-da2-evidence.md` | 251 | 2026-10-05 | 2026-10-05 | DA-2 review pack |  |
-| `docs/superpowers/plans/2026-10-04-mujoco-demo.md` | 274 | 2026-10-05 | 2026-10-05 | MuJoCo live survey demo |  |
+| `docs/superpowers/plans/2026-10-04-mujoco-demo.md` | 307 | 2026-10-05 | 2026-10-05 | MuJoCo live survey demo |  |
 | `docs/superpowers/plans/2026-10-04-repo-map.md` | 88 | 2026-10-04 | 2026-10-04 | Repo map: a generated onboarding document |  |
 | `docs/superpowers/plans/2026-10-05-da2-screenshots-and-zip.md` | 50 | 2026-10-05 | 2026-10-05 | DA-2: two screenshots, then the source zip rebuilt from HEAD |  |
 | `docs/superpowers/plans/archive/2026-08-06-week-1-foundation.md` | 2245 | 2026-09-05 | 2026-10-04 | Week 1 Foundation Implementation Plan |  |
@@ -526,13 +529,14 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `sim/__init__.py` | 0 | 2026-10-05 | 2026-10-05 | no docstring |  |
 | `sim/mujoco/__init__.py` | 1 | 2026-10-05 | 2026-10-05 | MuJoCo live survey demo. |  |
 | `sim/mujoco/camera.py` | 87 | 2026-10-05 | 2026-10-05 | Render what the dashcam would record, not what the renderer draws. |  |
-| `sim/mujoco/demo.py` | 164 | 2026-10-05 | 2026-10-05 | MuJoCo survey demo CLI. |  |
+| `sim/mujoco/demo.py` | 187 | 2026-10-05 | 2026-10-05 | MuJoCo survey demo CLI. |  |
 | `sim/mujoco/drive.py` | 281 | 2026-10-05 | 2026-10-05 | Drive the design camera down the road and detect with the real models, frame by frame. |  |
+| `sim/mujoco/evaluate.py` | 122 | 2026-10-05 | 2026-10-05 | Step 4: what the drive found against what was there, and what a budget would repair. |  |
 | `sim/mujoco/road.py` | 227 | 2026-10-05 | 2026-10-05 | Seeded road layout and clustered damage, and its ground truth. |  |
 | `sim/mujoco/scene.py` | 238 | 2026-10-05 | 2026-10-05 | Assemble the MuJoCo scene for one road: surface tiles, kerbs, shoulders, sky, sun, haze, poles, a wall, signs, and the vehicle carrying the camera. |  |
-| `sim/mujoco/screen.py` | 443 | 2026-10-05 | 2026-10-05 | The live screen: four panels and a caption bar, legible from 3 m on a projector. |  |
+| `sim/mujoco/screen.py` | 551 | 2026-10-05 | 2026-10-05 | The live screen: four panels and a caption bar, legible from 3 m on a projector. |  |
 | `sim/mujoco/surface.py` | 236 | 2026-10-05 | 2026-10-05 | Bake the road surface into texture tiles: asphalt, markings, then damage. |  |
-| `sim/mujoco/survey.py` | 237 | 2026-10-05 | 2026-10-05 | The live survey: every 5 m sample scored through certain_road.survey, segment by segment. |  |
+| `sim/mujoco/survey.py` | 254 | 2026-10-05 | 2026-10-05 | The live survey: every 5 m sample scored through certain_road.survey, segment by segment. |  |
 | `sim/mujoco/textures.py` | 185 | 2026-10-05 | 2026-10-05 | Trial-photo textures: curated, prepared, and checked against the training data. |  |
 | `splits/india_cal.txt` | 1156 | 2026-09-22 | 2026-09-22 | no docstring |  |
 | `splits/india_full.txt` | 7706 | 2026-09-22 | 2026-09-22 | no docstring |  |
@@ -832,9 +836,9 @@ What does `certain_road.survey` expose, and is anything outside the package usin
 |---|---|---|---|---|
 | `certain_road.survey` | (module) |  | Survey pipeline: what do we know about this road? |  |
 | `certain_road.survey.allocation` | (module) |  | T12 — which evaluation segments to repair under a fixed budget. |  |
-|  | `Segment` | `class Segment` | no docstring | 2 code, 1 test files |
-|  | `allocate_optimal` | `allocate_optimal(segments: Sequence[Segment], budget: float, *, quantum: float=PRIORITY_QUANTUM) -> list[int]` | Exact 0/1 knapsack over priority, subject to the budget. | 2 code, 1 test files |
-|  | `allocate_greedy_worst_first` | `allocate_greedy_worst_first(segments: Sequence[Segment], budget: float) -> list[int]` | Repair the worst segment that still fits, repeatedly. The obvious policy. | 2 code, 1 test files |
+|  | `Segment` | `class Segment` | no docstring | 2 code, 2 test files |
+|  | `allocate_optimal` | `allocate_optimal(segments: Sequence[Segment], budget: float, *, quantum: float=PRIORITY_QUANTUM) -> list[int]` | Exact 0/1 knapsack over priority, subject to the budget. | 2 code, 2 test files |
+|  | `allocate_greedy_worst_first` | `allocate_greedy_worst_first(segments: Sequence[Segment], budget: float) -> list[int]` | Repair the worst segment that still fits, repeatedly. The obvious policy. | 2 code, 2 test files |
 |  | `allocate_random` | `allocate_random(segments: Sequence[Segment], budget: float, seed: int=0) -> list[int]` | Lower bound. A policy that cannot beat this is not a policy. | 1 code, 1 test files |
 |  | `total_cost` | `total_cost(segments: Sequence[Segment], chosen: Sequence[int]) -> float` | no docstring | tests only (1) |
 |  | `total_priority` | `total_priority(segments: Sequence[Segment], chosen: Sequence[int]) -> float` | no docstring | tests only (1) |
@@ -1151,6 +1155,7 @@ What was committed on 2026-10-05, naming which tasks and decisions? Commits that
 | `1e130f8` | D087: MuJoCo demo simulator, step 1 - seeded road, trial-photo surface, design camera | — | D086, D087 | (root) 3 · configs 2 · docs 2 · sim 8 · tests 2 |
 | `73dbc9a` | D088: MuJoCo demo step 2 - drive loop with live detection at 30 fps | — | D006, D075, D082, D088 | configs 1 · docs 2 · sim 3 · tests 1 |
 | `a6e7317` | D089: MuJoCo demo step 3 - live survey, drift panel and four-panel screen | — | D006, D078, D089 | configs 1 · docs 2 · sim 4 · tests 1 |
+| `fcdbf90` | D090: MuJoCo demo step 4 - end screen, detection vs ground truth, repair plans | — | D079, D089, D090 | configs 1 · docs 2 · sim 4 · tests 2 |
 
 ### Decisions
 
@@ -1163,7 +1168,7 @@ Where did each decision come from, and what cites it? Title and status are the i
 | D003 | Stage isolation enforced by `import-linter` in CI | Accepted | `7470190 2026-08-06` | `docs/superpowers/plans/archive/2026-08-16-seven-week-schedule.md` |
 | D004 | Conformal layer targets PCI, not detections | Refined by D005 | `7470190 2026-08-06` | `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md` |
 | D005 | Calibration unit is the segment, not the frame | Accepted | `7470190 2026-08-06` | `docs/DA2-SCOPE-CHANGE.md`, `docs/MENTOR-WALKTHROUGH.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md` |
-| D006 | Distance-sampled frames + ROI area fraction; no tracker, no homography | Accepted | `7470190 2026-08-06` | `configs/eval/video.yaml`, `configs/sim/mujoco.yaml`, `docs/MENTOR-WALKTHROUGH.md`, `docs/superpowers/plans/2026-09-05-robot-sprint.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `results/RESULTS.md`, `sim/mujoco/drive.py`, `sim/mujoco/screen.py`, `sim/mujoco/survey.py`, `src/certain_road/driving/confirm.py`, `src/certain_road/perception/source.py`, `tests/test_mujoco_survey.py` |
+| D006 | Distance-sampled frames + ROI area fraction; no tracker, no homography | Accepted | `7470190 2026-08-06` | `configs/eval/video.yaml`, `configs/sim/mujoco.yaml`, `docs/MENTOR-WALKTHROUGH.md`, `docs/mujoco-demo.md`, `docs/superpowers/plans/2026-09-05-robot-sprint.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `results/RESULTS.md`, `sim/mujoco/drive.py`, `sim/mujoco/screen.py`, `sim/mujoco/survey.py`, `src/certain_road/driving/confirm.py`, `src/certain_road/perception/source.py`, `tests/test_mujoco_survey.py` |
 | D007 | `assess` runs before `calibrate` | Accepted | `7470190 2026-08-06` | `docs/superpowers/plans/archive/2026-08-15-week-2-assess.md` |
 | D008 | `rsl` is its own stage | Accepted | `7470190 2026-08-06` | — |
 | D009 | Four-way data split | Accepted | `7470190 2026-08-06` | `docs/colab-training-guide.md`, `docs/datasets/rdd2022-india.md`, `docs/detector-benchmark.md`, `docs/superpowers/plans/archive/2026-08-06-week-1-foundation.md`, `results/T2/findings.md`, `src/certain_road/perception/dataset/pool.py`, `src/certain_road/perception/dataset/split.py`, `src/certain_road/perception/train.py`, `tests/test_pool_split.py` |
@@ -1231,21 +1236,22 @@ Where did each decision come from, and what cites it? Title and status are the i
 | D072 | Overall 3-class mAP is not the target; pothole AP and per-pothole video detection are | Accepted | `b1b04e4 2026-09-22` | `docs/superpowers/plans/2026-09-22-kernel-preflight.md`, `scripts/build_pothole_pool.py`, `scripts/check_bharatpothole.py`, `scripts/t9_b_vs_p.py` |
 | D073 | BharatPotHole is 162 drives, not 7,074 images; neither its val nor its test split is held out, so neither is used for evaluation | Accepted | `b138f0f 2026-09-22` | `docs/superpowers/plans/2026-09-22-kernel-preflight.md`, `results/RESULTS.md`, `scripts/bph_internal_leakage.py`, `scripts/make_report.py`, `scripts/t9_b_vs_p.py` |
 | D074 | Model P selected over Model B on india_val; the advantage survives scene-group resampling there but does not transfer to locked india_test, where the two are indistinguishable | Accepted | `1599a2f 2026-09-22` | `README.md`, `configs/eval/video.yaml`, `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-09-28-t10-t12.md`, `docs/superpowers/plans/2026-09-28-video-extent.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `results/RESULTS.md`, `results/dashboard/index.html`, `results/video/2DV-cYmIvT4/P/summary.json`, `scripts/eval_video.py`, `scripts/exp_conformal.py`, `scripts/exp_video_extent.py`, `scripts/make_report.py`, `src/certain_road/dashboard/render.py` |
-| D075 | Video evaluation confirms per track (same ID, 3 of the last 5 frames, behind a horizon gate) and reports tracks, not potholes; qualifies D006 and D051 for evaluation only | Accepted | `d23691c 2026-10-04` | `configs/eval/video.yaml`, `configs/sim/mujoco.yaml`, `docs/CHALLENGES.md`, `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `results/RESULTS.md`, `results/figures/MANIFEST.md`, `results/video/2DV-cYmIvT4/B/summary.json`, `results/video/2DV-cYmIvT4/P/summary.json`, `results/video/2DV-cYmIvT4/gt_score.json`, `scripts/eval_video.py`, `scripts/make_report.py`, `scripts/score_video_gt.py`, `sim/mujoco/drive.py`, `tests/test_eval_video.py` |
+| D075 | Video evaluation confirms per track (same ID, 3 of the last 5 frames, behind a horizon gate) and reports tracks, not potholes; qualifies D006 and D051 for evaluation only | Accepted | `d23691c 2026-10-04` | `configs/eval/video.yaml`, `configs/sim/mujoco.yaml`, `docs/CHALLENGES.md`, `docs/mujoco-demo.md`, `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `results/RESULTS.md`, `results/figures/MANIFEST.md`, `results/video/2DV-cYmIvT4/B/summary.json`, `results/video/2DV-cYmIvT4/P/summary.json`, `results/video/2DV-cYmIvT4/gt_score.json`, `scripts/eval_video.py`, `scripts/make_report.py`, `scripts/score_video_gt.py`, `sim/mujoco/drive.py`, `tests/test_eval_video.py` |
 | D076 | The T10 tau grid never reached the measured floor, so D070's feasible-alpha prose contradicted its own table; fixed, and Model P's floors measured | Accepted | `a3badf4 2026-09-24` | `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-09-28-t10-t12.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `results/RESULTS.md`, `results/figures/MANIFEST.md`, `scripts/exp_conformal.py`, `scripts/make_report.py` |
 | D077 | T10 complete: Model B's certificate holds over 200 group-aware re-partitions, non-India calibration fails in every one, and every tight certificate costs a flood of false alarms | Accepted | `f511ec1 2026-09-28` | `configs/project.yaml`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `results/RESULTS.md`, `results/figures/MANIFEST.md`, `scripts/exp_allocation.py`, `scripts/make_report.py` |
-| D078 | T11: the spec's plain martingale is blind to a shift after 500 in-domain frames; a CUSUM reset at matched null false-alarm rate detects 197/200 with median delay 77 frames | Accepted | `fe1b608 2026-09-28` | `configs/eval/video.yaml`, `configs/project.yaml`, `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-09-28-video-extent.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `results/RESULTS.md`, `results/T11/drift.json`, `results/T11/drift.md`, `results/dashboard/index.html`, `results/figures/MANIFEST.md`, `scripts/exp_drift.py`, `scripts/exp_video_extent.py`, `scripts/make_report.py`, `sim/mujoco/drive.py`, `sim/mujoco/screen.py` |
-| D079 | T12: conformal robustness changes repair decisions and helps modestly; maximising benefit defers the worst roads, so the dashboard must report both objectives | Accepted | `df7e5e6 2026-09-28` | `configs/project.yaml`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-09-28-video-extent.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `results/RESULTS.md`, `results/T12/findings.md`, `results/figures/MANIFEST.md`, `scripts/exp_allocation.py`, `scripts/make_report.py`, `src/certain_road/dashboard/plans.py`, `src/certain_road/dashboard/render.py`, `tests/test_dashboard.py` |
+| D078 | T11: the spec's plain martingale is blind to a shift after 500 in-domain frames; a CUSUM reset at matched null false-alarm rate detects 197/200 with median delay 77 frames | Accepted | `fe1b608 2026-09-28` | `configs/eval/video.yaml`, `configs/project.yaml`, `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/mujoco-demo.md`, `docs/superpowers/plans/2026-09-28-video-extent.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `results/RESULTS.md`, `results/T11/drift.json`, `results/T11/drift.md`, `results/dashboard/index.html`, `results/figures/MANIFEST.md`, `scripts/exp_drift.py`, `scripts/exp_video_extent.py`, `scripts/make_report.py`, `sim/mujoco/drive.py`, `sim/mujoco/screen.py` |
+| D079 | T12: conformal robustness changes repair decisions and helps modestly; maximising benefit defers the worst roads, so the dashboard must report both objectives | Accepted | `df7e5e6 2026-09-28` | `configs/project.yaml`, `configs/sim/mujoco.yaml`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/mujoco-demo.md`, `docs/superpowers/plans/2026-09-28-video-extent.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `results/RESULTS.md`, `results/T12/findings.md`, `results/figures/MANIFEST.md`, `scripts/exp_allocation.py`, `scripts/make_report.py`, `sim/mujoco/evaluate.py`, `sim/mujoco/survey.py`, `src/certain_road/dashboard/plans.py`, `src/certain_road/dashboard/render.py`, `tests/test_dashboard.py`, `tests/test_mujoco_evaluate.py` |
 | D080 | Scope: a detection count measures discrete defects the detector recognises, not surface condition, and silence is not a good road; Model B's near-silence on degraded Bengaluru road is its training domain, not scale | Accepted | `d23691c 2026-10-04` | `configs/eval/gt/2DV-cYmIvT4_claude.csv`, `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `results/RESULTS.md`, `results/figures/MANIFEST.md`, `results/video/2DV-cYmIvT4/gt_score.json`, `scripts/make_report.py`, `scripts/score_video_gt.py`, `sim/mujoco/drive.py` |
 | D081 | On dashcam video P fires where B does not (100 vs 9 tracks) while on india_test they are indistinguishable; whether P transfers or only fires more is Open until GT scoring; run both on Chennai footage and report both | Accepted · transfer claim Open | `d23691c 2026-10-04` | `docs/CHALLENGES.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `results/RESULTS.md`, `scripts/make_report.py`, `scripts/score_video_gt.py`, `tests/test_make_report.py` |
-| D082 | Potholes come from Model P and cracks from Model B, and their pothole outputs are never summed; settles the channel D081 left open; no T12 number reflects it yet; D081's transfer claim stays Open | Accepted · T12 re-run Open | `d23691c 2026-10-04` | `configs/sim/mujoco.yaml`, `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `docs/superpowers/plans/2026-10-04-repo-map.md`, `results/RESULTS.md`, `results/T12/demo_network.json`, `results/dashboard/index.html`, `results/figures/MANIFEST.md`, `scripts/exp_allocation.py`, `scripts/make_report.py`, `sim/mujoco/drive.py`, `src/certain_road/dashboard/render.py`, `tests/test_dashboard.py`, `tests/test_make_report.py`, `tests/test_mujoco_drive.py` |
+| D082 | Potholes come from Model P and cracks from Model B, and their pothole outputs are never summed; settles the channel D081 left open; no T12 number reflects it yet; D081's transfer claim stays Open | Accepted · T12 re-run Open | `d23691c 2026-10-04` | `configs/sim/mujoco.yaml`, `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/mujoco-demo.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `docs/superpowers/plans/2026-10-04-repo-map.md`, `results/RESULTS.md`, `results/T12/demo_network.json`, `results/dashboard/index.html`, `results/figures/MANIFEST.md`, `scripts/exp_allocation.py`, `scripts/make_report.py`, `sim/mujoco/drive.py`, `src/certain_road/dashboard/render.py`, `tests/test_dashboard.py`, `tests/test_make_report.py`, `tests/test_mujoco_drive.py` |
 | D083 | T16: the dashboard stays one offline HTML file (D020 over the spec); the optimiser's and worst-first's plans always side by side; T12 numbers carry the Model B recall caveat | Accepted | `5e7058c 2026-10-03` | `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `results/RESULTS.md`, `results/figures/MANIFEST.md`, `scripts/make_report.py`, `tests/test_make_report.py` |
 | D084 | The locked Model P run's 2,312 absolute symlinks stay as committed (results/LOCKED is never rewritten); eval_locked.py now links relatively; a test pins every escaping link and home-directory path, and configs/data stays absolute by decision | Accepted | `d231467 2026-10-04` | `README-DA2.md`, `docs/ONBOARDING.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `scripts/eval_locked.py`, `tests/test_eval_locked_links.py`, `tests/test_repo_hygiene.py` |
 | D085 | Conformal prediction, cut by D051 under sprint pressure, was reinstated by the RoadSight spec adopted at T0 (a23bf6a), which made the certified miss rate the core claim; no separate decision recorded the reversal | Accepted | `03f6318 2026-10-04` | `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md` |
 | D086 | Simulator textures are QR4Change and BD-N6 photos (CC BY 4.0), never used in training; audited clean by norm_vec (max 0.8887) and ORB crop matching (max 8 inliers) | Accepted | `70e4328 2026-10-05` | `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `docs/superpowers/plans/2026-10-05-da2-screenshots-and-zip.md`, `docs/texture-provenance.md` |
-| D087 | A MuJoCo demo simulator for the DA-2 review (`sim/mujoco/`): synthetic road from the D086 photos, real detectors and survey code, design camera; not T13 | Accepted | `1e130f8 2026-10-05` | — |
-| D088 | The MuJoCo demo detects at 30 fps, the rate D075's 3-of-5 rule was set on; at 10 fps confirmation collapsed. Gate at the design detect range; the survey still scores 5 m samples (D006) | Accepted | `73dbc9a 2026-10-05` | `docs/superpowers/plans/2026-10-04-mujoco-demo.md` |
-| D089 | The demo's survey counts D006's ROI, the 5 m strip of the driving lane 3–8 m ahead, scored by certain_road.survey; the reference PCI takes the same path. The real drift monitor fires on clean road, not on the mixed preset's bad stretch, so that moment is captioned as a band drop | Accepted | `a6e7317 2026-10-05` | `docs/superpowers/plans/2026-10-04-mujoco-demo.md` |
+| D087 | A MuJoCo demo simulator for the DA-2 review (`sim/mujoco/`): synthetic road from the D086 photos, real detectors and survey code, design camera; not T13 | Accepted | `1e130f8 2026-10-05` | `docs/mujoco-demo.md` |
+| D088 | The MuJoCo demo detects at 30 fps, the rate D075's 3-of-5 rule was set on; at 10 fps confirmation collapsed. Gate at the design detect range; the survey still scores 5 m samples (D006) | Accepted | `73dbc9a 2026-10-05` | `configs/sim/mujoco.yaml`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md` |
+| D089 | The demo's survey counts D006's ROI, the 5 m strip of the driving lane 3–8 m ahead, scored by certain_road.survey; the reference PCI takes the same path. The real drift monitor fires on clean road, not on the mixed preset's bad stretch, so that moment is captioned as a band drop | Accepted | `a6e7317 2026-10-05` | `docs/mujoco-demo.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md` |
+| D090 | The demo's end screen scores confirmed tracks against ground truth (IoU > 0.1, both lanes) and runs both real allocators on D079's pricing, scored on D079's two objectives. Same seed, same result | Accepted | `fcdbf90 2026-10-05` | — |
 
 ## 8. Model and artifact registry
 
@@ -1346,7 +1352,9 @@ Which modules does each test file import?
 | `tests/test_metrics_coco.py` | `certain_road.perception.metrics_coco` |
 | `tests/test_mujoco_camera.py` | `certain_road.core.geometry` |
 | `tests/test_mujoco_drive.py` | `certain_road.core.geometry` |
+| `tests/test_mujoco_evaluate.py` | `certain_road.survey.allocation` |
 | `tests/test_mujoco_road.py` | `certain_road.core.paths` |
+| `tests/test_mujoco_screen.py` | — |
 | `tests/test_mujoco_survey.py` | `certain_road.core.geometry`, `certain_road.survey`, `certain_road.survey.scoring`, `certain_road.survey.segment` |
 | `tests/test_operating_points.py` | `scripts/t9_b_vs_p.py` |
 | `tests/test_perception_evaluate.py` | `certain_road.perception.evaluate` |
@@ -1372,7 +1380,7 @@ Which `src/` modules with public symbols does no test import directly?
 | Module |
 |---|
 
-pytest, run at build time: **456 passed** (exit 0).
+pytest, run at build time: **462 passed** (exit 0).
 
 import-linter: 8 contracts in `.importlinter`; lint-imports reports **Contracts: 8 kept, 0 broken.** (exit 0).
 
