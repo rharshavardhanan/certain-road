@@ -204,10 +204,61 @@ passes.
 
 ## Step 3 — survey panel
 
-**Goal** The four-panel live screen: camera, map with 50 m segments colouring by band,
-counters, and the drift trace. The live scores come from `survey.scoring` and `segment.py`,
-never a copy. **Done when** a test feeds the same detections through the sim path and
-through `certain_road.survey` and gets identical scores.
+### Task 3.1 — the live survey, through the real code
+
+**Goal** As the vehicle drives, every 5 m survey sample's detections become ground footprints
+(`scoring.box_footprint_m2`, the IPM), and every 10 samples close a 50 m segment. Each segment
+gets its vision-estimated PCI and band from `segment_distress`, `deduct_value`,
+`vision_estimated_pci` and `band`, and its counts from `segment.segment_drive`. The ground
+truth is scored through the same functions, giving the segment's true condition.
+
+**Why** The end screen's numbers must come from `certain_road.survey`, verified by a test that
+runs both paths on the same inputs.
+
+**Files** `sim/mujoco/survey.py`, `tests/test_mujoco_survey.py`
+
+**Steps**
+- [x] Tests first: a segment's PCI from the sim path equals a direct `certain_road.survey`
+  computation on the same detections; sample-to-segment assignment agrees with
+  `segment_drive`.
+- [x] Implement the `Survey` accumulator and the ground-truth scoring.
+
+**Done when** `uv run pytest tests/test_mujoco_survey.py -q` passes.
+
+Record: 5 passed. Red check: widening the ROI by 1 m fails 3 of them, and restoring it passes all 5.
+
+### Task 3.2 — the drift trace
+
+**Goal** Every `drift_every_frames` frames, Model B scores the frame exactly as `model.val`
+scored india_val (`exp_video_extent.val_mode_scorer`, with the NMS patch scoped to that call).
+The score feeds D078's CUSUM martingale against B's india_val bag (`exp_drift.frame_scores`),
+as D080 did.
+
+**Why** It is the bottom-right panel. Its behaviour on synthetic road is measured, not
+assumed: the monitor fires on *low* confidence, so a worse road should not trigger it.
+
+**Files** `sim/mujoco/survey.py`
+
+**Done when** a run logs the trace, and the alarm position (or its absence) is reported for
+the poor and mixed presets.
+
+Record: CUSUM alarms at 55 m on good, 295 m on poor, and 55 m on mixed, in its good stretch (D089).
+
+### Task 3.3 — the four-panel screen
+
+**Goal** One 1920×1080 window, legible at 3 m:
+- camera, top left;
+- the map with 50 m segments colouring by band, top right;
+- counters, bottom left;
+- the drift trace with its threshold, bottom right;
+- a caption bar.
+
+**Files** `sim/mujoco/screen.py`, `sim/mujoco/demo.py`
+
+**Done when** a windowed poor run shows all four panels, and a saved frame of the screen is
+inspected.
+
+Record: `runs/mujoco/step3_screen.png` was inspected and five fixes were made in one batch. The screen update takes 7.3 ms p50.
 
 ## Step 4 — end screen
 

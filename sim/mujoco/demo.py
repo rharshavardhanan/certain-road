@@ -16,6 +16,7 @@ import time
 from pathlib import Path
 
 import cv2
+import numpy as np
 
 from sim.mujoco import road as road_mod
 from sim.mujoco import textures
@@ -66,6 +67,8 @@ def main() -> None:
     ap.add_argument("--drive", action="store_true", help="run the drive loop with live detection")
     ap.add_argument("--headless", action="store_true", help="no window; write the logs only")
     ap.add_argument("--until-m", type=float, help="stop the drive early, for a quick check")
+    ap.add_argument("--record", type=Path, help="also write the screen to this .mp4, in real time")
+    ap.add_argument("--still", type=Path, help="save the last screen frame as a PNG")
     args = ap.parse_args()
     road, cfg = make_road(args.preset, args.seed)
     counts = {c: sum(i.cls == c for i in road.instances) for c in road_mod.CLASSES}
@@ -97,35 +100,64 @@ def main() -> None:
         from sim.mujoco.drive import run
 
         out = repo_root() / cfg["out_dir"] / f"{args.preset}_seed{args.seed}"
-        show = None if args.headless else live_window(cfg)
-        summary = run(road, cfg, out, show=show, until_m=args.until_m)
+        live = None
+        if not args.headless or args.record or args.still:
+            live = Live(road, cfg, window=not args.headless, record=args.record)
+        summary = run(road, cfg, out, show=live, until_m=args.until_m)
+        if live is not None:
+            if args.still and live.last is not None:
+                args.still.parent.mkdir(parents=True, exist_ok=True)
+                cv2.imwrite(str(args.still), live.last)
+            live.close()
         print(json.dumps(summary, indent=1))
 
 
-def live_window(cfg: dict):
-    """The step-2 view: the camera frame, boxes by class, confirmed tracks in green."""
-    colours = {k: tuple(v) for k, v in cfg["drive"]["colours_bgr"].items()}
-    name = "certain-road survey demo"
-    cv2.namedWindow(name, cv2.WINDOW_NORMAL)
+class Live:
+    """The four-panel screen, shown in a window and/or recorded. Built on the first frame."""
 
-    def show(rec, bgr, drv) -> bool:
-        img = bgr.copy()
-        g = int(drv.horizon)
-        cv2.line(img, (0, g), (img.shape[1], g), (200, 200, 200), 1)
-        for d in rec.dets:
-            c = colours["confirmed"] if d.confirmed else colours[d.cls]
-            p1, p2 = (int(d.x1), int(d.y1)), (int(d.x2), int(d.y2))
-            cv2.rectangle(img, p1, p2, c, 3 if d.confirmed else 2)
-            label = f"{d.model} {d.cls.replace('_crack', '')} {d.score:.2f}"
-            cv2.putText(
-                img, label, (p1[0], max(16, p1[1] - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, c, 2
+    NAME = "certain-road survey demo"
+
+    def __init__(self, road, cfg: dict, window: bool, record: Path | None):
+        self.road, self.cfg, self.window, self.record = road, cfg, window, record
+        self.screen = self.writer = None
+        self.last: np.ndarray | None = None
+        if window:
+            cv2.namedWindow(self.NAME, cv2.WINDOW_NORMAL)
+            cv2.resizeWindow(self.NAME, *cfg["screen"]["size"])
+
+    def __call__(self, rec, bgr, drv) -> bool:
+        from sim.mujoco.screen import Screen
+
+        if self.screen is None:
+            self.screen = Screen(
+                self.road, self.cfg, drv.cam, sum(drv.sampled), drv.survey.per_segment
             )
-        hud = f"{rec.x_m:6.1f} m   frame {rec.frame}   {'SURVEY SAMPLE' if rec.sampled else ''}"
-        cv2.putText(img, hud, (16, 36), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
-        cv2.imshow(name, img)
-        return cv2.waitKey(1) not in (27, ord("q"))
+            if self.record is not None:
+                self.record.parent.mkdir(parents=True, exist_ok=True)
+                fps = drv.cam["speed_mps"] / (drv.xs[1] - drv.xs[0])  # real time
+                self.fps = fps
+                self.writer = cv2.VideoWriter(
+                    str(self.record),
+                    cv2.VideoWriter_fourcc(*"mp4v"),
+                    fps,
+                    tuple(self.cfg["screen"]["size"]),
+                )
+        self.last = self.screen.update(rec, bgr, drv)
+        return self.show(self.last)
 
-    return show
+    def show(self, img: np.ndarray, wait_ms: int = 1) -> bool:
+        if self.writer is not None:
+            self.writer.write(img)
+        if not self.window:
+            return True
+        cv2.imshow(self.NAME, img)
+        return cv2.waitKey(wait_ms) not in (27, ord("q"))
+
+    def close(self) -> None:
+        if self.writer is not None:
+            self.writer.release()
+        if self.window:
+            cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":

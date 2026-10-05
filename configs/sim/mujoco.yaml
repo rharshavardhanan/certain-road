@@ -97,3 +97,42 @@ drive:
     B: [linear_crack, alligator_crack]
   colours_bgr: {pothole: [40, 40, 230], linear_crack: [0, 215, 255], alligator_crack: [0, 140, 255],
                 confirmed: [60, 200, 60]}
+
+# Step 3: the live survey (sim/mujoco/survey.py). D006's fixed ROI is the
+# edge.sample_every_m strip of the driving lane starting roi_near_m ahead, so consecutive
+# samples tile the road and nothing is counted twice. The frame's bottom row meets the road
+# at 2.2 m; starting at 3 m keeps boxes cut off by the frame edge out of the count.
+survey:
+  roi_near_m: 3.0
+  gt_outline_points: 32     # points on each instance's ellipse when projecting its box
+  band_drop_caption: 2      # bands lost from one segment to the next that earn a caption
+
+# The live screen (sim/mujoco/screen.py): 1920x1080, read from 3 m on a projector in a dark
+# room. Colour carries meaning only: detection class (drive.colours_bgr) and PCI band.
+screen:
+  size: [1920, 1080]
+  caption_h: 96
+  gutter: 4
+  fonts: {sans: /System/Library/Fonts/SFNS.ttf, mono: /System/Library/Fonts/SFNSMono.ttf}
+  px: {title: 28, label: 22, body: 28, value: 60, count: 48, caption: 38, small: 18, chip: 30}
+  rgb:
+    bg: [11, 14, 19]
+    panel: [21, 26, 33]
+    line: [52, 59, 68]
+    text: [232, 238, 244]
+    muted: [146, 155, 166]
+    road: [62, 66, 72]
+    alarm: [240, 84, 72]
+    dark: [11, 14, 19]
+  band_rgb:
+    Good: [34, 160, 92]
+    Satisfactory: [128, 196, 80]
+    Fair: [242, 196, 52]
+    Poor: [240, 140, 48]
+    Very Poor: [226, 76, 62]
+    Serious: [166, 44, 50]
+    Failed: [96, 99, 106]
+  dark_text_bands: [Satisfactory, Fair, Poor]
+  roi_flash_frames: 8       # a survey sample lights the ROI, fading over this many frames
+  map_lateral_px_per_m: 18  # the plan is to scale along the road, stretched across it
+  drift_x_tick_m: 100

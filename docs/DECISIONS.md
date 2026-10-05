@@ -109,6 +109,7 @@ Current design spec: [`design.md`](design.md)
 | D086 | Simulator textures are QR4Change and BD-N6 photos (CC BY 4.0), never used in training; audited clean by norm_vec (max 0.8887) and ORB crop matching (max 8 inliers) | Accepted |
 | D087 | A MuJoCo demo simulator for the DA-2 review (`sim/mujoco/`): synthetic road from the D086 photos, real detectors and survey code, design camera; not T13 | Accepted |
 | D088 | The MuJoCo demo detects at 30 fps, the rate D075's 3-of-5 rule was set on; at 10 fps confirmation collapsed. Gate at the design detect range; the survey still scores 5 m samples (D006) | Accepted |
+| D089 | The demo's survey counts D006's ROI, the 5 m strip of the driving lane 3–8 m ahead, scored by certain_road.survey; the reference PCI takes the same path. The real drift monitor fires on clean road, not on the mixed preset's bad stretch, so that moment is captioned as a band drop | Accepted |
 
 ---
 
@@ -3534,3 +3535,51 @@ box (IoU above 0.1).
 - Confirmed tracks that never matched an instance of their own class: 1 linear, 11
   alligator, 14 pothole. Most of the pothole ones are Model P firing on alligator patches.
 
+## D089 — The demo's live survey, drift panel and screen
+
+**2026-10-05 · Accepted · extends D088 · applies D006, D078, D080 and D082**
+
+Every 5 m survey sample is detected again with plain `predict`, by copies of P and B that
+hold no tracker state, and `sim/mujoco/survey.py` scores it through `certain_road.survey`.
+`sim/mujoco/screen.py` shows the drive on one 1920×1080 screen with four panels: camera,
+survey map, counters and drift.
+
+**D006's ROI is the 5 m strip of the driving lane, 3–8 m ahead.** D006 counts a fixed ROI on
+each sample and spaces the samples so that footprints never overlap. This camera sees the road
+from about 2.2 m to 12 m, so counting whole frames would count most damage twice. A box counts
+on a sample when its base centre lies 3–8 m ahead and within half a lane width of the camera,
+with the base centre found by `core.geometry.ground_point`. Samples are 5 m apart, so the
+strips tile the road. A test checks that every drive-lane instance is counted by exactly one
+sample. The strip starts at 3 m to clear the frame bottom (2.2 m), so a box cut off by the
+frame edge never counts.
+
+**The reference PCI takes the same path.** Each ground-truth instance is projected into the
+sample as the box a perfect detector would draw, then counted and scored like a detection.
+A test feeds those boxes back in as detections and gets the reference PCI exactly, for every
+segment. `segment_drive` groups the samples, 10 to a segment.
+
+**The drift panel shows the real monitor, and it does not fire where the brief expected.** On
+each sample, B scores the frame exactly as `model.val` scored india_val, using
+`exp_video_extent.val_mode_scorer`. D078's CUSUM (threshold 10⁴) runs against B's india_val
+bag, as in D080. The scorer patches NMS for the whole process, so the patch is held to its
+own calls, where it cannot change what the trackers see. Measured on the 103 samples of each
+seed-0 road:
+
+| Road | Mean frame score | CUSUM alarm |
+|---|---|---|
+| good | 0.992 | 55 m |
+| poor | 0.897 | 295 m |
+| mixed | 0.982 in the good stretch, 0.891 in the bad | 55 m, in the good stretch |
+
+97% of india_val frames contain damage, and the bag's mean score is 0.879. On a clean road B
+sees almost nothing, which looks unlike that bag. The monitor is one-sided and fires on low
+confidence. On the mixed preset the bad stretch pulls the CUSUM down, not up. A road getting
+worse is a change in condition, which the PCI reports, not a shift in domain. So the mixed
+preset's moment is the band drop instead: the caption marks a segment that falls two bands or
+more below the one before it. The reference bag was not changed to make the alarm fire where
+it was expected.
+
+**Detector confusion lowers the vision estimate, and is reported as found.** Over the first
+110 m of the poor road, segment 2 scores 86.9 against a reference of 93.2. Model P marks an
+alligator patch as a pothole. On one linear crack, B fires both linear (0.52) and alligator
+(0.39), and P calls the same crack a pothole (0.31). Nothing is tuned against this.
