@@ -30,3 +30,6 @@ results/**/qa/
 # Kaggle staging: hard-links / copies, rebuilt by scripts
 /data/kaggle_weights/
 /kaggle/build/
+
+# Submission archives: git archive output, rebuilt on demand (README-DA2.md)
+/dist/

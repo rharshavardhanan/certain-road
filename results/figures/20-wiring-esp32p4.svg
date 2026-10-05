@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 860" width="1200" height="860" role="img" aria-labelledby="t d" font-family="Helvetica, Arial, sans-serif">
+  <title id="t">Sensor hub wiring: ESP32-P4 with NEO-6M GPS and MPU6050 IMU, USB to Jetson Orin Nano</title>
+  <desc id="d">Design for T14, not built or tested. The NEO-6M connects VCC to 3V3, GND to GND and TX to a UART RX pin of the ESP32-P4. The MPU6050 connects VCC to 3V3, GND to GND, SCL and SDA to I2C pins. The ESP32-P4 connects to the Jetson Orin Nano over USB. All ESP32-P4 GPIOs are 3.3 V only.</desc>
+  <defs>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2e7d32"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="860" fill="#ffffff"/>
+
+  <!-- Heading -->
+  <text x="40" y="48" font-size="22" font-weight="bold" fill="#1a1a1a">Sensor hub wiring: ESP32-P4 · NEO-6M GPS · MPU6050 IMU · USB to Jetson Orin Nano</text>
+  <text x="40" y="74" font-size="14" fill="#555555">Camera-Based Pothole and Crack Survey for Road Maintenance Planning · DA-2 · design for T14, not built or tested</text>
+
+  <!-- Legend -->
+  <g font-size="13" fill="#333333">
+    <line x1="440" y1="112" x2="466" y2="112" stroke="#c62828" stroke-width="4"/><text x="474" y="117">3V3</text>
+    <line x1="530" y1="112" x2="556" y2="112" stroke="#212121" stroke-width="4"/><text x="564" y="117">GND</text>
+    <line x1="622" y1="112" x2="648" y2="112" stroke="#2e7d32" stroke-width="4"/><text x="656" y="117">UART (GPS TX → RX)</text>
+    <line x1="800" y1="112" x2="826" y2="112" stroke="#ef6c00" stroke-width="4"/><text x="834" y="117">I²C SCL</text>
+    <line x1="904" y1="112" x2="930" y2="112" stroke="#1565c0" stroke-width="4"/><text x="938" y="117">I²C SDA</text>
+    <line x1="1010" y1="112" x2="1036" y2="112" stroke="#757575" stroke-width="7" stroke-linecap="round"/><text x="1044" y="117">USB</text>
+  </g>
+
+  <!-- Jetson Orin Nano -->
+  <rect x="40" y="240" width="240" height="240" rx="10" fill="#f5f5f5" stroke="#555555" stroke-width="2"/>
+  <text x="60" y="272" font-size="17" font-weight="bold" fill="#1a1a1a">Jetson Orin Nano</text>
+  <text x="60" y="292" font-size="13" fill="#666666">8 GB developer kit</text>
+  <text x="60" y="355" font-size="13" fill="#333333">USB-A host port</text>
+  <text x="60" y="394" font-size="13" fill="#333333">reads GPS and IMU over</text>
+  <text x="60" y="412" font-size="13" fill="#333333">USB serial (no code yet)</text>
+  <text x="60" y="446" font-size="13" fill="#666666">the camera connects to the</text>
+  <text x="60" y="464" font-size="13" fill="#666666">Jetson and is not shown</text>
+  <rect x="268" y="338" width="12" height="24" fill="#757575"/>
+
+  <!-- USB cable -->
+  <line x1="280" y1="350" x2="440" y2="350" stroke="#757575" stroke-width="8" stroke-linecap="round"/>
+  <text x="360" y="334" font-size="13" font-weight="bold" fill="#333333" text-anchor="middle">USB</text>
+  <text x="360" y="376" font-size="12" fill="#555555" text-anchor="middle">serial data and</text>
+  <text x="360" y="392" font-size="12" fill="#555555" text-anchor="middle">5 V bus power</text>
+
+  <!-- ESP32-P4 -->
+  <rect x="440" y="150" width="260" height="460" rx="10" fill="#eef3fb" stroke="#3b5b8a" stroke-width="2"/>
+  <text x="460" y="182" font-size="17" font-weight="bold" fill="#1a1a1a">ESP32-P4</text>
+  <text x="460" y="202" font-size="13" fill="#555555">dev board, sensor hub</text>
+  <text x="460" y="220" font-size="13" fill="#555555">firmware not written</text>
+  <rect x="440" y="338" width="12" height="24" fill="#757575"/>
+  <text x="460" y="355" font-size="13" fill="#333333">USB</text>
+  <g font-size="13" fill="#1a1a1a" text-anchor="end">
+    <text x="688" y="262">3V3</text>
+    <text x="688" y="332">UART RX</text>
+    <text x="688" y="367">GND</text>
+    <text x="688" y="472">3V3</text>
+    <text x="688" y="507">GND</text>
+    <text x="688" y="542">I²C SCL</text>
+    <text x="688" y="577">I²C SDA</text>
+  </g>
+
+  <!-- NEO-6M GPS (GY-NEO6MV2), pins in header order -->
+  <rect x="900" y="150" width="260" height="230" rx="10" fill="#f1f8e9" stroke="#558b2f" stroke-width="2"/>
+  <text x="1070" y="182" font-size="17" font-weight="bold" fill="#1a1a1a" text-anchor="middle">NEO-6M GPS</text>
+  <text x="1070" y="202" font-size="13" fill="#555555" text-anchor="middle">GY-NEO6MV2 module</text>
+  <g font-size="13" fill="#1a1a1a">
+    <text x="914" y="262">VCC</text>
+    <text x="914" y="297" fill="#9e9e9e">RX · not connected</text>
+    <text x="914" y="332">TX</text>
+    <text x="914" y="367">GND</text>
+  </g>
+
+  <!-- MPU6050 IMU (GY-521), pins in header order -->
+  <rect x="900" y="400" width="260" height="320" rx="10" fill="#fff3e0" stroke="#e65100" stroke-width="2"/>
+  <text x="1070" y="432" font-size="17" font-weight="bold" fill="#1a1a1a" text-anchor="middle">MPU6050 IMU</text>
+  <text x="1070" y="452" font-size="13" fill="#555555" text-anchor="middle">GY-521 module</text>
+  <g font-size="13" fill="#1a1a1a">
+    <text x="914" y="472">VCC</text>
+    <text x="914" y="507">GND</text>
+    <text x="914" y="542">SCL</text>
+    <text x="914" y="577">SDA</text>
+  </g>
+  <g font-size="13" fill="#9e9e9e">
+    <text x="914" y="612">XDA · not connected</text>
+    <text x="914" y="642">XCL · not connected</text>
+    <text x="914" y="672">AD0 · not connected (0x68)</text>
+    <text x="914" y="702">INT · not connected</text>
+  </g>
+
+  <!-- Wires: each one straight, pin to pin -->
+  <g stroke-width="3" fill="none">
+    <line x1="700" y1="258" x2="900" y2="258" stroke="#c62828"/>
+    <line x1="900" y1="328" x2="706" y2="328" stroke="#2e7d32" marker-end="url(#arrow-green)"/>
+    <line x1="700" y1="363" x2="900" y2="363" stroke="#212121"/>
+    <line x1="700" y1="468" x2="900" y2="468" stroke="#c62828"/>
+    <line x1="700" y1="503" x2="900" y2="503" stroke="#212121"/>
+    <line x1="700" y1="538" x2="900" y2="538" stroke="#ef6c00"/>
+    <line x1="700" y1="573" x2="900" y2="573" stroke="#1565c0"/>
+    <line x1="900" y1="293" x2="872" y2="293" stroke="#9e9e9e" stroke-dasharray="4 4"/>
+  </g>
+  <g>
+    <circle cx="700" cy="258" r="5" fill="#c62828"/><circle cx="900" cy="258" r="5" fill="#c62828"/>
+    <circle cx="700" cy="328" r="5" fill="#2e7d32"/><circle cx="900" cy="328" r="5" fill="#2e7d32"/>
+    <circle cx="700" cy="363" r="5" fill="#212121"/><circle cx="900" cy="363" r="5" fill="#212121"/>
+    <circle cx="700" cy="468" r="5" fill="#c62828"/><circle cx="900" cy="468" r="5" fill="#c62828"/>
+    <circle cx="700" cy="503" r="5" fill="#212121"/><circle cx="900" cy="503" r="5" fill="#212121"/>
+    <circle cx="700" cy="538" r="5" fill="#ef6c00"/><circle cx="900" cy="538" r="5" fill="#ef6c00"/>
+    <circle cx="700" cy="573" r="5" fill="#1565c0"/><circle cx="900" cy="573" r="5" fill="#1565c0"/>
+  </g>
+  <text x="800" y="320" font-size="12" fill="#2e7d32" text-anchor="middle">NMEA, 9600 baud</text>
+  <text x="800" y="530" font-size="12" fill="#555555" text-anchor="middle">I²C, address 0x68</text>
+
+  <!-- The 3.3 V rule -->
+  <rect x="40" y="630" width="830" height="92" rx="8" fill="#fff8e1" stroke="#f9a825" stroke-width="2"/>
+  <text x="60" y="658" font-size="15" font-weight="bold" fill="#1a1a1a">3.3 V only</text>
+  <text x="60" y="682" font-size="13" fill="#333333">ESP32-P4 GPIOs are 3.3 V logic and are not 5 V tolerant. Power both modules from a 3V3 pin, never from 5V,</text>
+  <text x="60" y="702" font-size="13" fill="#333333">so the GPS TX line and the MPU6050's I²C pull-ups stay at 3.3 V whichever clone board is fitted.</text>
+
+  <!-- Notes -->
+  <g font-size="13" fill="#444444">
+    <text x="40" y="756">GPS: NMEA at 9600 baud (the NEO-6M default) into a spare UART (UART1 to UART4). The module's RX stays unconnected: receive only.</text>
+    <text x="40" y="776">UART0 (GPIO37/38) stays the console. IMU: I²C at address 0x68 (AD0 is pulled low on the module), sampled at 100 Hz (configs/project.yaml, edge.imu_hz).</text>
+    <text x="40" y="796">Both 3V3 pins are one rail, as are both GND pins: any header pin will do, or one pin can be shared. UART and I²C go through the GPIO matrix,</text>
+    <text x="40" y="816">so the GPIO numbers are a firmware choice and none is fixed yet.</text>
+    <text x="40" y="840" font-weight="bold" fill="#333333">Status: a design for T14 (edge hardware), which has not run. Nothing here is built, wired or tested, and no firmware exists.</text>
+  </g>
+</svg>
