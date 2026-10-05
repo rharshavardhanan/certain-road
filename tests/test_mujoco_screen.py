@@ -46,6 +46,7 @@ def test_end_screen_with_nothing_to_repair_and_a_class_never_seen():
         survey.add(k, k * 5.0, k * 0.9, [])
     plan = repair_plan(survey.segments, CFG)
     assert all(p["true_benefit"] == 0 for p in plan["plans"].values())
+    assert plan["worst"] == []  # an undamaged road has no "worst" segments to cover
     empty = {
         "instances": 0,
         "hit": 0,

@@ -111,6 +111,7 @@ Current design spec: [`design.md`](design.md)
 | D088 | The MuJoCo demo detects at 30 fps, the rate D075's 3-of-5 rule was set on; at 10 fps confirmation collapsed. Gate at the design detect range; the survey still scores 5 m samples (D006) | Accepted |
 | D089 | The demo's survey counts D006's ROI, the 5 m strip of the driving lane 3–8 m ahead, scored by certain_road.survey; the reference PCI takes the same path. The real drift monitor fires on clean road, not on the mixed preset's bad stretch, so that moment is captioned as a band drop | Accepted |
 | D090 | The demo's end screen scores confirmed tracks against ground truth (IoU > 0.1, both lanes) and runs both real allocators on D079's pricing, scored on D079's two objectives. Same seed, same result | Accepted |
+| D091 | Only damaged segments can be among the end screen's true worst N; all five presets run, and the drift alarm fires at 65–150 m on every road | Accepted |
 
 ---
 
@@ -3632,3 +3633,20 @@ only the sample positions, so its sensor-noise draws differ from the drive's. On
 road the CUSUM hovers near the threshold, so the alarm position moves with the noise. The
 drive alarms at 150 m, not 295 m. Step 5 records the drive's alarm position for every preset.
 D089's conclusion stands.
+
+## D091 — The demo's true worst N are damaged segments; all five presets run
+
+**2026-10-05 · Accepted · refines D090**
+
+**Only damaged segments can be among the true worst N.** On the good road every segment's
+reference PCI is 100. D090's rule then made the "true worst 3" three tied, undamaged
+segments, and gave worst-first 3 of 3 for spending budget on road that needs nothing.
+`allocate_greedy_worst_first` does fill a leftover budget with zero-priority segments; that is
+the real code's behaviour and is shown as it is. But covering undamaged road is not covering
+the worst road. So the worst N are now drawn from segments with reference PCI below 100,
+and a road with none shows "no damaged segment".
+
+**All five presets, seed 0.** The table is in `docs/mujoco-demo.md`. As D090 promised, it
+records the drift alarm position for every preset, measured in the drive itself: 65 m on
+good, moderate and mixed, 145 m on random and 150 m on poor. Every alarm comes before any bad
+stretch, which is D089's finding on every road.

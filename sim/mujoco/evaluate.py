@@ -91,7 +91,10 @@ def repair_plan(segments: list[SegmentResult], cfg: dict, budget_frac: float | N
     segs = [Segment(s.index, s.vision_estimated_pci, cost[s.index]) for s in segments]
     budget = frac * sum(cost.values())
     benefit = {s.index: 100.0 - s.pci_ref for s in segments}
-    worst = [s.index for s in sorted(segments, key=lambda s: (s.pci_ref, s.index))][: e["worst_n"]]
+    # Only damaged segments can be among the worst: on an undamaged road the "worst N" would
+    # be N tied segments at 100, and repairing them would score as covering them.
+    damaged = sorted((s for s in segments if s.pci_ref < 100.0), key=lambda s: (s.pci_ref, s.index))
+    worst = [s.index for s in damaged][: e["worst_n"]]
     out = {"budget_frac": frac, "budget": round(budget, 2), "worst": worst, "plans": {}}
     for name, policy in POLICIES.items():
         chosen = policy(segs, budget)

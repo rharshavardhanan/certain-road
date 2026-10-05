@@ -507,12 +507,18 @@ def render_end(end: dict, road: Road, cfg: dict) -> np.ndarray:
     for k, (name, label) in enumerate((("optimiser", "Optimiser"), ("worst-first", "Worst-first"))):
         p, y = rep["plans"][name], 262 + k * 176
         ink.put(img, x, y, label, t, "body", "Semibold")
-        ids = ", ".join(str(i + 1) for i in p["chosen"]) or "none"
-        ink.put(img, x, y + 38, f"repairs segments {ids}", m, "small")
+        ids = ", ".join(str(i + 1) for i in p["chosen"])
+        ink.put(
+            img, x, y + 38, f"repairs segments {ids}" if ids else "repairs no segment", m, "small"
+        )
         ink.put(img, x, y + 68, f"{p['true_benefit']:.0f}", t, "count", "Medium")
         ink.put(img, x, y + 124, "true benefit", m, "small")
-        ink.put(img, x + 200, y + 68, f"{p['worst_covered']} of {rep_n(rep)}", t, "count", "Medium")
-        ink.put(img, x + 200, y + 124, f"of the true worst {rep_n(rep)}", m, "small")
+        if rep_n(rep):
+            got = f"{p['worst_covered']} of {rep_n(rep)}"
+            ink.put(img, x + 200, y + 68, got, t, "count", "Medium")
+            ink.put(img, x + 200, y + 124, f"of the true worst {rep_n(rep)}", m, "small")
+        else:
+            ink.put(img, x + 200, y + 84, "no damaged segment", m, "label")
 
     # ---- detection vs ground truth ----
     y = 640

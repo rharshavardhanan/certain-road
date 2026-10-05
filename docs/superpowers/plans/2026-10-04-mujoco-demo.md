@@ -303,5 +303,18 @@ Determinism: two poor seed-0 runs gave byte-identical `ground_truth.json`,
 ## Step 5 — the other presets, recording, docs
 
 **Goal** All five presets run. `--record out.mp4` writes a backup. The docs say how to run
-it and what is simulated and what is real. **Done when** all five complete and their recall
-and false alarms per km are reported, one MP4 exists, and `check_repo.py` exits 0.
+it and what is simulated and what is real.
+
+**Files** `docs/mujoco-demo.md`, `docs/ONBOARDING.md` (one row), `sim/mujoco/evaluate.py`
+(true worst N from damaged segments only, D091), `sim/mujoco/screen.py`
+
+**Steps**
+- [x] Drive good, moderate, mixed and random, seed 0, headless; poor was driven in step 4.
+- [x] Fix the good road's true-worst-N, found in its end screen (D091); redraw all five.
+- [x] Judge the realism of five live-settings frames (`runs/mujoco/realism_grid.png`).
+- [x] Record poor, seed 0: `runs/mujoco/poor_seed0.mp4`, 3,066 frames at 30 fps, 102 s.
+- [x] Write `docs/mujoco-demo.md` with the results table.
+
+**Done when** all five complete and their recall and false alarms per km are reported, one
+MP4 exists, and `check_repo.py` exits 0. Record: all five exited 0 and the table is in
+`docs/mujoco-demo.md`.
