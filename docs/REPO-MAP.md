@@ -1,8 +1,8 @@
 # Repository map
 
-Generated 2026-10-04 17:07:40 +0530
+Generated 2026-10-05 12:46:43 +0530
 
-Commit `e344482` on `workspace-cleanup`; 0 paths differ from it in the working tree.
+Commit `0034bcf` on `workspace-cleanup`; 16 paths differ from it in the working tree.
 
 Do not edit by hand — rerun scripts/repo_map.py
 
@@ -46,7 +46,7 @@ Quoted from `docs/design.md`:
 >
 > The novelty is the **integration and the decision**, not the detector.
 
-Evidence at build time, beside the quotes' own status lines: 125 commits from 2026-08-06 to 2026-10-04; Python files: 1 in `kaggle/`, 35 in `scripts/`, 51 in `src/`, 43 in `tests/`.
+Evidence at build time, beside the quotes' own status lines: 129 commits from 2026-08-06 to 2026-10-05; Python files: 1 in `kaggle/`, 35 in `scripts/`, 8 in `sim/`, 51 in `src/`, 45 in `tests/`.
 
 ## 2. Pipeline
 
@@ -203,7 +203,9 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `configs/eval/video.yaml` | 40 | 2026-10-04 | 2026-10-04 | D075 — per-pothole confirmation on road video (scripts/eval_video.py). | read-only lane |
 | `configs/project.yaml` | 115 | 2026-09-22 | 2026-09-28 | RoadSight project configuration. |  |
 | `configs/repo_map.yaml` | 103 | 2026-10-04 | 2026-10-04 | scripts/repo_map.py -> docs/REPO-MAP.md. |  |
+| `configs/sim/mujoco.yaml` | 84 | uncommitted | uncommitted | MuJoCo live survey demo (sim/mujoco). | untracked |
 | `configs/sim/robot.yaml` | 23 | 2026-09-05 | 2026-09-05 | Simulated robot and camera geometry. |  |
+| `configs/sim/textures.yaml` | 84 | uncommitted | uncommitted | Textures for the MuJoCo demo (sim/mujoco/textures.py). | untracked |
 | `configs/train/yolov8n.yaml` | 24 | 2026-08-07 | 2026-08-07 | YOLOv8n on the RDD2022 India subset (D025). |  |
 | `configs/train/yolov8s.yaml` | 36 | 2026-08-14 | 2026-08-14 | YOLOv8s on the RDD2022 multi-country corpus (D042). |  |
 | `configs/train/yolov8s_continue.yaml` | 84 | 2026-08-15 | 2026-08-15 | Continuation of the D042 multi-country YOLOv8s run from existing weights (D043). |  |
@@ -240,6 +242,8 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `tests/test_kaggle_guard.py` | 157 | 2026-09-22 | 2026-10-04 | The last line of defence before a six-hour run reads its first image. |  |
 | `tests/test_make_report.py` | 136 | 2026-10-03 | 2026-10-04 | RESULTS.md is generated; these pin the properties that make it trustworthy. |  |
 | `tests/test_metrics_coco.py` | 122 | 2026-09-22 | 2026-10-04 | T6 — the class-id offset is the bug that would not announce itself. |  |
+| `tests/test_mujoco_camera.py` | 81 | uncommitted | uncommitted | The MuJoCo camera is the design camera, and it agrees with core.geometry's IPM. | untracked |
+| `tests/test_mujoco_road.py` | 79 | uncommitted | uncommitted | The MuJoCo demo's road generator: reproducible, round-trips, and clusters its damage. | untracked |
 | `tests/test_operating_points.py` | 123 | 2026-09-22 | 2026-10-04 | The B-vs-P comparison turns on numbers no eyeball can check. |  |
 | `tests/test_perception_evaluate.py` | 271 | 2026-09-05 | 2026-09-05 | Tests for `certain_road.perception.evaluate`. |  |
 | `tests/test_perception_predict.py` | 201 | 2026-09-05 | 2026-09-05 | Tests for the predict.py schema/remap boundary. |  |
@@ -384,6 +388,29 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `results/T9/bharatpothole_overlap.json` | 26 | 2026-09-22 | 2026-09-22 | no docstring |  |
 | `results/T9/bph_internal_leakage.json` | 179 | 2026-09-22 | 2026-09-22 | no docstring |  |
 | `results/dashboard/index.html` | 365 | 2026-10-03 | 2026-10-03 | no docstring |  |
+| `results/figures/01-dataset-pool-B-samples.jpg` | binary | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `results/figures/02-leak-same-scene-pairs.jpg` | binary | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `results/figures/03-leak-threshold-bands.jpg` | binary | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `results/figures/04-modelA-nonindia-val-PR.png` | binary | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `results/figures/05-modelA-india-PR.png` | binary | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `results/figures/06-modelA-india-pothole-misses.jpg` | binary | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `results/figures/07-modelB-india-heldout-PR.png` | binary | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `results/figures/08-modelB-india-heldout-labels.jpg` | binary | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `results/figures/09-modelB-india-heldout-predictions.jpg` | binary | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `results/figures/10-modelP-india-heldout-PR.png` | binary | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `results/figures/11-crc-risk-vs-alpha.png` | binary | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `results/figures/12-crc-false-alarms-vs-alpha.png` | binary | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `results/figures/13-crc-resampled-risk.png` | binary | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `results/figures/14-drift-martingale-traces.png` | binary | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `results/figures/15-drift-cusum-delay.png` | binary | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `results/figures/16-allocation-policies.png` | binary | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `results/figures/17-video-scale-test.png` | binary | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `results/figures/18-video-drift-alarm.png` | binary | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `results/figures/19-sim-centre-scenario.png` | binary | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `results/figures/20-wiring-esp32p4.svg` | 126 | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `results/figures/21-dashboard-full-page.png` | binary | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `results/figures/22-video-P-confirmed-tracks.png` | binary | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `results/figures/MANIFEST.md` | 55 | 2026-10-05 | 2026-10-05 | Deck figures |  |
 | `results/mps_sanity.json` | 59 | 2026-09-22 | 2026-09-22 | no docstring |  |
 | `results/video/2DV-cYmIvT4/B/summary.json` | 124 | 2026-10-04 | 2026-10-04 | no docstring | read-only lane |
 | `results/video/2DV-cYmIvT4/P/summary.json` | 670 | 2026-10-04 | 2026-10-04 | no docstring | read-only lane |
@@ -398,7 +425,10 @@ What is each file for, and when was it first and last committed? Purpose is the 
 
 | Path | Lines | First commit | Last commit | Purpose | Working tree |
 |---|---|---|---|---|---|
-| `docs/DECISIONS.md` | 3416 | 2026-08-06 | 2026-10-04 | Decision log |  |
+| `docs/CHALLENGES.md` | 203 | 2026-10-05 | 2026-10-05 | Challenges |  |
+| `docs/DA2-EVIDENCE.md` | 351 | 2026-10-05 | 2026-10-05 | DA-2 evidence |  |
+| `docs/DA2-SCOPE-CHANGE.md` | 101 | 2026-10-05 | 2026-10-05 | Scope change, DA-1 to DA-2 |  |
+| `docs/DECISIONS.md` | 3446 | 2026-08-06 | 2026-10-05 | Decision log |  |
 | `docs/MENTOR-WALKTHROUGH.md` | 1403 | 2026-09-05 | 2026-09-22 | certain-road — a walkthrough |  |
 | `docs/ONBOARDING.md` | 66 | 2026-10-04 | 2026-10-04 | Onboarding |  |
 | `docs/colab-training-guide.md` | 220 | 2026-09-07 | 2026-09-07 | Training on Colab (T4) |  |
@@ -420,13 +450,18 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `docs/superpowers/plans/2026-10-03-d082.md` | 99 | 2026-10-04 | 2026-10-04 | D082: record the model attribution the dashboard already cites |  |
 | `docs/superpowers/plans/2026-10-03-t17-results.md` | 35 | 2026-10-03 | 2026-10-03 | T17 results report |  |
 | `docs/superpowers/plans/2026-10-04-cleanup.md` | 195 | 2026-10-04 | 2026-10-04 | Release-readiness cleanup |  |
+| `docs/superpowers/plans/2026-10-04-da2-evidence.md` | 251 | 2026-10-05 | 2026-10-05 | DA-2 review pack |  |
+| `docs/superpowers/plans/2026-10-04-mujoco-demo.md` | 181 | uncommitted | uncommitted | MuJoCo live survey demo | untracked |
 | `docs/superpowers/plans/2026-10-04-repo-map.md` | 88 | 2026-10-04 | 2026-10-04 | Repo map: a generated onboarding document |  |
+| `docs/superpowers/plans/2026-10-05-da2-screenshots-and-zip.md` | 50 | 2026-10-05 | 2026-10-05 | DA-2: two screenshots, then the source zip rebuilt from HEAD |  |
 | `docs/superpowers/plans/archive/2026-08-06-week-1-foundation.md` | 2245 | 2026-09-05 | 2026-10-04 | Week 1 Foundation Implementation Plan |  |
 | `docs/superpowers/plans/archive/2026-08-15-week-2-assess.md` | 526 | 2026-09-05 | 2026-09-05 | Week 2: Assess — Vision-Estimated PCI Implementation Plan |  |
 | `docs/superpowers/plans/archive/2026-08-16-mentor-walkthrough-doc.md` | 65 | 2026-09-05 | 2026-09-05 | Plan — mentor walkthrough document |  |
 | `docs/superpowers/plans/archive/2026-08-16-seven-week-schedule.md` | 194 | 2026-09-05 | 2026-09-05 | The schedule — 4 partitions, 7 weeks, 2026-08-18 → 2026-10-05 |  |
 | `docs/superpowers/plans/archive/README.md` | 5 | 2026-09-05 | 2026-09-05 | Archived plans |  |
 | `docs/superpowers/specs/2026-09-22-workspace-cleanup-design.md` | 101 | 2026-09-22 | 2026-09-22 | Workspace cleanup and repo reorganisation — design |  |
+| `docs/texture-provenance.md` | 176 | 2026-10-05 | 2026-10-05 | Trial textures: sources, licences and leak audit |  |
+| `docs/wiring-esp32p4.svg` | 126 | 2026-10-05 | 2026-10-05 | no docstring |  |
 
 ### `kaggle/`
 
@@ -456,9 +491,10 @@ What does the gitignored `data/` hold? It is never committed, so it has no commi
 | `data/processed/multicountry/` | 76,776 files | 11,081,691,618 bytes |
 | `data/processed/norway/` | 8,161 files | 426,702 bytes |
 | `data/processed/united_states/` | 4,805 files | 418,532 bytes |
-| `data/raw/` | 99,975 files | 14,678,117,229 bytes |
-| `data/raw/RDD2022/` | 85,817 files | 13,832,551,703 bytes |
-| `data/raw/bharatpothole/` | 14,156 files | 845,559,273 bytes |
+| `data/raw/` | 100,032 files | 14,772,307,460 bytes |
+| `data/raw/RDD2022/` | 85,820 files | 13,832,570,147 bytes |
+| `data/raw/bharatpothole/` | 14,158 files | 845,571,569 bytes |
+| `data/raw/trial_textures/` | 52 files | 94,159,491 bytes |
 | `data/video/` | 2 files | 151,851,243 bytes |
 | `data/yolo/` | 76,803 files | 7,774,309,604 bytes |
 | `data/yolo/_vectors/` | 22 files | 3,019,941,550 bytes |
@@ -475,15 +511,24 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | Path | Lines | First commit | Last commit | Purpose | Working tree |
 |---|---|---|---|---|---|
 | `.github/workflows/ci.yml` | 15 | 2026-08-06 | 2026-10-04 | no docstring |  |
-| `.gitignore` | 32 | 2026-08-06 | 2026-09-22 | Data, models, run outputs — large, regenerable, never committed Anchored to the repo root: an unanchored `data/` also matches configs/data/, which holds committed dataset YAMLs (T2). |  |
+| `.gitignore` | 35 | 2026-08-06 | 2026-10-05 | Data, models, run outputs — large, regenerable, never committed Anchored to the repo root: an unanchored `data/` also matches configs/data/, which holds committed dataset YAMLs (T2). |  |
 | `.importlinter` | 93 | 2026-08-06 | 2026-09-22 | no docstring |  |
 | `.python-version` | 1 | 2026-08-06 | 2026-08-06 | no docstring |  |
 | `CLAUDE.md` | 59 | 2026-08-06 | 2026-10-04 | certain-road |  |
 | `Makefile` | 4 | 2026-10-04 | 2026-10-04 | `make check` runs every check CI runs; the steps are in scripts/check_repo.py. |  |
+| `README-DA2.md` | 66 | 2026-10-05 | 2026-10-05 | Camera-Based Pothole and Crack Survey for Road Maintenance Planning |  |
 | `README.md` | 154 | 2026-08-06 | 2026-10-04 | certain-road |  |
 | `TASK_LOG.md` | 348 | 2026-09-22 | 2026-10-04 | RoadSight — task log |  |
-| `pyproject.toml` | 64 | 2026-08-06 | 2026-10-04 | no docstring |  |
-| `requirements.txt` | 381 | 2026-09-22 | 2026-10-04 | This file was autogenerated by uv via the following command: uv export --format requirements-txt --no-hashes |  |
+| `pyproject.toml` | 65 | 2026-08-06 | 2026-10-04 | no docstring | modified |
+| `requirements.txt` | 399 | 2026-09-22 | 2026-10-04 | This file was autogenerated by uv via the following command: uv export --format requirements-txt --no-hashes | modified |
+| `sim/__init__.py` | 0 | uncommitted | uncommitted | no docstring | untracked |
+| `sim/mujoco/__init__.py` | 1 | uncommitted | uncommitted | MuJoCo live survey demo. | untracked |
+| `sim/mujoco/camera.py` | 72 | uncommitted | uncommitted | Render what the dashcam would record, not what the renderer draws. | untracked |
+| `sim/mujoco/demo.py` | 91 | uncommitted | uncommitted | MuJoCo survey demo CLI. | untracked |
+| `sim/mujoco/road.py` | 227 | uncommitted | uncommitted | Seeded road layout and clustered damage, and its ground truth. | untracked |
+| `sim/mujoco/scene.py` | 238 | uncommitted | uncommitted | Assemble the MuJoCo scene for one road: surface tiles, kerbs, shoulders, sky, sun, haze, poles, a wall, signs, and the vehicle carrying the camera. | untracked |
+| `sim/mujoco/surface.py` | 236 | uncommitted | uncommitted | Bake the road surface into texture tiles: asphalt, markings, then damage. | untracked |
+| `sim/mujoco/textures.py` | 185 | uncommitted | uncommitted | Trial-photo textures: curated, prepared, and checked against the training data. | untracked |
 | `splits/india_cal.txt` | 1156 | 2026-09-22 | 2026-09-22 | no docstring |  |
 | `splits/india_full.txt` | 7706 | 2026-09-22 | 2026-09-22 | no docstring |  |
 | `splits/india_heldout.txt` | 2312 | 2026-09-22 | 2026-09-22 | no docstring |  |
@@ -493,7 +538,7 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `splits/nonindia_replay.txt` | 5000 | 2026-09-22 | 2026-09-22 | no docstring |  |
 | `splits/nonindia_train.txt` | 24508 | 2026-09-22 | 2026-09-22 | no docstring |  |
 | `splits/nonindia_val.txt` | 6142 | 2026-09-22 | 2026-09-22 | no docstring |  |
-| `uv.lock` | 1808 | 2026-08-06 | 2026-10-04 | no docstring |  |
+| `uv.lock` | 1889 | 2026-08-06 | 2026-10-04 | no docstring | modified |
 
 ## 4. Module reference
 
@@ -589,11 +634,11 @@ What does `certain_road.core` expose, and is anything outside the package using 
 | `certain_road.core` | (module) |  | core stage. |  |
 | `certain_road.core.geometry` | (module) |  | T12 — ground-plane geometry: inverse perspective mapping and GPS helpers. |  |
 |  | `ground_point` | `ground_point(u: float, v: float, *, f: float, cx: float, cy: float, cam_h: float, pitch: float) -> tuple[float, float] \| None` | Pixel (u, v) -> ground (X forward, Y left) in metres, or None. | 1 code, 1 test files |
-|  | `project` | `project(forward: float, left: float, *, f: float, cx: float, cy: float, cam_h: float, pitch: float) -> tuple[float, float] \| None` | Ground (X forward, Y left) -> pixel (u, v). Exact inverse of `ground_point`. | tests only (1) |
+|  | `project` | `project(forward: float, left: float, *, f: float, cx: float, cy: float, cam_h: float, pitch: float) -> tuple[float, float] \| None` | Ground (X forward, Y left) -> pixel (u, v). Exact inverse of `ground_point`. | tests only (2) |
 |  | `haversine_m` | `haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float` | Great-circle distance in metres. | 1 code, 1 test files |
 |  | `interp_track` | `interp_track(ts: list[float], lat: list[float], lon: list[float], t: float) -> tuple[float, float]` | Position at time `t`, linearly interpolated between fixes. | tests only (1) |
 | `certain_road.core.paths` | (module) |  | Repository-relative path resolution. |  |
-|  | `repo_root` | `repo_root() -> Path` | Walk upward from this file until the directory holding pyproject.toml. | 36 code, 11 test files |
+|  | `repo_root` | `repo_root() -> Path` | Walk upward from this file until the directory holding pyproject.toml. | 36 code, 12 test files |
 |  | `data_dir` | `data_dir() -> Path` | no docstring | **possibly unused** |
 |  | `raw_dir` | `raw_dir() -> Path` | no docstring | 4 code, 0 test files |
 |  | `processed_dir` | `processed_dir() -> Path` | no docstring | 1 code, 0 test files |
@@ -1087,6 +1132,17 @@ What was committed on 2026-10-04, naming which tasks and decisions? Commits that
 | `e77197a` | repo_map: drop the C5 exception; the video lane is committed | — | D075, D080, D082 | configs 1 |
 | `e344482` | docs: cleanup plan records the follow-up decisions and the lane's commits | — | D084, D085 | docs 1 |
 
+### 2026-10-05
+
+What was committed on 2026-10-05, naming which tasks and decisions? Commits that only regenerate this map are left out.
+
+| Commit | Subject | Tasks | Decisions | Files touched (by area) |
+|---|---|---|---|---|
+| `70e4328` | D086: simulator texture provenance and leak audit | — | D086 | data 1 · docs 1 |
+| `4b48ea9` | docs: move texture provenance to docs/texture-provenance.md | — | D086 | docs 1 |
+| `119a666` | D086: point at docs/texture-provenance.md | — | D086 | docs 1 |
+| `0034bcf` | DA-2 pack: evidence, scope change, challenges, wiring, and 22 deck figures | — | — | (root) 2 · docs 6 · results 23 |
+
 ### Decisions
 
 Where did each decision come from, and what cites it? Title and status are the index row in `docs/DECISIONS.md`; the commit is the first that added its `## Dnnn` heading; citing files exclude the log itself.
@@ -1096,21 +1152,21 @@ Where did each decision come from, and what cites it? Title and status are the i
 | D001 | Product is a prioritisation system, not a pothole detector | Accepted | `7470190 2026-08-06` | `docs/superpowers/plans/2026-09-22-workspace-cleanup.md` |
 | D002 | Single `uv` project with staged artifacts ("A+") | Accepted | `7470190 2026-08-06` | `src/certain_road/runtime/recorder.py` |
 | D003 | Stage isolation enforced by `import-linter` in CI | Accepted | `7470190 2026-08-06` | `docs/superpowers/plans/archive/2026-08-16-seven-week-schedule.md` |
-| D004 | Conformal layer targets PCI, not detections | Refined by D005 | `7470190 2026-08-06` | — |
-| D005 | Calibration unit is the segment, not the frame | Accepted | `7470190 2026-08-06` | `docs/MENTOR-WALKTHROUGH.md` |
+| D004 | Conformal layer targets PCI, not detections | Refined by D005 | `7470190 2026-08-06` | `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md` |
+| D005 | Calibration unit is the segment, not the frame | Accepted | `7470190 2026-08-06` | `docs/DA2-SCOPE-CHANGE.md`, `docs/MENTOR-WALKTHROUGH.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md` |
 | D006 | Distance-sampled frames + ROI area fraction; no tracker, no homography | Accepted | `7470190 2026-08-06` | `configs/eval/video.yaml`, `docs/MENTOR-WALKTHROUGH.md`, `docs/superpowers/plans/2026-09-05-robot-sprint.md`, `results/RESULTS.md`, `src/certain_road/driving/confirm.py`, `src/certain_road/perception/source.py` |
 | D007 | `assess` runs before `calibrate` | Accepted | `7470190 2026-08-06` | `docs/superpowers/plans/archive/2026-08-15-week-2-assess.md` |
 | D008 | `rsl` is its own stage | Accepted | `7470190 2026-08-06` | — |
 | D009 | Four-way data split | Accepted | `7470190 2026-08-06` | `docs/colab-training-guide.md`, `docs/datasets/rdd2022-india.md`, `docs/detector-benchmark.md`, `docs/superpowers/plans/archive/2026-08-06-week-1-foundation.md`, `results/T2/findings.md`, `src/certain_road/perception/dataset/pool.py`, `src/certain_road/perception/dataset/split.py`, `src/certain_road/perception/train.py`, `tests/test_pool_split.py` |
-| D010 | Evaluation segments: disjoint random partition, within-country | Accepted | `7470190 2026-08-06` | `docs/datasets/rdd2022-india.md`, `docs/superpowers/plans/archive/2026-08-06-week-1-foundation.md`, `src/certain_road/artifacts/schema.py`, `src/certain_road/survey/segment.py` |
+| D010 | Evaluation segments: disjoint random partition, within-country | Accepted | `7470190 2026-08-06` | `docs/DA2-EVIDENCE.md`, `docs/datasets/rdd2022-india.md`, `docs/superpowers/plans/archive/2026-08-06-week-1-foundation.md`, `src/certain_road/artifacts/schema.py`, `src/certain_road/survey/segment.py` |
 | D011 | `pci_true` renamed `pci_ref` (reference PCI) | Accepted | `7470190 2026-08-06` | `docs/superpowers/plans/archive/2026-08-06-week-1-foundation.md` |
 | D012 | OOD detection / conformal p-values cut to future work | Accepted | `7470190 2026-08-06` | — |
-| D013 | Band-spanning intervals flagged `inconclusive` | Accepted | `7470190 2026-08-06` | `docs/MENTOR-WALKTHROUGH.md` |
+| D013 | Band-spanning intervals flagged `inconclusive` | Accepted | `7470190 2026-08-06` | `docs/DA2-SCOPE-CHANGE.md`, `docs/MENTOR-WALKTHROUGH.md` |
 | D014 | Severity is an area-quantile proxy, declared as such | Accepted | `7470190 2026-08-06` | `docs/datasets/rdd2022-india.md`, `docs/superpowers/plans/archive/2026-08-06-week-1-foundation.md`, `docs/superpowers/plans/archive/2026-08-15-week-2-assess.md` |
-| D015 | `density` renamed `vision_density` | Accepted | `7470190 2026-08-06` | `docs/superpowers/plans/archive/2026-08-06-week-1-foundation.md`, `docs/superpowers/plans/archive/2026-08-15-week-2-assess.md` |
-| D016 | Deduct curves digitized; raw points committed | Accepted | `7470190 2026-08-06` | `docs/superpowers/plans/archive/2026-08-15-week-2-assess.md` |
-| D017 | Full iterative CDV correction, not simplified | Accepted | `7470190 2026-08-06` | `docs/superpowers/plans/archive/2026-08-15-week-2-assess.md` |
-| D018 | PCI→RSL curve requires a mandatory `source:` citation | Open | `7470190 2026-08-06` | `README.md`, `docs/MENTOR-WALKTHROUGH.md`, `docs/superpowers/plans/archive/2026-08-15-week-2-assess.md` |
+| D015 | `density` renamed `vision_density` | Accepted | `7470190 2026-08-06` | `docs/DA2-EVIDENCE.md`, `docs/superpowers/plans/archive/2026-08-06-week-1-foundation.md`, `docs/superpowers/plans/archive/2026-08-15-week-2-assess.md` |
+| D016 | Deduct curves digitized; raw points committed | Accepted | `7470190 2026-08-06` | `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `docs/superpowers/plans/archive/2026-08-15-week-2-assess.md` |
+| D017 | Full iterative CDV correction, not simplified | Accepted | `7470190 2026-08-06` | `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `docs/superpowers/plans/archive/2026-08-15-week-2-assess.md` |
+| D018 | PCI→RSL curve requires a mandatory `source:` citation | Open | `7470190 2026-08-06` | `README.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/MENTOR-WALKTHROUGH.md`, `docs/superpowers/plans/archive/2026-08-15-week-2-assess.md` |
 | D019 | Optimiser ranks on worst-case RSL with must-fix constraint | Accepted | `7470190 2026-08-06` | `docs/MENTOR-WALKTHROUGH.md` |
 | D020 | Dashboard is a self-contained offline HTML file | Accepted | `7470190 2026-08-06` | `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `results/RESULTS.md`, `results/dashboard/index.html`, `scripts/build_dashboard.py`, `scripts/make_report.py`, `src/certain_road/dashboard/render.py`, `src/certain_road/dashboard/template.html` |
 | D021 | Decision Replay panel | Accepted | `7470190 2026-08-06` | — |
@@ -1131,7 +1187,7 @@ Where did each decision come from, and what cites it? Title and status are the i
 | D036 | RDD2022 archive is nested two levels; corrects D032's flat-layout assumption and image/annotation counts | Accepted | `54e38bf 2026-08-06` | `docs/MENTOR-WALKTHROUGH.md`, `docs/datasets/multicountry-summary.md`, `docs/datasets/rdd2022-india.md`, `docs/datasets/water-pothole-viability.md`, `scripts/audit_raw.py`, `src/certain_road/perception/dataset/fetch.py` |
 | D037 | Real census: RDD2022 India carries six non-CRDDC2022 class strings; `D44` dominates the drop set | Accepted | `137ad4a 2026-08-06` | `configs/eval/class_maps.yaml`, `docs/MENTOR-WALKTHROUGH.md`, `docs/datasets/multicountry-summary.md`, `docs/datasets/rdd2022-india.md`, `results/T2/split_audit.json`, `results/T2/split_audit.md`, `scripts/build_pool.py` |
 | D038 | D00/D10 merged to one class; three-class set, refines D016 | Accepted | `429245b 2026-08-07` | `TASK_LOG.md`, `configs/eval/class_maps.yaml`, `configs/project.yaml`, `docs/MENTOR-WALKTHROUGH.md`, `docs/datasets/multicountry-summary.md`, `docs/datasets/rdd2022-india.md`, `docs/datasets/water-pothole-viability.md`, `docs/superpowers/plans/2026-08-15-detector-evaluation-harness.md`, `results/T1/raw_audit.md`, `results/T2/split_audit.json`, `results/T2/split_audit.md`, `scripts/audit_raw.py`, `scripts/build_pool.py`, `scripts/qa_raw.py` |
-| D039 | Water-pothole dataset: NO-GO as secondary shift experiment | Accepted | `9a87b39 2026-08-07` | `docs/MENTOR-WALKTHROUGH.md`, `docs/superpowers/plans/2026-09-22-workspace-cleanup.md`, `docs/superpowers/specs/2026-09-22-workspace-cleanup-design.md` |
+| D039 | Water-pothole dataset: NO-GO as secondary shift experiment | Accepted | `9a87b39 2026-08-07` | `docs/MENTOR-WALKTHROUGH.md`, `docs/superpowers/plans/2026-09-22-workspace-cleanup.md`, `docs/superpowers/specs/2026-09-22-workspace-cleanup-design.md`, `docs/texture-provenance.md` |
 | D040 | Ultralytics resolves a relative data-yaml `path` against its own `datasets_dir`, not cwd; `detect train` resolves against `repo_root()` at runtime | Accepted | `11d2a71 2026-08-07` | `docs/MENTOR-WALKTHROUGH.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `src/certain_road/perception/dataset/split.py`, `src/certain_road/perception/train.py`, `tests/test_repo_hygiene.py`, `tests/test_train_config.py` |
 | D041 | Multi-country training, India-only calibration; refines D025 | Accepted | `1c610a1 2026-08-07` | `docs/MENTOR-WALKTHROUGH.md`, `docs/datasets/multicountry-summary.md`, `src/certain_road/cli.py`, `src/certain_road/perception/dataset/split.py`, `tests/test_dataset_split.py` |
 | D042 | YOLOv8s over v8n for the multi-country run; combined before/after vs. india_v1 | Accepted | `e5185ef 2026-08-14` | `configs/train/yolov8s.yaml`, `configs/train/yolov8s_continue.yaml`, `configs/train/yolov8s_india.yaml`, `docs/MENTOR-WALKTHROUGH.md`, `docs/colab-training-guide.md`, `docs/superpowers/specs/2026-09-22-workspace-cleanup-design.md` |
@@ -1140,43 +1196,44 @@ Where did each decision come from, and what cites it? Title and status are the i
 | D045 | Detector eval harness metrics: reuse `ultralytics.utils.metrics`, not `torchmetrics`; Task-4 validation diverges 0.029 mAP50 from `model.val()`'s `rect=True` default, cause identified | Accepted | `cafebf4 2026-08-15` | `docs/MENTOR-WALKTHROUGH.md`, `docs/detector-benchmark.md`, `src/certain_road/cli.py`, `src/certain_road/perception/evaluate.py` |
 | D046 | Timeline fixed to 7 dated weeks (2026-08-17 → 2026-10-05); shift sweep cut; detector freezes 2026-08-30; refines D025 | Refined by D047 | `d7a391e 2026-09-05` | `docs/superpowers/plans/2026-09-05-robot-sprint.md` |
 | D047 | Jetson + GPS brought into scope as a 3-week partition sequenced last; 4-partition schedule 2026-08-18 → 2026-10-05; sensitivity analysis cut | Refined by D048 | `d7a391e 2026-09-05` | `docs/MENTOR-WALKTHROUGH.md`, `docs/superpowers/plans/archive/2026-08-16-seven-week-schedule.md` |
-| D048 | Jetson arrives 2026-08-18: risky bring-up pulled into a bounded weeks-1–4 parallel track; only `ingest`+`detect` ship to the edge | Accepted | `d7a391e 2026-09-05` | `docs/superpowers/plans/2026-09-05-robot-sprint.md`, `src/certain_road/perception/source.py` |
-| D049 | Project pivots to an autonomous road-inspection robot; perception feeds two independent pipelines; control transport is abstract | Accepted | `8c38584 2026-09-05` | `README.md`, `configs/canbus/transport.yaml`, `configs/driving/corridor.yaml`, `docs/superpowers/plans/2026-09-05-day5-corridor-sim.md`, `docs/superpowers/plans/archive/README.md`, `src/certain_road/artifacts/schema.py`, `src/certain_road/driving/corridor.py`, `src/certain_road/runtime/recorder.py`, `src/certain_road/sim/run.py`, `tests/test_driving_corridor.py` |
-| D050 | Simulator is a fourth `Transport`; robot for the demo, simulation for the trial matrix | Accepted | `69e4b45 2026-09-05` | `README.md`, `src/certain_road/driving/corridor.py`, `tests/test_driving_corridor.py` |
-| D051 | CP cut from the sprint; survey ends at vision-estimated PCI; ADAS-inspired behaviours added; calibration split preserved | Superseded by D085 | `09dcb26 2026-09-05` | `docs/detector-benchmark.md`, `docs/superpowers/plans/2026-09-05-robot-sprint.md`, `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `results/RESULTS.md`, `src/certain_road/runtime/pipeline.py`, `src/certain_road/survey/__init__.py`, `tests/test_eval_video.py` |
-| D052 | Deliverable is a vehicle-agnostic control unit demoed on the Jetson: recorded video → real YOLO → real CAN on vcan0; no robot, camera or transceiver required | Accepted | `ed1593f 2026-09-06` | `configs/canbus/transport.yaml`, `src/certain_road/canbus/transport.py`, `src/certain_road/perception/source.py` |
-| D053 | External RDD2022 weights rejected: 0.9765 mAP50 on our test set indicates train/test overlap, so they cannot be measured | Accepted | `d6f7367 2026-09-06` | `README.md`, `docs/MENTOR-WALKTHROUGH.md`, `docs/superpowers/plans/2026-09-22-workspace-cleanup.md`, `docs/superpowers/specs/2026-09-22-workspace-cleanup-design.md` |
+| D048 | Jetson arrives 2026-08-18: risky bring-up pulled into a bounded weeks-1–4 parallel track; only `ingest`+`detect` ship to the edge | Accepted | `d7a391e 2026-09-05` | `docs/DA2-EVIDENCE.md`, `docs/superpowers/plans/2026-09-05-robot-sprint.md`, `src/certain_road/perception/source.py` |
+| D049 | Project pivots to an autonomous road-inspection robot; perception feeds two independent pipelines; control transport is abstract | Accepted | `8c38584 2026-09-05` | `README.md`, `configs/canbus/transport.yaml`, `configs/driving/corridor.yaml`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-09-05-day5-corridor-sim.md`, `docs/superpowers/plans/archive/README.md`, `src/certain_road/artifacts/schema.py`, `src/certain_road/driving/corridor.py`, `src/certain_road/runtime/recorder.py`, `src/certain_road/sim/run.py`, `tests/test_driving_corridor.py` |
+| D050 | Simulator is a fourth `Transport`; robot for the demo, simulation for the trial matrix | Accepted | `69e4b45 2026-09-05` | `README.md`, `docs/DA2-EVIDENCE.md`, `results/figures/MANIFEST.md`, `src/certain_road/driving/corridor.py`, `tests/test_driving_corridor.py` |
+| D051 | CP cut from the sprint; survey ends at vision-estimated PCI; ADAS-inspired behaviours added; calibration split preserved | Superseded by D085 | `09dcb26 2026-09-05` | `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/detector-benchmark.md`, `docs/superpowers/plans/2026-09-05-robot-sprint.md`, `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `results/RESULTS.md`, `src/certain_road/runtime/pipeline.py`, `src/certain_road/survey/__init__.py`, `tests/test_eval_video.py` |
+| D052 | Deliverable is a vehicle-agnostic control unit demoed on the Jetson: recorded video → real YOLO → real CAN on vcan0; no robot, camera or transceiver required | Accepted | `ed1593f 2026-09-06` | `configs/canbus/transport.yaml`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `src/certain_road/canbus/transport.py`, `src/certain_road/perception/source.py` |
+| D053 | External RDD2022 weights rejected: 0.9765 mAP50 on our test set indicates train/test overlap, so they cannot be measured | Accepted | `d6f7367 2026-09-06` | `README.md`, `docs/CHALLENGES.md`, `docs/MENTOR-WALKTHROUGH.md`, `docs/superpowers/plans/2026-09-22-workspace-cleanup.md`, `docs/superpowers/specs/2026-09-22-workspace-cleanup-design.md` |
 | D054 | Workspace cleaned and repo reorganised; redundant weights and data deleted, keepers named explicitly | Accepted | `1a14f7c 2026-09-22` | `docs/MENTOR-WALKTHROUGH.md`, `docs/superpowers/plans/2026-09-22-workspace-cleanup.md`, `docs/superpowers/specs/2026-09-22-workspace-cleanup-design.md` |
 | D055 | RoadSight spec amended to the frozen three-class merge; `pothole_class` replaces every hard-coded class 3 | Accepted | `a23bf6a 2026-09-22` | `TASK_LOG.md`, `configs/project.yaml`, `results/T1/findings.md`, `results/T1/raw_audit.md`, `results/T2/split_audit.json`, `results/T2/split_audit.md`, `scripts/audit_raw.py`, `scripts/build_pool.py`, `scripts/kaggle_push.py`, `scripts/qa_raw.py`, `tests/test_dataset_convert.py` |
-| D056 | `uv` and Python 3.12 retained over the spec's pip/3.11; `requirements.txt` is generated, Kaggle installs only ultralytics | Accepted | `a23bf6a 2026-09-22` | `CLAUDE.md`, `TASK_LOG.md`, `configs/project.yaml`, `kaggle/train/train.py` |
+| D056 | `uv` and Python 3.12 retained over the spec's pip/3.11; `requirements.txt` is generated, Kaggle installs only ultralytics | Accepted | `a23bf6a 2026-09-22` | `CLAUDE.md`, `TASK_LOG.md`, `configs/project.yaml`, `docs/DA2-EVIDENCE.md`, `kaggle/train/train.py` |
 | D057 | Package stays `certain_road`; spec modules are audited and extended, never rewritten | Accepted | `a23bf6a 2026-09-22` | `TASK_LOG.md`, `src/certain_road/perception/metrics_coco.py`, `tests/test_dataset_convert.py` |
-| D058 | Local commit at the end of each task and before every `eval_locked` run; never push | Accepted | `a23bf6a 2026-09-22` | `TASK_LOG.md`, `scripts/eval_locked.py` |
-| D059 | India block split rejected on evidence: adjacent IDs are uncorrelated, so a per-image salted-hash split at the spec's fractions is used | Accepted | `66204f9 2026-09-22` | `TASK_LOG.md`, `results/T2/split_audit.md`, `scripts/audit_duplicates.py`, `scripts/build_pool.py`, `src/certain_road/perception/dataset/pool.py` |
-| D060 | Model A trains on Kaggle only; the Mac is a fallback for Model B alone, and never for A | Accepted | `4a91ed2 2026-09-22` | `TASK_LOG.md`, `results/mps_sanity.json`, `scripts/mps_sanity.py` |
-| D061 | Near-duplicate audit by dHash before T3 bakes the splits into an upload | Accepted | `4a91ed2 2026-09-22` | `TASK_LOG.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `results/T2/duplicates.md`, `results/T2/findings.md`, `scripts/audit_duplicates.py`, `scripts/build_pool.py`, `scripts/scene_groups.py`, `src/certain_road/perception/dataset/dedupe.py`, `src/certain_road/perception/dataset/pool.py`, `tests/test_pool_split.py`, `tests/test_splits.py` |
-| D062 | Allocation solved by exact priority-indexed DP, not PuLP: the bundled CBC binary is x86_64 and cannot run here | Accepted | `e0074a8 2026-09-22` | `TASK_LOG.md`, `scripts/build_pool.py`, `scripts/exhaustive_groups.py`, `scripts/exhaustive_leak_check.py`, `scripts/stage_upload.py`, `src/certain_road/survey/allocation.py` |
-| D063 | Leak verification is exhaustive, not hash-prefiltered; held-out India is never uploaded | Accepted | `e689432 2026-09-22` | `TASK_LOG.md`, `results/RESULTS.md`, `scripts/build_pothole_pool.py`, `scripts/check_bharatpothole.py`, `scripts/eval_locked.py`, `scripts/make_report.py`, `tests/test_splits.py` |
-| D064 | T10 resampling permutes scene groups, not images | Accepted | `e689432 2026-09-22` | `docs/superpowers/plans/2026-09-28-t10-t12.md`, `results/RESULTS.md`, `results/T10/conformal.json`, `results/T10/conformal.md`, `scripts/exp_conformal.py`, `scripts/make_report.py`, `scripts/t9_b_vs_p.py` |
-| D065 | India x nonindia_val checked (68 false positives, 0 copies); kernel-side India guard added; NaN val loss shown to be inert | Accepted | `38529ed 2026-09-22` | `results/RESULTS.md`, `scripts/make_report.py`, `scripts/verify_run.py` |
-| D066 | Cross-country checks test for copies at 0.98, not the within-India same-scene 0.93; amends D063 | Accepted | `bb8889d 2026-09-22` | `docs/superpowers/plans/2026-10-04-cleanup.md`, `results/RESULTS.md`, `scripts/check_bharatpothole.py`, `scripts/make_report.py` |
-| D067 | The India generalization gap is the finding; Model A is never retuned because that number looks low | Accepted | `6305ae2 2026-09-22` | — |
-| D068 | Model A accepted; evaluation settings frozen and stamped so every reported number is like-for-like | Accepted | `85fc55e 2026-09-22` | `configs/project.yaml` |
-| D069 | The India gap is confidence collapse and annotation extent, not blindness; corrects the T6 narrative | Accepted | `13bfc17 2026-09-22` | `docs/superpowers/plans/2026-09-28-video-extent.md` |
-| D070 | T10 alphas come from the measured miss-rate floor, not a fixed list; Model A cannot certify India | Accepted | `13bfc17 2026-09-22` | `configs/project.yaml`, `docs/superpowers/plans/2026-09-28-t10-t12.md`, `results/RESULTS.md`, `scripts/exp_conformal.py`, `scripts/make_report.py` |
+| D058 | Local commit at the end of each task and before every `eval_locked` run; never push | Accepted | `a23bf6a 2026-09-22` | `TASK_LOG.md`, `docs/DA2-EVIDENCE.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `scripts/eval_locked.py` |
+| D059 | India block split rejected on evidence: adjacent IDs are uncorrelated, so a per-image salted-hash split at the spec's fractions is used | Accepted | `66204f9 2026-09-22` | `TASK_LOG.md`, `docs/CHALLENGES.md`, `results/T2/split_audit.md`, `results/figures/MANIFEST.md`, `scripts/audit_duplicates.py`, `scripts/build_pool.py`, `src/certain_road/perception/dataset/pool.py` |
+| D060 | Model A trains on Kaggle only; the Mac is a fallback for Model B alone, and never for A | Accepted | `4a91ed2 2026-09-22` | `TASK_LOG.md`, `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `results/mps_sanity.json`, `scripts/mps_sanity.py` |
+| D061 | Near-duplicate audit by dHash before T3 bakes the splits into an upload | Accepted | `4a91ed2 2026-09-22` | `TASK_LOG.md`, `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `results/T2/duplicates.md`, `results/T2/findings.md`, `results/figures/MANIFEST.md`, `scripts/audit_duplicates.py`, `scripts/build_pool.py`, `scripts/scene_groups.py`, `src/certain_road/perception/dataset/dedupe.py`, `src/certain_road/perception/dataset/pool.py`, `tests/test_pool_split.py`, `tests/test_splits.py` |
+| D062 | Allocation solved by exact priority-indexed DP, not PuLP: the bundled CBC binary is x86_64 and cannot run here | Accepted | `e0074a8 2026-09-22` | `TASK_LOG.md`, `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `scripts/build_pool.py`, `scripts/exhaustive_groups.py`, `scripts/exhaustive_leak_check.py`, `scripts/stage_upload.py`, `src/certain_road/survey/allocation.py` |
+| D063 | Leak verification is exhaustive, not hash-prefiltered; held-out India is never uploaded | Accepted | `e689432 2026-09-22` | `TASK_LOG.md`, `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `docs/texture-provenance.md`, `results/RESULTS.md`, `results/figures/MANIFEST.md`, `scripts/build_pothole_pool.py`, `scripts/check_bharatpothole.py`, `scripts/eval_locked.py`, `scripts/make_report.py`, `tests/test_splits.py` |
+| D064 | T10 resampling permutes scene groups, not images | Accepted | `e689432 2026-09-22` | `docs/DA2-EVIDENCE.md`, `docs/superpowers/plans/2026-09-28-t10-t12.md`, `results/RESULTS.md`, `results/T10/conformal.json`, `results/T10/conformal.md`, `results/figures/MANIFEST.md`, `scripts/exp_conformal.py`, `scripts/make_report.py`, `scripts/t9_b_vs_p.py` |
+| D065 | India x nonindia_val checked (68 false positives, 0 copies); kernel-side India guard added; NaN val loss shown to be inert | Accepted | `38529ed 2026-09-22` | `docs/CHALLENGES.md`, `results/RESULTS.md`, `results/figures/MANIFEST.md`, `scripts/make_report.py`, `scripts/verify_run.py` |
+| D066 | Cross-country checks test for copies at 0.98, not the within-India same-scene 0.93; amends D063 | Accepted | `bb8889d 2026-09-22` | `configs/sim/mujoco.yaml`, `docs/CHALLENGES.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `docs/texture-provenance.md`, `results/RESULTS.md`, `results/figures/MANIFEST.md`, `scripts/check_bharatpothole.py`, `scripts/make_report.py`, `sim/mujoco/textures.py` |
+| D067 | The India generalization gap is the finding; Model A is never retuned because that number looks low | Accepted | `6305ae2 2026-09-22` | `docs/CHALLENGES.md`, `results/figures/MANIFEST.md` |
+| D068 | Model A accepted; evaluation settings frozen and stamped so every reported number is like-for-like | Accepted | `85fc55e 2026-09-22` | `configs/project.yaml`, `docs/DA2-EVIDENCE.md` |
+| D069 | The India gap is confidence collapse and annotation extent, not blindness; corrects the T6 narrative | Accepted | `13bfc17 2026-09-22` | `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `docs/superpowers/plans/2026-09-28-video-extent.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `results/figures/MANIFEST.md` |
+| D070 | T10 alphas come from the measured miss-rate floor, not a fixed list; Model A cannot certify India | Accepted | `13bfc17 2026-09-22` | `configs/project.yaml`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-09-28-t10-t12.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `results/RESULTS.md`, `results/figures/MANIFEST.md`, `scripts/exp_conformal.py`, `scripts/make_report.py` |
 | D072 | Overall 3-class mAP is not the target; pothole AP and per-pothole video detection are | Accepted | `b1b04e4 2026-09-22` | `docs/superpowers/plans/2026-09-22-kernel-preflight.md`, `scripts/build_pothole_pool.py`, `scripts/check_bharatpothole.py`, `scripts/t9_b_vs_p.py` |
 | D073 | BharatPotHole is 162 drives, not 7,074 images; neither its val nor its test split is held out, so neither is used for evaluation | Accepted | `b138f0f 2026-09-22` | `docs/superpowers/plans/2026-09-22-kernel-preflight.md`, `results/RESULTS.md`, `scripts/bph_internal_leakage.py`, `scripts/make_report.py`, `scripts/t9_b_vs_p.py` |
-| D074 | Model P selected over Model B on india_val; the advantage survives scene-group resampling there but does not transfer to locked india_test, where the two are indistinguishable | Accepted | `1599a2f 2026-09-22` | `README.md`, `configs/eval/video.yaml`, `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-09-28-t10-t12.md`, `docs/superpowers/plans/2026-09-28-video-extent.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `results/RESULTS.md`, `results/dashboard/index.html`, `results/video/2DV-cYmIvT4/P/summary.json`, `scripts/eval_video.py`, `scripts/exp_conformal.py`, `scripts/exp_video_extent.py`, `scripts/make_report.py`, `src/certain_road/dashboard/render.py` |
-| D075 | Video evaluation confirms per track (same ID, 3 of the last 5 frames, behind a horizon gate) and reports tracks, not potholes; qualifies D006 and D051 for evaluation only | Accepted | `d23691c 2026-10-04` | `configs/eval/video.yaml`, `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `results/RESULTS.md`, `results/video/2DV-cYmIvT4/B/summary.json`, `results/video/2DV-cYmIvT4/P/summary.json`, `results/video/2DV-cYmIvT4/gt_score.json`, `scripts/eval_video.py`, `scripts/make_report.py`, `scripts/score_video_gt.py`, `tests/test_eval_video.py` |
-| D076 | The T10 tau grid never reached the measured floor, so D070's feasible-alpha prose contradicted its own table; fixed, and Model P's floors measured | Accepted | `a3badf4 2026-09-24` | `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-09-28-t10-t12.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `results/RESULTS.md`, `scripts/exp_conformal.py`, `scripts/make_report.py` |
-| D077 | T10 complete: Model B's certificate holds over 200 group-aware re-partitions, non-India calibration fails in every one, and every tight certificate costs a flood of false alarms | Accepted | `f511ec1 2026-09-28` | `configs/project.yaml`, `results/RESULTS.md`, `scripts/exp_allocation.py`, `scripts/make_report.py` |
-| D078 | T11: the spec's plain martingale is blind to a shift after 500 in-domain frames; a CUSUM reset at matched null false-alarm rate detects 197/200 with median delay 77 frames | Accepted | `fe1b608 2026-09-28` | `configs/eval/video.yaml`, `configs/project.yaml`, `docs/superpowers/plans/2026-09-28-video-extent.md`, `results/RESULTS.md`, `results/T11/drift.json`, `results/T11/drift.md`, `results/dashboard/index.html`, `scripts/exp_drift.py`, `scripts/exp_video_extent.py`, `scripts/make_report.py` |
-| D079 | T12: conformal robustness changes repair decisions and helps modestly; maximising benefit defers the worst roads, so the dashboard must report both objectives | Accepted | `df7e5e6 2026-09-28` | `configs/project.yaml`, `docs/superpowers/plans/2026-09-28-video-extent.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `results/RESULTS.md`, `results/T12/findings.md`, `scripts/exp_allocation.py`, `scripts/make_report.py`, `src/certain_road/dashboard/plans.py`, `src/certain_road/dashboard/render.py`, `tests/test_dashboard.py` |
-| D080 | Scope: a detection count measures discrete defects the detector recognises, not surface condition, and silence is not a good road; Model B's near-silence on degraded Bengaluru road is its training domain, not scale | Accepted | `d23691c 2026-10-04` | `configs/eval/gt/2DV-cYmIvT4_claude.csv`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `results/RESULTS.md`, `results/video/2DV-cYmIvT4/gt_score.json`, `scripts/make_report.py`, `scripts/score_video_gt.py` |
-| D081 | On dashcam video P fires where B does not (100 vs 9 tracks) while on india_test they are indistinguishable; whether P transfers or only fires more is Open until GT scoring; run both on Chennai footage and report both | Accepted · transfer claim Open | `d23691c 2026-10-04` | `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `results/RESULTS.md`, `scripts/make_report.py`, `scripts/score_video_gt.py`, `tests/test_make_report.py` |
-| D082 | Potholes come from Model P and cracks from Model B, and their pothole outputs are never summed; settles the channel D081 left open; no T12 number reflects it yet; D081's transfer claim stays Open | Accepted · T12 re-run Open | `d23691c 2026-10-04` | `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-repo-map.md`, `results/RESULTS.md`, `results/T12/demo_network.json`, `results/dashboard/index.html`, `scripts/exp_allocation.py`, `scripts/make_report.py`, `src/certain_road/dashboard/render.py`, `tests/test_dashboard.py`, `tests/test_make_report.py` |
-| D083 | T16: the dashboard stays one offline HTML file (D020 over the spec); the optimiser's and worst-first's plans always side by side; T12 numbers carry the Model B recall caveat | Accepted | `5e7058c 2026-10-03` | `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `results/RESULTS.md`, `scripts/make_report.py`, `tests/test_make_report.py` |
-| D084 | The locked Model P run's 2,312 absolute symlinks stay as committed (results/LOCKED is never rewritten); eval_locked.py now links relatively; a test pins every escaping link and home-directory path, and configs/data stays absolute by decision | Accepted | `d231467 2026-10-04` | `docs/ONBOARDING.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `scripts/eval_locked.py`, `tests/test_eval_locked_links.py`, `tests/test_repo_hygiene.py` |
-| D085 | Conformal prediction, cut by D051 under sprint pressure, was reinstated by the RoadSight spec adopted at T0 (a23bf6a), which made the certified miss rate the core claim; no separate decision recorded the reversal | Accepted | `03f6318 2026-10-04` | `docs/superpowers/plans/2026-10-04-cleanup.md` |
+| D074 | Model P selected over Model B on india_val; the advantage survives scene-group resampling there but does not transfer to locked india_test, where the two are indistinguishable | Accepted | `1599a2f 2026-09-22` | `README.md`, `configs/eval/video.yaml`, `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-09-28-t10-t12.md`, `docs/superpowers/plans/2026-09-28-video-extent.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `results/RESULTS.md`, `results/dashboard/index.html`, `results/video/2DV-cYmIvT4/P/summary.json`, `scripts/eval_video.py`, `scripts/exp_conformal.py`, `scripts/exp_video_extent.py`, `scripts/make_report.py`, `src/certain_road/dashboard/render.py` |
+| D075 | Video evaluation confirms per track (same ID, 3 of the last 5 frames, behind a horizon gate) and reports tracks, not potholes; qualifies D006 and D051 for evaluation only | Accepted | `d23691c 2026-10-04` | `configs/eval/video.yaml`, `docs/CHALLENGES.md`, `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `results/RESULTS.md`, `results/figures/MANIFEST.md`, `results/video/2DV-cYmIvT4/B/summary.json`, `results/video/2DV-cYmIvT4/P/summary.json`, `results/video/2DV-cYmIvT4/gt_score.json`, `scripts/eval_video.py`, `scripts/make_report.py`, `scripts/score_video_gt.py`, `tests/test_eval_video.py` |
+| D076 | The T10 tau grid never reached the measured floor, so D070's feasible-alpha prose contradicted its own table; fixed, and Model P's floors measured | Accepted | `a3badf4 2026-09-24` | `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-09-28-t10-t12.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `results/RESULTS.md`, `results/figures/MANIFEST.md`, `scripts/exp_conformal.py`, `scripts/make_report.py` |
+| D077 | T10 complete: Model B's certificate holds over 200 group-aware re-partitions, non-India calibration fails in every one, and every tight certificate costs a flood of false alarms | Accepted | `f511ec1 2026-09-28` | `configs/project.yaml`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `results/RESULTS.md`, `results/figures/MANIFEST.md`, `scripts/exp_allocation.py`, `scripts/make_report.py` |
+| D078 | T11: the spec's plain martingale is blind to a shift after 500 in-domain frames; a CUSUM reset at matched null false-alarm rate detects 197/200 with median delay 77 frames | Accepted | `fe1b608 2026-09-28` | `configs/eval/video.yaml`, `configs/project.yaml`, `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-09-28-video-extent.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `results/RESULTS.md`, `results/T11/drift.json`, `results/T11/drift.md`, `results/dashboard/index.html`, `results/figures/MANIFEST.md`, `scripts/exp_drift.py`, `scripts/exp_video_extent.py`, `scripts/make_report.py` |
+| D079 | T12: conformal robustness changes repair decisions and helps modestly; maximising benefit defers the worst roads, so the dashboard must report both objectives | Accepted | `df7e5e6 2026-09-28` | `configs/project.yaml`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-09-28-video-extent.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `results/RESULTS.md`, `results/T12/findings.md`, `results/figures/MANIFEST.md`, `scripts/exp_allocation.py`, `scripts/make_report.py`, `src/certain_road/dashboard/plans.py`, `src/certain_road/dashboard/render.py`, `tests/test_dashboard.py` |
+| D080 | Scope: a detection count measures discrete defects the detector recognises, not surface condition, and silence is not a good road; Model B's near-silence on degraded Bengaluru road is its training domain, not scale | Accepted | `d23691c 2026-10-04` | `configs/eval/gt/2DV-cYmIvT4_claude.csv`, `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `results/RESULTS.md`, `results/figures/MANIFEST.md`, `results/video/2DV-cYmIvT4/gt_score.json`, `scripts/make_report.py`, `scripts/score_video_gt.py` |
+| D081 | On dashcam video P fires where B does not (100 vs 9 tracks) while on india_test they are indistinguishable; whether P transfers or only fires more is Open until GT scoring; run both on Chennai footage and report both | Accepted · transfer claim Open | `d23691c 2026-10-04` | `docs/CHALLENGES.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `results/RESULTS.md`, `scripts/make_report.py`, `scripts/score_video_gt.py`, `tests/test_make_report.py` |
+| D082 | Potholes come from Model P and cracks from Model B, and their pothole outputs are never summed; settles the channel D081 left open; no T12 number reflects it yet; D081's transfer claim stays Open | Accepted · T12 re-run Open | `d23691c 2026-10-04` | `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `docs/superpowers/plans/2026-10-04-repo-map.md`, `results/RESULTS.md`, `results/T12/demo_network.json`, `results/dashboard/index.html`, `results/figures/MANIFEST.md`, `scripts/exp_allocation.py`, `scripts/make_report.py`, `src/certain_road/dashboard/render.py`, `tests/test_dashboard.py`, `tests/test_make_report.py` |
+| D083 | T16: the dashboard stays one offline HTML file (D020 over the spec); the optimiser's and worst-first's plans always side by side; T12 numbers carry the Model B recall caveat | Accepted | `5e7058c 2026-10-03` | `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `results/RESULTS.md`, `results/figures/MANIFEST.md`, `scripts/make_report.py`, `tests/test_make_report.py` |
+| D084 | The locked Model P run's 2,312 absolute symlinks stay as committed (results/LOCKED is never rewritten); eval_locked.py now links relatively; a test pins every escaping link and home-directory path, and configs/data stays absolute by decision | Accepted | `d231467 2026-10-04` | `README-DA2.md`, `docs/ONBOARDING.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `scripts/eval_locked.py`, `tests/test_eval_locked_links.py`, `tests/test_repo_hygiene.py` |
+| D085 | Conformal prediction, cut by D051 under sprint pressure, was reinstated by the RoadSight spec adopted at T0 (a23bf6a), which made the certified miss rate the core claim; no separate decision recorded the reversal | Accepted | `03f6318 2026-10-04` | `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md` |
+| D086 | Simulator textures are QR4Change and BD-N6 photos (CC BY 4.0), never used in training; audited clean by norm_vec (max 0.8887) and ORB crop matching (max 8 inliers) | Accepted | `70e4328 2026-10-05` | `docs/superpowers/plans/2026-10-05-da2-screenshots-and-zip.md`, `docs/texture-provenance.md` |
 
 ## 8. Model and artifact registry
 
@@ -1275,6 +1332,8 @@ Which modules does each test file import?
 | `tests/test_kaggle_guard.py` | — |
 | `tests/test_make_report.py` | `scripts/make_report.py` |
 | `tests/test_metrics_coco.py` | `certain_road.perception.metrics_coco` |
+| `tests/test_mujoco_camera.py` | `certain_road.core.geometry` |
+| `tests/test_mujoco_road.py` | `certain_road.core.paths` |
 | `tests/test_operating_points.py` | `scripts/t9_b_vs_p.py` |
 | `tests/test_perception_evaluate.py` | `certain_road.perception.evaluate` |
 | `tests/test_perception_predict.py` | `certain_road.artifacts.io`, `certain_road.artifacts.schema`, `certain_road.perception.predict` |
