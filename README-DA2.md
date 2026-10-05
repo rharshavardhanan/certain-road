@@ -34,8 +34,10 @@ The `git` line is needed because the checks read the repository through git, and
 archive has no `.git`. Without it, two tests in `tests/test_repo_hygiene.py` fail and the
 repo-map step stops.
 
-This archive, extracted and checked that way on macOS on 2026-10-04, gave
-`6 of 6 steps passed`:
+This archive, extracted and checked that way on macOS on 2026-10-05, gave
+`6 of 6 steps passed`. The check ran in a sandbox that could not read the original
+checkout, with the 2,312 links below pointing at a home directory that does not exist, as
+on a reviewer's machine:
 
 - `pytest`: 422 passed and 16 skipped. Each skipped test needs the gitignored image pool,
   and its skip message names the script that builds it.
