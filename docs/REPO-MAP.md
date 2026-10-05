@@ -1,8 +1,8 @@
 # Repository map
 
-Generated 2026-10-05 12:55:08 +0530
+Generated 2026-10-05 13:17:51 +0530
 
-Commit `d9485fb` on `workspace-cleanup`; 17 paths differ from it in the working tree.
+Commit `1e130f8` on `workspace-cleanup`; 0 paths differ from it in the working tree.
 
 Do not edit by hand — rerun scripts/repo_map.py
 
@@ -46,7 +46,7 @@ Quoted from `docs/design.md`:
 >
 > The novelty is the **integration and the decision**, not the detector.
 
-Evidence at build time, beside the quotes' own status lines: 130 commits from 2026-08-06 to 2026-10-05; Python files: 1 in `kaggle/`, 35 in `scripts/`, 8 in `sim/`, 51 in `src/`, 45 in `tests/`.
+Evidence at build time, beside the quotes' own status lines: 131 commits from 2026-08-06 to 2026-10-05; Python files: 1 in `kaggle/`, 35 in `scripts/`, 8 in `sim/`, 51 in `src/`, 45 in `tests/`.
 
 ## 2. Pipeline
 
@@ -203,9 +203,9 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `configs/eval/video.yaml` | 40 | 2026-10-04 | 2026-10-04 | D075 — per-pothole confirmation on road video (scripts/eval_video.py). | read-only lane |
 | `configs/project.yaml` | 115 | 2026-09-22 | 2026-09-28 | RoadSight project configuration. |  |
 | `configs/repo_map.yaml` | 103 | 2026-10-04 | 2026-10-04 | scripts/repo_map.py -> docs/REPO-MAP.md. |  |
-| `configs/sim/mujoco.yaml` | 84 | uncommitted | uncommitted | MuJoCo live survey demo (sim/mujoco). | untracked |
+| `configs/sim/mujoco.yaml` | 84 | 2026-10-05 | 2026-10-05 | MuJoCo live survey demo (sim/mujoco). |  |
 | `configs/sim/robot.yaml` | 23 | 2026-09-05 | 2026-09-05 | Simulated robot and camera geometry. |  |
-| `configs/sim/textures.yaml` | 84 | uncommitted | uncommitted | Textures for the MuJoCo demo (sim/mujoco/textures.py). | untracked |
+| `configs/sim/textures.yaml` | 84 | 2026-10-05 | 2026-10-05 | Textures for the MuJoCo demo (sim/mujoco/textures.py). |  |
 | `configs/train/yolov8n.yaml` | 24 | 2026-08-07 | 2026-08-07 | YOLOv8n on the RDD2022 India subset (D025). |  |
 | `configs/train/yolov8s.yaml` | 36 | 2026-08-14 | 2026-08-14 | YOLOv8s on the RDD2022 multi-country corpus (D042). |  |
 | `configs/train/yolov8s_continue.yaml` | 84 | 2026-08-15 | 2026-08-15 | Continuation of the D042 multi-country YOLOv8s run from existing weights (D043). |  |
@@ -242,8 +242,8 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `tests/test_kaggle_guard.py` | 157 | 2026-09-22 | 2026-10-04 | The last line of defence before a six-hour run reads its first image. |  |
 | `tests/test_make_report.py` | 136 | 2026-10-03 | 2026-10-04 | RESULTS.md is generated; these pin the properties that make it trustworthy. |  |
 | `tests/test_metrics_coco.py` | 122 | 2026-09-22 | 2026-10-04 | T6 — the class-id offset is the bug that would not announce itself. |  |
-| `tests/test_mujoco_camera.py` | 81 | uncommitted | uncommitted | The MuJoCo camera is the design camera, and it agrees with core.geometry's IPM. | untracked |
-| `tests/test_mujoco_road.py` | 79 | uncommitted | uncommitted | The MuJoCo demo's road generator: reproducible, round-trips, and clusters its damage. | untracked |
+| `tests/test_mujoco_camera.py` | 81 | 2026-10-05 | 2026-10-05 | The MuJoCo camera is the design camera, and it agrees with core.geometry's IPM. |  |
+| `tests/test_mujoco_road.py` | 79 | 2026-10-05 | 2026-10-05 | The MuJoCo demo's road generator: reproducible, round-trips, and clusters its damage. |  |
 | `tests/test_operating_points.py` | 123 | 2026-09-22 | 2026-10-04 | The B-vs-P comparison turns on numbers no eyeball can check. |  |
 | `tests/test_perception_evaluate.py` | 271 | 2026-09-05 | 2026-09-05 | Tests for `certain_road.perception.evaluate`. |  |
 | `tests/test_perception_predict.py` | 201 | 2026-09-05 | 2026-09-05 | Tests for the predict.py schema/remap boundary. |  |
@@ -428,7 +428,7 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `docs/CHALLENGES.md` | 203 | 2026-10-05 | 2026-10-05 | Challenges |  |
 | `docs/DA2-EVIDENCE.md` | 351 | 2026-10-05 | 2026-10-05 | DA-2 evidence |  |
 | `docs/DA2-SCOPE-CHANGE.md` | 101 | 2026-10-05 | 2026-10-05 | Scope change, DA-1 to DA-2 |  |
-| `docs/DECISIONS.md` | 3491 | 2026-08-06 | 2026-10-05 | Decision log | modified |
+| `docs/DECISIONS.md` | 3491 | 2026-08-06 | 2026-10-05 | Decision log |  |
 | `docs/MENTOR-WALKTHROUGH.md` | 1403 | 2026-09-05 | 2026-09-22 | certain-road — a walkthrough |  |
 | `docs/ONBOARDING.md` | 66 | 2026-10-04 | 2026-10-04 | Onboarding |  |
 | `docs/colab-training-guide.md` | 220 | 2026-09-07 | 2026-09-07 | Training on Colab (T4) |  |
@@ -451,7 +451,7 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `docs/superpowers/plans/2026-10-03-t17-results.md` | 35 | 2026-10-03 | 2026-10-03 | T17 results report |  |
 | `docs/superpowers/plans/2026-10-04-cleanup.md` | 195 | 2026-10-04 | 2026-10-04 | Release-readiness cleanup |  |
 | `docs/superpowers/plans/2026-10-04-da2-evidence.md` | 251 | 2026-10-05 | 2026-10-05 | DA-2 review pack |  |
-| `docs/superpowers/plans/2026-10-04-mujoco-demo.md` | 193 | uncommitted | uncommitted | MuJoCo live survey demo | untracked |
+| `docs/superpowers/plans/2026-10-04-mujoco-demo.md` | 193 | 2026-10-05 | 2026-10-05 | MuJoCo live survey demo |  |
 | `docs/superpowers/plans/2026-10-04-repo-map.md` | 88 | 2026-10-04 | 2026-10-04 | Repo map: a generated onboarding document |  |
 | `docs/superpowers/plans/2026-10-05-da2-screenshots-and-zip.md` | 50 | 2026-10-05 | 2026-10-05 | DA-2: two screenshots, then the source zip rebuilt from HEAD |  |
 | `docs/superpowers/plans/archive/2026-08-06-week-1-foundation.md` | 2245 | 2026-09-05 | 2026-10-04 | Week 1 Foundation Implementation Plan |  |
@@ -519,16 +519,16 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `README-DA2.md` | 68 | 2026-10-05 | 2026-10-05 | Camera-Based Pothole and Crack Survey for Road Maintenance Planning |  |
 | `README.md` | 154 | 2026-08-06 | 2026-10-04 | certain-road |  |
 | `TASK_LOG.md` | 348 | 2026-09-22 | 2026-10-04 | RoadSight — task log |  |
-| `pyproject.toml` | 65 | 2026-08-06 | 2026-10-04 | no docstring | modified |
-| `requirements.txt` | 399 | 2026-09-22 | 2026-10-04 | This file was autogenerated by uv via the following command: uv export --format requirements-txt --no-hashes | modified |
-| `sim/__init__.py` | 0 | uncommitted | uncommitted | no docstring | untracked |
-| `sim/mujoco/__init__.py` | 1 | uncommitted | uncommitted | MuJoCo live survey demo. | untracked |
-| `sim/mujoco/camera.py` | 72 | uncommitted | uncommitted | Render what the dashcam would record, not what the renderer draws. | untracked |
-| `sim/mujoco/demo.py` | 91 | uncommitted | uncommitted | MuJoCo survey demo CLI. | untracked |
-| `sim/mujoco/road.py` | 227 | uncommitted | uncommitted | Seeded road layout and clustered damage, and its ground truth. | untracked |
-| `sim/mujoco/scene.py` | 238 | uncommitted | uncommitted | Assemble the MuJoCo scene for one road: surface tiles, kerbs, shoulders, sky, sun, haze, poles, a wall, signs, and the vehicle carrying the camera. | untracked |
-| `sim/mujoco/surface.py` | 236 | uncommitted | uncommitted | Bake the road surface into texture tiles: asphalt, markings, then damage. | untracked |
-| `sim/mujoco/textures.py` | 185 | uncommitted | uncommitted | Trial-photo textures: curated, prepared, and checked against the training data. | untracked |
+| `pyproject.toml` | 65 | 2026-08-06 | 2026-10-05 | no docstring |  |
+| `requirements.txt` | 399 | 2026-09-22 | 2026-10-05 | This file was autogenerated by uv via the following command: uv export --format requirements-txt --no-hashes |  |
+| `sim/__init__.py` | 0 | 2026-10-05 | 2026-10-05 | no docstring |  |
+| `sim/mujoco/__init__.py` | 1 | 2026-10-05 | 2026-10-05 | MuJoCo live survey demo. |  |
+| `sim/mujoco/camera.py` | 72 | 2026-10-05 | 2026-10-05 | Render what the dashcam would record, not what the renderer draws. |  |
+| `sim/mujoco/demo.py` | 91 | 2026-10-05 | 2026-10-05 | MuJoCo survey demo CLI. |  |
+| `sim/mujoco/road.py` | 227 | 2026-10-05 | 2026-10-05 | Seeded road layout and clustered damage, and its ground truth. |  |
+| `sim/mujoco/scene.py` | 238 | 2026-10-05 | 2026-10-05 | Assemble the MuJoCo scene for one road: surface tiles, kerbs, shoulders, sky, sun, haze, poles, a wall, signs, and the vehicle carrying the camera. |  |
+| `sim/mujoco/surface.py` | 236 | 2026-10-05 | 2026-10-05 | Bake the road surface into texture tiles: asphalt, markings, then damage. |  |
+| `sim/mujoco/textures.py` | 185 | 2026-10-05 | 2026-10-05 | Trial-photo textures: curated, prepared, and checked against the training data. |  |
 | `splits/india_cal.txt` | 1156 | 2026-09-22 | 2026-09-22 | no docstring |  |
 | `splits/india_full.txt` | 7706 | 2026-09-22 | 2026-09-22 | no docstring |  |
 | `splits/india_heldout.txt` | 2312 | 2026-09-22 | 2026-09-22 | no docstring |  |
@@ -538,7 +538,7 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `splits/nonindia_replay.txt` | 5000 | 2026-09-22 | 2026-09-22 | no docstring |  |
 | `splits/nonindia_train.txt` | 24508 | 2026-09-22 | 2026-09-22 | no docstring |  |
 | `splits/nonindia_val.txt` | 6142 | 2026-09-22 | 2026-09-22 | no docstring |  |
-| `uv.lock` | 1889 | 2026-08-06 | 2026-10-04 | no docstring | modified |
+| `uv.lock` | 1889 | 2026-08-06 | 2026-10-05 | no docstring |  |
 
 ## 4. Module reference
 
@@ -1143,6 +1143,7 @@ What was committed on 2026-10-05, naming which tasks and decisions? Commits that
 | `119a666` | D086: point at docs/texture-provenance.md | — | D086 | docs 1 |
 | `0034bcf` | DA-2 pack: evidence, scope change, challenges, wiring, and 22 deck figures | — | — | (root) 2 · docs 6 · results 23 |
 | `d9485fb` | README-DA2: the archive check re-run on an archive built from HEAD | — | — | (root) 1 |
+| `1e130f8` | D087: MuJoCo demo simulator, step 1 - seeded road, trial-photo surface, design camera | — | D086, D087 | (root) 3 · configs 2 · docs 2 · sim 8 · tests 2 |
 
 ### Decisions
 
@@ -1235,7 +1236,7 @@ Where did each decision come from, and what cites it? Title and status are the i
 | D084 | The locked Model P run's 2,312 absolute symlinks stay as committed (results/LOCKED is never rewritten); eval_locked.py now links relatively; a test pins every escaping link and home-directory path, and configs/data stays absolute by decision | Accepted | `d231467 2026-10-04` | `README-DA2.md`, `docs/ONBOARDING.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `scripts/eval_locked.py`, `tests/test_eval_locked_links.py`, `tests/test_repo_hygiene.py` |
 | D085 | Conformal prediction, cut by D051 under sprint pressure, was reinstated by the RoadSight spec adopted at T0 (a23bf6a), which made the certified miss rate the core claim; no separate decision recorded the reversal | Accepted | `03f6318 2026-10-04` | `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md` |
 | D086 | Simulator textures are QR4Change and BD-N6 photos (CC BY 4.0), never used in training; audited clean by norm_vec (max 0.8887) and ORB crop matching (max 8 inliers) | Accepted | `70e4328 2026-10-05` | `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `docs/superpowers/plans/2026-10-05-da2-screenshots-and-zip.md`, `docs/texture-provenance.md` |
-| D087 | A MuJoCo demo simulator for the DA-2 review (`sim/mujoco/`): synthetic road from the D086 photos, real detectors and survey code, design camera; not T13 | Accepted | uncommitted | — |
+| D087 | A MuJoCo demo simulator for the DA-2 review (`sim/mujoco/`): synthetic road from the D086 photos, real detectors and survey code, design camera; not T13 | Accepted | `1e130f8 2026-10-05` | — |
 
 ## 8. Model and artifact registry
 
@@ -1360,7 +1361,7 @@ Which `src/` modules with public symbols does no test import directly?
 | Module |
 |---|
 
-pytest, run at build time: **438 passed** (exit 0).
+pytest, run at build time: **448 passed** (exit 0).
 
 import-linter: 8 contracts in `.importlinter`; lint-imports reports **Contracts: 8 kept, 0 broken.** (exit 0).
 
@@ -1400,7 +1401,7 @@ Which decisions are written in the working tree but absent from `HEAD:docs/DECIS
 
 | Decision | Title |
 |---|---|
-| D087 | A MuJoCo demo simulator for the DA-2 review (`sim/mujoco/`): synthetic road from the D086 photos, real detectors and survey code, design camera; not T13 |
+| none | — |
 
 ### c) Loose ends
 
