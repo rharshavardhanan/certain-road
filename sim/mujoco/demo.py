@@ -64,12 +64,16 @@ def main() -> None:
     ap.add_argument("--ground-truth", type=Path)
     ap.add_argument("--screenshot", type=Path)
     ap.add_argument("--at", type=float, help="metres along the road; default: the busiest view")
-    ap.add_argument("--drive", action="store_true", help="run the drive loop with live detection")
+    ap.add_argument("--drive", action="store_true", help="drive (the default with no other action)")
     ap.add_argument("--headless", action="store_true", help="no window; write the logs only")
     ap.add_argument("--until-m", type=float, help="stop the drive early, for a quick check")
     ap.add_argument("--record", type=Path, help="also write the screen to this .mp4, in real time")
     ap.add_argument("--still", type=Path, help="save the last screen frame as a PNG")
+    ap.add_argument("--budget-frac", type=float, help="repair budget, share of the full cost")
+    ap.add_argument("--end-only", action="store_true", help="redraw the end screen of a run")
     args = ap.parse_args()
+    # The plain command drives: the brief's `--preset poor --seed 0` opens and runs.
+    args.drive = args.drive or not (args.screenshot or args.ground_truth or args.end_only)
     road, cfg = make_road(args.preset, args.seed)
     counts = {c: sum(i.cls == c for i in road.instances) for c in road_mod.CLASSES}
     print(
@@ -95,21 +99,31 @@ def main() -> None:
             f"-> {args.screenshot} {img.shape[1]}x{img.shape[0]}"
         )
 
-    if args.drive:
+    if args.drive or args.end_only:
         from certain_road.core.paths import repo_root
-        from sim.mujoco.drive import run
+        from sim.mujoco.evaluate import summarise
+        from sim.mujoco.screen import render_end
 
         out = repo_root() / cfg["out_dir"] / f"{args.preset}_seed{args.seed}"
         live = None
         if not args.headless or args.record or args.still:
             live = Live(road, cfg, window=not args.headless, record=args.record)
-        summary = run(road, cfg, out, show=live, until_m=args.until_m)
-        if live is not None:
-            if args.still and live.last is not None:
+        if args.drive:
+            from sim.mujoco.drive import run
+
+            summary = run(road, cfg, out, show=live, until_m=args.until_m)
+            print(json.dumps(summary, indent=1))
+            if live is not None and args.still and live.last is not None:
                 args.still.parent.mkdir(parents=True, exist_ok=True)
                 cv2.imwrite(str(args.still), live.last)
+        end = summarise(road, cfg, out, args.budget_frac)
+        img = render_end(end, road, cfg)
+        cv2.imwrite(str(out / "end_screen.png"), img)
+        print(json.dumps({k: end[k] for k in ("detection", "repair", "drift_alarm_m")}, indent=1))
+        print(f"end screen -> {out / 'end_screen.png'}")
+        if live is not None:
+            live.hold(img, cfg["end"]["hold_s"])
             live.close()
-        print(json.dumps(summary, indent=1))
 
 
 class Live:
@@ -152,6 +166,15 @@ class Live:
             return True
         cv2.imshow(self.NAME, img)
         return cv2.waitKey(wait_ms) not in (27, ord("q"))
+
+    def hold(self, img: np.ndarray, seconds: float) -> None:
+        """Hold the end screen: `seconds` of it in a recording; in a window, until a key."""
+        if self.writer is not None:
+            for _ in range(round(self.fps * seconds)):
+                self.writer.write(img)
+        if self.window:
+            cv2.imshow(self.NAME, img)
+            cv2.waitKey(0)
 
     def close(self) -> None:
         if self.writer is not None:

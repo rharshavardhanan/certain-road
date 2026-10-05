@@ -77,18 +77,21 @@ def in_roi(box: Box, camera: scoring.Camera, cfg: dict) -> bool:
     return near <= g[0] < far and abs(g[1]) <= half
 
 
-def gt_boxes(road: Road, x_cam: float, cam: dict, cfg: dict) -> list[Box]:
+def gt_boxes_by_id(
+    road: Road, x_cam: float, cam: dict, cfg: dict, max_m: float | None = None
+) -> list[tuple[int, Box]]:
     """The box a perfect detector would draw round each instance, from the camera at x_cam.
 
     Projects the instance's ellipse, the shape the surface baker paints, and clips the box to
-    the frame. Only instances that could reach the ROI are projected.
+    the frame. Only instances starting within `max_m` ahead are projected (default: those that
+    could reach the ROI).
     """
     camera = survey_camera(cam)
-    _, far, _ = roi(cfg)
+    reach = roi(cfg)[1] + 1.0 if max_m is None else max_m
     t = np.linspace(0, 2 * math.pi, cfg["survey"]["gt_outline_points"], endpoint=False)
     out = []
     for i in road.instances:
-        if i.bbox[2] <= x_cam or i.bbox[0] >= x_cam + far + 1.0:
+        if i.bbox[2] <= x_cam or i.bbox[0] >= x_cam + reach:
             continue
         c, s = math.cos(i.angle_rad), math.sin(i.angle_rad)
         ex, ey = i.length_m / 2 * np.cos(t), i.width_m / 2 * np.sin(t)
@@ -100,23 +103,35 @@ def gt_boxes(road: Road, x_cam: float, cam: dict, cfg: dict) -> list[Box]:
         x1, y1 = np.clip(uv.min(0), 0, [cam["w"], cam["h"]])
         x2, y2 = np.clip(uv.max(0), 0, [cam["w"], cam["h"]])
         if x2 > x1 and y2 > y1:
-            out.append((i.cls, float(x1), float(y1), float(x2), float(y2)))
+            out.append((i.id, (i.cls, float(x1), float(y1), float(x2), float(y2))))
     return out
+
+
+def gt_boxes(road: Road, x_cam: float, cam: dict, cfg: dict) -> list[Box]:
+    """`gt_boxes_by_id` without the ids, for the instances that could reach the ROI."""
+    return [b for _, b in gt_boxes_by_id(road, x_cam, cam, cfg)]
 
 
 def score_boxes(boxes: list[Box], camera: scoring.Camera, segment_m: float) -> dict:
     """One segment's vision-estimated PCI from its counted boxes, by the real scoring code."""
     p = PROJECT["scoring"]
-    distress, deducts = {}, {}
+    distress, deducts, area = {}, {}, 0.0
     for c in CLASSES:
         fp = [scoring.box_footprint_m2(*b[1:], camera) for b in boxes if b[0] == c]
+        area += sum(f for f in fp if f is not None)
         value, unit = scoring.segment_distress(
             fp, segment_m=segment_m, lane_width_m=p["lane_width_m"]
         )
-        distress[c] = (round(value, 4), unit)
+        distress[c] = (round(float(value), 4), unit)
         deducts[c] = scoring.deduct_value(value, p["deduct_weights"][c])
     pci = scoring.vision_estimated_pci(deducts)
-    return {"pci": pci, "band": scoring.band(pci), "distress": distress, "deducts": deducts}
+    return {
+        "pci": pci,
+        "band": scoring.band(pci),
+        "distress": distress,
+        "deducts": deducts,
+        "area_m2": area,
+    }
 
 
 @dataclass
@@ -132,6 +147,7 @@ class SegmentResult:
     pci_ref: float  # reference PCI: the ground truth through the same path
     band_ref: str
     distress_ref: dict[str, tuple[float, str]]
+    area_ref_m2: float  # reference footprints, the area D079's repair cost is priced on
 
 
 @dataclass
@@ -232,6 +248,7 @@ class Survey:
             pci_ref=round(ref["pci"], 2),
             band_ref=ref["band"],
             distress_ref=ref["distress"],
+            area_ref_m2=round(ref["area_m2"], 4),
         )
         self.segments.append(res)
         return res

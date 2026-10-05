@@ -103,6 +103,14 @@ def chip(img, ink, x, y, s, fill, text_rgb, size="chip", weight="Semibold", pad=
     return x + w
 
 
+def honesty(road: Road, cfg: dict) -> str:
+    """The line every render carries: what is simulated, what is real, and the texture credits."""
+    return (
+        f"Simulated {road.preset} road, seed {road.seed} · real Model P and Model B · "
+        f"real certain_road.survey scoring and allocation · {cfg['credits']}"
+    )
+
+
 class Screen:
     def __init__(self, road: Road, cfg: dict, cam: dict, samples_total: int, per_segment: int):
         self.road, self.cfg, self.cam = road, cfg, cam
@@ -156,25 +164,7 @@ class Screen:
         self._title(img, self.count_box, "Survey", "confirmed = same track in 3 of 5 frames")
         self._title(img, self.drift_box, "Drift monitor", "Model B confidence vs india_val, CUSUM")
         ink, m = self.ink, self.rgb["muted"]
-        right = x + w - 40
-        ink.put(
-            img,
-            right,
-            y + 18,
-            "Simulated road · real models · real scoring code",
-            m,
-            "label",
-            align="right",
-        )
-        ink.put(
-            img,
-            right,
-            y + 52,
-            f"certain-road · {self.road.preset} · seed {self.road.seed}",
-            m,
-            "label",
-            align="right",
-        )
+        ink.put(img, x + 40, y + 64, honesty(self.road, self.cfg), m, "small")
         # map: road plan, the segment row and the band legend
         mx, my, mw, _ = self.map_box
         self.sx = (mw - 80) / self.road.length_m
@@ -283,16 +273,14 @@ class Screen:
             self.rgb["muted"],
             "label",
         )
-        legend = [
-            (NAMES[c], self.cls_rgb[c]) for c in ("pothole", "linear_crack", "alligator_crack")
+        short = {"pothole": "Pothole", "linear_crack": "Linear", "alligator_crack": "Alligator"}
+        legend = [(short[c], self.cls_rgb[c]) for c in short] + [
+            ("Confirmed", self.cls_rgb["confirmed"])
         ]
-        legend.append(("Confirmed", self.cls_rgb["confirmed"]))
-        span = sum(ink.width(n, "label", "Semibold") for n, _ in legend) + 20 * (len(legend) + 1)
-        lx, ly = x + w - 16 - int(span), y + h - 56
-        blend(img, lx, ly, np.full((40, int(span), 1), 0.8, np.float32), self.rgb["dark"])
-        lx += 20
-        for name, rgb in legend:
-            lx = ink.put(img, lx, ly + 7, name, rgb, "label", "Semibold") + 20
+        lx = x + w - 20  # in the top strip, right-aligned, clear of the road
+        for name, rgb in reversed(legend):
+            ink.put(img, lx, y + 9, name, rgb, "label", "Semibold", align="right")
+            lx -= ink.width(name, "label", "Semibold") + 18
         if rec.sampled or flash > 0:
             white, dark = (255, 255, 255), self.rgb["dark"]
             chip(img, ink, x + 16, y + h - 56, "5 m survey sample", dark, white, "label", h=40)
@@ -435,9 +423,129 @@ class Screen:
     def _caption(self, img):
         x, y, w, h = self.cap_box
         text, tag = self.caption
-        end = self.ink.put(img, x + 40, y + 24, text, self.rgb["text"], "caption", "Semibold")
+        end = self.ink.put(img, x + 40, y + 10, text, self.rgb["text"], "caption", "Semibold")
         if tag == "alarm":
             return
         if tag is not None:
             tc = self.rgb["dark"] if tag in self.sc["dark_text_bands"] else (255, 255, 255)
-            chip(img, self.ink, int(end + 20), y + 24, tag, self.band_rgb[tag], tc)
+            chip(img, self.ink, int(end + 20), y + 8, tag, self.band_rgb[tag], tc)
+
+
+def render_end(end: dict, road: Road, cfg: dict) -> np.ndarray:
+    """The result screen: segments, the repair plans at the budget, and detection vs truth."""
+    sc = cfg["screen"]
+    rgb = {k: tuple(v) for k, v in sc["rgb"].items()}
+    band_rgb = {k: tuple(v) for k, v in sc["band_rgb"].items()}
+    ink, t, m = Ink(sc), rgb["text"], rgb["muted"]
+    W, H = sc["size"]
+    img = np.empty((H, W, 3), np.uint8)
+    img[:] = rgb["bg"]
+    ch = sc["caption_h"]
+    img[H - ch :] = rgb["panel"]
+    segs, rep, det = end["segments"], end["repair"], end["detection"]
+
+    def band_chip(x, y, pci, band, size="label"):
+        tc = rgb["dark"] if band in sc["dark_text_bands"] else (255, 255, 255)
+        return chip(img, ink, x, y, f"{pci:.0f}  {band}", band_rgb[band], tc, size, h=40)
+
+    alarm = end["drift_alarm_m"]
+    ink.put(img, 60, 36, "Survey complete", t, 48, "Semibold")
+    sub = (
+        f"{road.preset} road, seed {road.seed} · {road.length_m:.0f} m · {len(segs)} segments · "
+        + (f"drift alarm at {alarm:.0f} m" if alarm is not None else "no drift alarm")
+    )
+    ink.put(img, 60, 104, sub, m, "label")
+
+    # ---- per-segment table ----
+    cols = {
+        "#": 60,
+        "Ground": 120,
+        "Counted P · A · L": 330,
+        "Vision-estimated PCI": 560,
+        "Reference PCI": 830,
+        "Optimiser": 1090,
+        "Worst-first": 1220,
+    }
+    y0 = 172
+    for name, cx in cols.items():
+        ink.put(img, cx, y0, name, m, "small", "Medium")
+    row_h = min(58, (H - ch - 40 - (y0 + 36)) // max(1, len(segs)))
+    chosen = {k: set(v["chosen"]) for k, v in rep["plans"].items()}
+    worst = set(rep["worst"])
+    for r, s in enumerate(segs):
+        y = y0 + 36 + r * row_h
+        if r % 2 == 0:
+            img[y - 6 : y + row_h - 6, 40:1340] = rgb["panel"]
+        cy = y + 4
+        ink.put(img, cols["#"], cy, str(s["index"] + 1), t, "label", "Semibold")
+        ink.put(img, cols["Ground"], cy, f"{s['x0_m']:.0f}–{s['x1_m']:.0f} m", t, "label")
+        c = s["counts"]
+        counted = f"{c['pothole']} · {c['alligator_crack']} · {c['linear_crack']}"
+        ink.put(img, cols["Counted P · A · L"], cy, counted, t, "label")
+        band_chip(cols["Vision-estimated PCI"], y - 2, s["vision_estimated_pci"], s["band"])
+        right = band_chip(cols["Reference PCI"], y - 2, s["pci_ref"], s["band_ref"])
+        if s["index"] in worst:
+            ink.put(img, right + 10, cy, f"worst {rep_n(rep)}", m, "small")
+        for name in ("optimiser", "worst-first"):
+            cx = cols["Optimiser" if name == "optimiser" else "Worst-first"] + 40
+            if s["index"] in chosen[name]:
+                cv2.circle(img, (cx, y + 18), 11, t, -1, cv2.LINE_AA)
+            else:
+                cv2.circle(img, (cx, y + 18), 11, rgb["line"], 2, cv2.LINE_AA)
+
+    # ---- repair plan ----
+    x = 1400
+    ink.put(img, x, 172, "Repair plan", t, "title", "Semibold")
+    ink.put(
+        img,
+        x,
+        212,
+        f"budget {rep['budget_frac']:.0%} of the cost of repairing every segment",
+        m,
+        "small",
+    )
+    for k, (name, label) in enumerate((("optimiser", "Optimiser"), ("worst-first", "Worst-first"))):
+        p, y = rep["plans"][name], 262 + k * 176
+        ink.put(img, x, y, label, t, "body", "Semibold")
+        ids = ", ".join(str(i + 1) for i in p["chosen"]) or "none"
+        ink.put(img, x, y + 38, f"repairs segments {ids}", m, "small")
+        ink.put(img, x, y + 68, f"{p['true_benefit']:.0f}", t, "count", "Medium")
+        ink.put(img, x, y + 124, "true benefit", m, "small")
+        ink.put(img, x + 200, y + 68, f"{p['worst_covered']} of {rep_n(rep)}", t, "count", "Medium")
+        ink.put(img, x + 200, y + 124, f"of the true worst {rep_n(rep)}", m, "small")
+
+    # ---- detection vs ground truth ----
+    y = 640
+    ink.put(img, x, y, "Detection vs ground truth", t, "title", "Semibold")
+    ink.put(img, x, y + 40, "confirmed tracks, both lanes, IoU > 0.1", m, "small")
+    ink.put(img, x + 200, y + 80, "recall", m, "small", "Medium")
+    ink.put(img, x + 330, y + 80, "false alarms/km", m, "small", "Medium")
+    for k, cls in enumerate(("pothole", "alligator_crack", "linear_crack")):
+        d, ry = det["per_class"][cls], y + 112 + k * 62
+        cv2.circle(
+            img, (x + 9, ry + 18), 9, tuple(cfg["drive"]["colours_bgr"][cls][::-1]), -1, cv2.LINE_AA
+        )
+        ink.put(img, x + 28, ry, NAMES[cls], t, "label")
+        rec = "n/a" if d["recall"] is None else f"{d['recall']:.0%}"
+        ink.put(img, x + 200, ry - 6, rec, t, "body", "Semibold")
+        ink.put(img, x + 200, ry + 30, f"{d['hit']} of {d['instances']}", m, "small")
+        fa = "n/a" if d["false_alarms_per_km"] is None else f"{d['false_alarms_per_km']:.1f}"
+        ink.put(img, x + 330, ry - 6, fa, t, "body", "Semibold")
+        ink.put(img, x + 330, ry + 30, f"{d['false_alarm_tracks']} tracks", m, "small")
+
+    y = H - ch
+    ink.put(
+        img,
+        40,
+        y + 10,
+        "A simulated road scored by the real pipeline: a demonstration, not a field result",
+        t,
+        "caption",
+        "Semibold",
+    )
+    ink.put(img, 40, y + 64, honesty(road, cfg), m, "small")
+    return cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
+
+def rep_n(rep: dict) -> int:
+    return len(rep["worst"])

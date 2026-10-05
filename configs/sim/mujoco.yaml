@@ -136,3 +136,17 @@ screen:
   roi_flash_frames: 8       # a survey sample lights the ROI, fading over this many frames
   map_lateral_px_per_m: 18  # the plan is to scale along the road, stretched across it
   drift_x_tick_m: 100
+
+# Step 4: the end screen (sim/mujoco/evaluate.py). A confirmed track hits an instance when its
+# box overlaps the instance's projected box above iou_min in some frame, as D088's rough
+# figures did. The repair plan prices segments as D079 does (configs/project.yaml allocation)
+# and spends budget_frac of the cost of repairing every segment.
+end:
+  iou_min: 0.1
+  seen_every_frames: 3      # how often ground truth is projected to decide what came into view
+  budget_frac: 0.3
+  worst_n: 3                # D079's second objective: how many of the true worst N get repaired
+  hold_s: 10                # how long a recording holds the end screen
+credits: >-
+  Textures CC BY 4.0: QR4Change, Maske et al. 2025 (potholes); BD-N6, Hossain et al.
+  (cracks, asphalt)

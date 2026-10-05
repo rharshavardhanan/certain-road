@@ -110,6 +110,7 @@ Current design spec: [`design.md`](design.md)
 | D087 | A MuJoCo demo simulator for the DA-2 review (`sim/mujoco/`): synthetic road from the D086 photos, real detectors and survey code, design camera; not T13 | Accepted |
 | D088 | The MuJoCo demo detects at 30 fps, the rate D075's 3-of-5 rule was set on; at 10 fps confirmation collapsed. Gate at the design detect range; the survey still scores 5 m samples (D006) | Accepted |
 | D089 | The demo's survey counts D006's ROI, the 5 m strip of the driving lane 3–8 m ahead, scored by certain_road.survey; the reference PCI takes the same path. The real drift monitor fires on clean road, not on the mixed preset's bad stretch, so that moment is captioned as a band drop | Accepted |
+| D090 | The demo's end screen scores confirmed tracks against ground truth (IoU > 0.1, both lanes) and runs both real allocators on D079's pricing, scored on D079's two objectives. Same seed, same result | Accepted |
 
 ---
 
@@ -3583,3 +3584,51 @@ it was expected.
 110 m of the poor road, segment 2 scores 86.9 against a reference of 93.2. Model P marks an
 alligator patch as a pothole. On one linear crack, B fires both linear (0.52) and alligator
 (0.39), and P calls the same crack a pothole (0.31). Nothing is tuned against this.
+
+*Correction, D090: in the drive itself the poor road's alarm comes at 150 m, not 295 m.*
+
+## D090 — The demo's end screen: detection against ground truth, and both repair plans
+
+**2026-10-05 · Accepted · extends D089 · applies D079**
+
+`sim/mujoco/evaluate.py` scores a run from its logs and writes `end.json`, and
+`screen.render_end` draws the result screen. `--end-only` redraws it without driving again.
+
+**Detection is scored on confirmed tracks, in both lanes.** A confirmed track hits an
+instance when, in some frame, its box overlaps the instance's projected box with IoU above
+0.1 and the classes agree, as D088's rough figures did. Recall's denominator is every
+instance that came into view nearer than the 12 m gate. A false alarm is a confirmed track
+that never hit an instance of its own class, counted per km driven. Both lanes count, because
+the camera sees both.
+
+**The plans are the real allocators', on D079's pricing.** Each segment is an
+`allocation.Segment` with its vision-estimated PCI. Its cost is D079's: mobilisation plus
+`cost_per_m2` times the reference distressed area. `allocate_optimal` and
+`allocate_greedy_worst_first` spend the same budget, by default 30% of the cost of repairing
+every segment. Each plan is scored on D079's two objectives, both against the reference PCI:
+the true benefit repaired, and how many of the true worst 3 segments it repairs. D079 counts
+the worst 20 of 200 segments; a 500 m road has about 11.
+
+**Poor road, seed 0:**
+
+| Class | Recall | False alarms per km |
+|---|---|---|
+| pothole | 16 of 28 (57%) | 35.2 (18 tracks) |
+| alligator crack | 22 of 24 (92%) | 7.8 (4 tracks) |
+| linear crack | 14 of 27 (52%) | 0.0 |
+
+At the 30% budget, worst-first repairs segments 7 and 8, for a true benefit of 58, and gets
+2 of the true worst 3. The optimiser repairs segments 3, 5 and 8, for a true benefit of 50,
+and gets 1 of 3. It maximises benefit as the vision estimate sees it, and that estimate puts
+segment 3 at 86 when its reference is 97. Under uniform traffic D079 also found worst-first
+close to optimal. This is one road; it is reported as found and nothing was tuned.
+
+**The same seed gives the same result.** Two runs of poor, seed 0, gave byte-identical
+`ground_truth.json`, `survey.json` (segments and drift trace) and `end.json`. Their frame
+records were identical apart from timings.
+
+**Correction to D089's drift table.** D089's alarm positions came from a probe that rendered
+only the sample positions, so its sensor-noise draws differ from the drive's. On the poor
+road the CUSUM hovers near the threshold, so the alarm position moves with the noise. The
+drive alarms at 150 m, not 295 m. Step 5 records the drive's alarm position for every preset.
+D089's conclusion stands.

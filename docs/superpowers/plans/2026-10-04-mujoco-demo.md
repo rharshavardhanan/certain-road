@@ -262,10 +262,43 @@ Record: `runs/mujoco/step3_screen.png` was inspected and five fixes were made in
 
 ## Step 4 — end screen
 
-**Goal** The per-segment table, the optimiser plan beside worst-first at a chosen budget
-with true-worst-N coverage for each (D079), per-class recall and false alarms per km
-against ground truth, and the honesty caption. **Done when** two runs with the same seed
-give identical end-screen numbers.
+### Task 4.1 — detection and repair numbers, through the real allocators
+
+**Goal** Two things, computed from a run's logs:
+- **Detection.** Per-class recall and false alarms per km of the confirmed tracks against the
+  ground truth.
+- **Repair plan.** `allocate_optimal` and `allocate_greedy_worst_first` choose under one
+  budget, on segments priced as D079 prices them. Each plan is scored on D079's two
+  objectives against the reference PCI.
+
+**Why** The end screen's numbers must come from certain_road.survey, verified by a test.
+
+**Files** `sim/mujoco/evaluate.py`, `tests/test_mujoco_evaluate.py`, `sim/mujoco/survey.py`
+(instance ids, reference area), `configs/sim/mujoco.yaml` (`end:`)
+
+**Steps**
+- [x] Tests: a perfect tracker scores recall 1.0 with no false alarms; a stray track is one
+  false alarm per 0.5 km; the plan equals direct calls to the allocators at the budget.
+- [x] Implement `detection_scores`, `repair_plan` and `summarise`, which also writes `end.json`.
+
+**Done when** `uv run pytest tests/test_mujoco_evaluate.py -q` passes. Record: 4 passed.
+
+### Task 4.2 — the end screen
+
+**Goal** The per-segment table, both plans with their true-worst-N coverage, detection
+against ground truth, and the honesty caption with the texture credits. In a window it holds
+until a key is pressed; a recording holds it for `end.hold_s`.
+
+**Files** `sim/mujoco/screen.py`, `sim/mujoco/demo.py`
+
+**Steps**
+- [x] `render_end`; `--end-only` redraws a run's end screen without driving again.
+- [x] The plain command drives, so the brief's `--preset poor --seed 0` opens and runs.
+
+**Done when** the poor run ends on the screen, and two runs with the same seed give identical
+end-screen numbers. Record: the end screen was inspected and one batch of spacing fixes made.
+Determinism: two poor seed-0 runs gave byte-identical `ground_truth.json`,
+`survey.json` and `end.json`, and frame records identical apart from timings.
 
 ## Step 5 — the other presets, recording, docs
 
