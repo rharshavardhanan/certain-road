@@ -1,8 +1,8 @@
 # Repository map
 
-Generated 2026-10-05 20:49:25 +0530
+Generated 2026-10-05 21:01:38 +0530
 
-Commit `fcdbf90` on `workspace-cleanup`; 1 paths differ from it in the working tree.
+Commit `71b6318` on `workspace-cleanup`; 0 paths differ from it in the working tree.
 
 Do not edit by hand — rerun scripts/repo_map.py
 
@@ -46,7 +46,7 @@ Quoted from `docs/design.md`:
 >
 > The novelty is the **integration and the decision**, not the detector.
 
-Evidence at build time, beside the quotes' own status lines: 134 commits from 2026-08-06 to 2026-10-05; Python files: 1 in `kaggle/`, 35 in `scripts/`, 12 in `sim/`, 51 in `src/`, 49 in `tests/`.
+Evidence at build time, beside the quotes' own status lines: 135 commits from 2026-08-06 to 2026-10-05; Python files: 1 in `kaggle/`, 35 in `scripts/`, 12 in `sim/`, 51 in `src/`, 49 in `tests/`.
 
 ## 2. Pipeline
 
@@ -246,7 +246,7 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `tests/test_mujoco_drive.py` | 45 | 2026-10-05 | 2026-10-05 | The drive loop's rules: D082's channels, the gate row, and the 5 m survey samples. |  |
 | `tests/test_mujoco_evaluate.py` | 101 | 2026-10-05 | 2026-10-05 | The end screen's numbers: detection against ground truth, and the repair plan. |  |
 | `tests/test_mujoco_road.py` | 79 | 2026-10-05 | 2026-10-05 | The MuJoCo demo's road generator: reproducible, round-trips, and clusters its damage. |  |
-| `tests/test_mujoco_screen.py` | 62 | 2026-10-05 | 2026-10-05 | The live and end screens render their edge cases rather than crash mid-demo. |  |
+| `tests/test_mujoco_screen.py` | 63 | 2026-10-05 | 2026-10-05 | The live and end screens render their edge cases rather than crash mid-demo. |  |
 | `tests/test_mujoco_survey.py` | 132 | 2026-10-05 | 2026-10-05 | The live survey: D006's ROI counts each instance once, and scores come from certain_road.survey. |  |
 | `tests/test_operating_points.py` | 123 | 2026-09-22 | 2026-10-04 | The B-vs-P comparison turns on numbers no eyeball can check. |  |
 | `tests/test_perception_evaluate.py` | 271 | 2026-09-05 | 2026-09-05 | Tests for `certain_road.perception.evaluate`. |  |
@@ -432,16 +432,16 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `docs/CHALLENGES.md` | 203 | 2026-10-05 | 2026-10-05 | Challenges |  |
 | `docs/DA2-EVIDENCE.md` | 351 | 2026-10-05 | 2026-10-05 | DA-2 evidence |  |
 | `docs/DA2-SCOPE-CHANGE.md` | 101 | 2026-10-05 | 2026-10-05 | Scope change, DA-1 to DA-2 |  |
-| `docs/DECISIONS.md` | 3634 | 2026-08-06 | 2026-10-05 | Decision log |  |
+| `docs/DECISIONS.md` | 3652 | 2026-08-06 | 2026-10-05 | Decision log |  |
 | `docs/MENTOR-WALKTHROUGH.md` | 1403 | 2026-09-05 | 2026-09-22 | certain-road — a walkthrough |  |
-| `docs/ONBOARDING.md` | 66 | 2026-10-04 | 2026-10-04 | Onboarding |  |
+| `docs/ONBOARDING.md` | 67 | 2026-10-04 | 2026-10-05 | Onboarding |  |
 | `docs/colab-training-guide.md` | 220 | 2026-09-07 | 2026-09-07 | Training on Colab (T4) |  |
 | `docs/datasets/multicountry-summary.md` | 228 | 2026-09-22 | 2026-09-22 | Dataset summary — RDD2022, all six non-India countries |  |
 | `docs/datasets/rdd2022-india.md` | 133 | 2026-09-22 | 2026-09-22 | Dataset card — RDD2022 India subset |  |
 | `docs/datasets/water-pothole-viability.md` | 136 | 2026-09-22 | 2026-09-22 | Water-pothole dataset — viability verdict |  |
 | `docs/design.md` | 630 | 2026-09-22 | 2026-09-22 | certain-road — Design Specification |  |
 | `docs/detector-benchmark.md` | 79 | 2026-09-06 | 2026-09-06 | Detector benchmark — India test set |  |
-| `docs/mujoco-demo.md` | 96 | uncommitted | uncommitted | The MuJoCo survey demo | untracked |
+| `docs/mujoco-demo.md` | 127 | 2026-10-05 | 2026-10-05 | The MuJoCo survey demo |  |
 | `docs/superpowers/plans/2026-08-15-detector-evaluation-harness.md` | 270 | 2026-08-15 | 2026-08-15 | Detector Evaluation Harness Implementation Plan |  |
 | `docs/superpowers/plans/2026-09-05-day5-corridor-sim.md` | 146 | 2026-09-05 | 2026-09-05 | Day 5 (hardware-free) — driving corridor + simulator core |  |
 | `docs/superpowers/plans/2026-09-05-robot-sprint.md` | 433 | 2026-09-05 | 2026-09-05 | CertainRoad Robot — 15-Day Sprint Plan |  |
@@ -456,7 +456,7 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `docs/superpowers/plans/2026-10-03-t17-results.md` | 35 | 2026-10-03 | 2026-10-03 | T17 results report |  |
 | `docs/superpowers/plans/2026-10-04-cleanup.md` | 195 | 2026-10-04 | 2026-10-04 | Release-readiness cleanup |  |
 | `docs/superpowers/plans/2026-10-04-da2-evidence.md` | 251 | 2026-10-05 | 2026-10-05 | DA-2 review pack |  |
-| `docs/superpowers/plans/2026-10-04-mujoco-demo.md` | 307 | 2026-10-05 | 2026-10-05 | MuJoCo live survey demo |  |
+| `docs/superpowers/plans/2026-10-04-mujoco-demo.md` | 320 | 2026-10-05 | 2026-10-05 | MuJoCo live survey demo |  |
 | `docs/superpowers/plans/2026-10-04-repo-map.md` | 88 | 2026-10-04 | 2026-10-04 | Repo map: a generated onboarding document |  |
 | `docs/superpowers/plans/2026-10-05-da2-screenshots-and-zip.md` | 50 | 2026-10-05 | 2026-10-05 | DA-2: two screenshots, then the source zip rebuilt from HEAD |  |
 | `docs/superpowers/plans/archive/2026-08-06-week-1-foundation.md` | 2245 | 2026-09-05 | 2026-10-04 | Week 1 Foundation Implementation Plan |  |
@@ -531,10 +531,10 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `sim/mujoco/camera.py` | 87 | 2026-10-05 | 2026-10-05 | Render what the dashcam would record, not what the renderer draws. |  |
 | `sim/mujoco/demo.py` | 187 | 2026-10-05 | 2026-10-05 | MuJoCo survey demo CLI. |  |
 | `sim/mujoco/drive.py` | 281 | 2026-10-05 | 2026-10-05 | Drive the design camera down the road and detect with the real models, frame by frame. |  |
-| `sim/mujoco/evaluate.py` | 122 | 2026-10-05 | 2026-10-05 | Step 4: what the drive found against what was there, and what a budget would repair. |  |
+| `sim/mujoco/evaluate.py` | 125 | 2026-10-05 | 2026-10-05 | Step 4: what the drive found against what was there, and what a budget would repair. |  |
 | `sim/mujoco/road.py` | 227 | 2026-10-05 | 2026-10-05 | Seeded road layout and clustered damage, and its ground truth. |  |
 | `sim/mujoco/scene.py` | 238 | 2026-10-05 | 2026-10-05 | Assemble the MuJoCo scene for one road: surface tiles, kerbs, shoulders, sky, sun, haze, poles, a wall, signs, and the vehicle carrying the camera. |  |
-| `sim/mujoco/screen.py` | 551 | 2026-10-05 | 2026-10-05 | The live screen: four panels and a caption bar, legible from 3 m on a projector. |  |
+| `sim/mujoco/screen.py` | 557 | 2026-10-05 | 2026-10-05 | The live screen: four panels and a caption bar, legible from 3 m on a projector. |  |
 | `sim/mujoco/surface.py` | 236 | 2026-10-05 | 2026-10-05 | Bake the road surface into texture tiles: asphalt, markings, then damage. |  |
 | `sim/mujoco/survey.py` | 254 | 2026-10-05 | 2026-10-05 | The live survey: every 5 m sample scored through certain_road.survey, segment by segment. |  |
 | `sim/mujoco/textures.py` | 185 | 2026-10-05 | 2026-10-05 | Trial-photo textures: curated, prepared, and checked against the training data. |  |
@@ -1156,6 +1156,7 @@ What was committed on 2026-10-05, naming which tasks and decisions? Commits that
 | `73dbc9a` | D088: MuJoCo demo step 2 - drive loop with live detection at 30 fps | — | D006, D075, D082, D088 | configs 1 · docs 2 · sim 3 · tests 1 |
 | `a6e7317` | D089: MuJoCo demo step 3 - live survey, drift panel and four-panel screen | — | D006, D078, D089 | configs 1 · docs 2 · sim 4 · tests 1 |
 | `fcdbf90` | D090: MuJoCo demo step 4 - end screen, detection vs ground truth, repair plans | — | D079, D089, D090 | configs 1 · docs 2 · sim 4 · tests 2 |
+| `71b6318` | D091: MuJoCo demo step 5 - all five presets, docs, damaged-only worst N | — | D089, D091 | docs 4 · sim 2 · tests 1 |
 
 ### Decisions
 
@@ -1251,7 +1252,8 @@ Where did each decision come from, and what cites it? Title and status are the i
 | D087 | A MuJoCo demo simulator for the DA-2 review (`sim/mujoco/`): synthetic road from the D086 photos, real detectors and survey code, design camera; not T13 | Accepted | `1e130f8 2026-10-05` | `docs/mujoco-demo.md` |
 | D088 | The MuJoCo demo detects at 30 fps, the rate D075's 3-of-5 rule was set on; at 10 fps confirmation collapsed. Gate at the design detect range; the survey still scores 5 m samples (D006) | Accepted | `73dbc9a 2026-10-05` | `configs/sim/mujoco.yaml`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md` |
 | D089 | The demo's survey counts D006's ROI, the 5 m strip of the driving lane 3–8 m ahead, scored by certain_road.survey; the reference PCI takes the same path. The real drift monitor fires on clean road, not on the mixed preset's bad stretch, so that moment is captioned as a band drop | Accepted | `a6e7317 2026-10-05` | `docs/mujoco-demo.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md` |
-| D090 | The demo's end screen scores confirmed tracks against ground truth (IoU > 0.1, both lanes) and runs both real allocators on D079's pricing, scored on D079's two objectives. Same seed, same result | Accepted | `fcdbf90 2026-10-05` | — |
+| D090 | The demo's end screen scores confirmed tracks against ground truth (IoU > 0.1, both lanes) and runs both real allocators on D079's pricing, scored on D079's two objectives. Same seed, same result | Accepted | `fcdbf90 2026-10-05` | `docs/mujoco-demo.md` |
+| D091 | Only damaged segments can be among the end screen's true worst N; all five presets run, and the drift alarm fires at 65–150 m on every road | Accepted | `71b6318 2026-10-05` | `docs/superpowers/plans/2026-10-04-mujoco-demo.md` |
 
 ## 8. Model and artifact registry
 
