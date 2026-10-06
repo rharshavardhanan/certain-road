@@ -1,0 +1,15 @@
+# Colours and texture for src/certain_road/sim/camera_image.py: the flat-shaded camera
+# frame the 2D simulator renders for the ROS demo (D093). RGB, 0-255.
+#
+# Chosen to read clearly on a projector, not to look like a road: the module docstring
+# says why the detectors are not expected to fire on these frames. The asphalt range
+# (asphalt_rgb +/- asphalt_noise) must stay clear of both pothole colours, so a pixel's
+# colour alone says whether it shows a pothole; a test relies on that.
+
+sky_rgb: [170, 196, 222]
+asphalt_rgb: [112, 112, 108]
+asphalt_texture_m: 0.04       # side of one world-fixed noise cell
+asphalt_noise: 14             # +/- grey levels between cells
+pothole_rgb: [36, 32, 28]     # the depression's floor
+pothole_rim_rgb: [72, 66, 60] # the broken edge
+pothole_rim_frac: 0.2         # outer fraction of the radius drawn as rim

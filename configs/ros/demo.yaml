@@ -1,0 +1,81 @@
+# ROS 2 Jazzy demo (ros/certain_road_ros, D093): the 2D simulator, the detectors and the
+# drive decision as three nodes.
+#
+#   sim_node         camera frames, ground truth and pose out; /cmd_vel in, applied
+#                    through certain_road.sim.model.step
+#   perception_node  frames in; vision_msgs/Detection2DArray out
+#   planner_node     detections in; corridor + Confirmer + state machine, unchanged;
+#                    the Command leaves through RosTransport as /cmd_vel
+#
+# Every tunable the ROS layer adds lives here. Robot and camera geometry stay in
+# configs/sim/robot.yaml, the corridor and policy in configs/driving/, the weights in
+# configs/eval/video.yaml.
+
+frames:
+  world: map
+  robot: base_link
+  camera: camera_link
+
+topics:
+  image: /camera/image_raw
+  ground_truth: /sim/ground_truth     # certain_road.sim.project's boxes, the projection-only input
+  pose: /sim/pose
+  path: /sim/path
+  world_markers: /sim/markers
+  scenario: /sim/scenario             # latched; a new value starts an episode
+  detections: /perception/detections
+  annotated: /perception/image_annotated
+  source: /perception/source          # latched; what the detections came from
+  cmd_vel: /cmd_vel
+  drive_state: /planner/drive_state
+  planner_markers: /planner/markers
+
+sim:
+  # The trial matrix (certain_road.sim.scenario), driven in turn and then from the top.
+  # Each runs its own frame count at its own dt, in real time: one frame every dt.
+  scenarios: [centre, left, right, multiple, blocked_left, blocked_right, blocked_both, clear]
+  # The vehicle's own watchdog, independent of the planner's staleness failsafe: no
+  # /cmd_vel for this many frames and it stops. A real drive controller has one too.
+  cmd_timeout_frames: 3
+  camera_mount_x_m: 0.10              # camera_link ahead of base_link; the TF tree only
+  marker_height_m: 0.10               # robot body marker
+  flat_marker_m: 0.002                # thickness of the road and pothole markers
+  road_marker: {x: [-0.5, 4.5], y: [-1.0, 1.0], rgba: [0.33, 0.33, 0.32, 1.0]}
+  pothole_rgba: [0.08, 0.07, 0.06, 1.0]
+  robot_rgba: [0.17, 0.37, 0.66, 0.9]
+
+perception:
+  # auto: the detectors if torch, ultralytics and both weights files load, else
+  # projection-only, said loudly in the log, on /perception/source and on the image.
+  source: auto                        # auto | detector | projection
+  # D082: potholes from Model P only, cracks from Model B only; never summed.
+  classes_from: {P: [pothole], B: [linear_crack, alligator_crack]}
+  conf: 0.25                          # = configs/eval/video.yaml conf
+  imgsz: 640                          # = configs/sim/robot.yaml camera img_w
+  sync_queue: 10                      # frames held while pairing an image with its ground truth
+  overlay:
+    colours_bgr: {pothole: [40, 40, 230], linear_crack: [0, 215, 255],
+                  alligator_crack: [0, 140, 255], truth: [235, 235, 235],
+                  corridor: [168, 95, 43], banner: [20, 20, 20], text: [240, 240, 240],
+                  warn: [0, 165, 255]}
+    corridor_alpha: 0.22
+    box_px: 2
+    truth_px: 1
+    font_scale: 0.55
+    banner_px: 26
+
+planner:
+  # Cracks are survey material (D049). Only potholes steer the robot.
+  hazard_classes: [pothole]
+  # How often the staleness failsafe is checked. The failsafe itself is the policy's
+  # max_frame_age (configs/driving/decision.yaml), counted in the scenario's dt.
+  watchdog_period_s: 0.05
+  log_dir: runs/ros                   # runs/ros/<UTC stamp>/episodes.jsonl, one line per episode
+  text_height_m: 0.12
+  text_z_m: 0.45
+  state_rgba:
+    normal: [0.30, 0.75, 0.45, 1.0]
+    warning: [0.95, 0.75, 0.20, 1.0]
+    avoid_left: [0.95, 0.55, 0.15, 1.0]
+    avoid_right: [0.95, 0.55, 0.15, 1.0]
+    stop: [0.90, 0.25, 0.20, 1.0]

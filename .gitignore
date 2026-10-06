@@ -33,3 +33,8 @@ results/**/qa/
 
 # Submission archives: git archive output, rebuilt on demand (README-DA2.md)
 /dist/
+
+# ROS 2 demo workspace (D093): colcon output, rebuilt by `colcon build` in ros/
+/ros/build/
+/ros/install/
+/ros/log/

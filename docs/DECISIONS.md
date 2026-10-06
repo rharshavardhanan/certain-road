@@ -113,6 +113,7 @@ Current design spec: [`design.md`](design.md)
 | D090 | The demo's end screen scores confirmed tracks against ground truth (IoU > 0.1, both lanes) and runs both real allocators on D079's pricing, scored on D079's two objectives. Same seed, same result | Accepted |
 | D091 | Only damaged segments can be among the end screen's true worst N; all five presets run, and the drift alarm fires at 65–150 m on every road | Accepted |
 | D092 | The demo's look v2 adds 3D potholes, surface marks and harsher light with tree shadows, and is the default; v1 stays byte-identical as the fallback. Measured once: detection barely moves, and no false alarm comes from the new marks | Accepted |
+| D093 | A ROS 2 Jazzy demo on the Jetson wraps the 2D simulator in three nodes; ROS is one more `Transport`; the camera frame is rendered from the projection; no Gazebo (D050 stands) | Accepted |
 
 ---
 
@@ -3689,3 +3690,59 @@ or a linear crack. None sits on a tree shadow, a repair patch, an oil stain or b
 
 **Drift.** v2 moves the alarm to 80 m on good, moderate and mixed, and to 150 m on random,
 and removes it on poor. The clean opening stretch still sets it off, so D089 stands.
+
+## D093 — A ROS 2 Jazzy demo on the Jetson: three nodes around the 2D simulator; ROS is one more `Transport`
+
+**2026-10-06 · Accepted · extends D050; D050's rejection of Gazebo stands**
+
+The user asked for a ROS 2 demo running on the Jetson the same day. JetPack 7.2 ships
+Ubuntu 24.04, so the distribution is Jazzy. A Gazebo world, models and nodes is not a
+one-day build on a freshly installed stack, and D050's reasons for rejecting Gazebo still
+hold, so the existing 2D simulator is wrapped instead. `ros/certain_road_ros` holds three
+nodes, a launch file and an RViz layout; every tunable is in `configs/ros/demo.yaml`.
+
+- **`sim_node`** steps the bicycle model with the latest `/cmd_vel` and publishes the
+  camera frame, the ground-truth boxes for that frame, pose, path and TF. It runs the trial
+  matrix in turn, each scenario for its own frame count, as `run_scenario` does.
+- **`perception_node`** runs Model P for potholes and Model B for cracks (D082) on CUDA, or,
+  when torch, ultralytics or either weights file is missing, passes on the simulator's
+  projected boxes. That fallback says PROJECTION-ONLY in the log, on `/perception/source`
+  and on every annotated frame, so a recording cannot pass ground truth off as model output.
+- **`planner_node`** runs `build_perception`, `next_state` and `command_for` unchanged.
+  Only potholes steer (D049: cracks are survey material). A stale detection stream goes
+  through the same `next_state` failsafe and stops the robot.
+
+**ROS is one more `Transport` (D049, D050).** `RosTransport` implements
+`canbus.transport.Transport` and publishes each `Command` as a Twist in physical units,
+from `sim.model.command_velocity`; the vehicle reads it back with `command_from_velocity`.
+The conversion drops `Mode`, which a Twist cannot carry. A test pins that the round trip
+drives `step` identically. `driving/` cannot tell ROS from CAN.
+
+**The simulator gets a camera frame.** `sim/project.py` turns a pothole straight into a box,
+so there was no image to publish. `sim/camera_image.py` runs that projection backwards per
+pixel, and a test pins that a rendered pothole fills its projected box. Building it exposed
+that `project_pothole` under-reports a near pothole's width: it takes the width at the
+disc's centre distance, short by 1–2 % at the ~0.9 m decision distance and 7 % at 0.5 m.
+It is left unchanged because the trial matrix is asserted on it. The frames are flat-shaded,
+far from the RDD2022 photos the detectors learnt from, so a detector missing these potholes
+says nothing about real roads; `sim/mujoco` is the photographic renderer (D087).
+
+**Evidence, per episode.** `planner_node` writes each episode to
+`runs/ros/<UTC stamp>/episodes.jsonl`: whether it reached its `expect`, and whether its
+drive-state sequence matches `run_scenario` on the same scenario offline. Measured on the
+Jetson, 2026-10-06, projection-only: over two cycles of all eight scenarios, 17 complete
+episodes all reached their expected state and 16 matched frame for frame. The 17th lost its
+first frame, published before ROS discovery finished. `sim_node` now waits for every link
+of the loop before starting its clock; a re-run then gave episode 0 all 60 frames, matching.
+The loop runs at 9.97 Hz against a 10 Hz target.
+
+**Environment.** The nodes run on the project's own uv venv, built on the system Python
+3.12 with system site packages so that ROS's `rclpy` loads into it. The locked PyPI
+torch 2.13.0 is a CUDA 13 build on aarch64. The Orin (sm_87) is outside its build list, but
+its sm_80 kernels run: conv output matches the CPU to 6.6e-7 and NMS is identical.
+CLAUDE.md's "MPS, not CUDA" describes the MacBook; on the Jetson torch runs on CUDA. Jazzy's
+message libraries, built against numpy 1.26, were checked to work with the venv's numpy 2.5.
+
+**What it cannot show.** The weights are not on the Jetson yet, so every run so far is
+projection-only. D050's list stands: no motion blur, vibration, lighting, real command
+latency or actuator dynamics.
