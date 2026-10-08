@@ -31,7 +31,9 @@ until a key is pressed. Esc or q during the drive stops it early.
 | `--end-only` | Redraws the result screen of an earlier run, without driving again |
 | `--screenshot f.png --at 196` | One camera frame at 196 m along the road |
 
-On an Apple Silicon Mac the drive runs at about 0.6× real time: a 527 m road takes about
+On the Jetson Orin Nano it runs on CUDA at about 0.2× real time, after a scene build of
+about 220 s; `scripts/fetch_trial_textures.py` rebuilds the texture photos there from their
+public sources (D094). On an Apple Silicon Mac the drive runs at about 0.6× real time: a 527 m road takes about
 2.5 minutes. Each run writes these files to `runs/mujoco/<preset>_seed<seed>_v2/` (v1: no suffix):
 `ground_truth.json`, `detections.jsonl` (every frame), `survey.json` (segments and the drift
 trace), `drive_summary.json`, `end.json` and `end_screen.png`.

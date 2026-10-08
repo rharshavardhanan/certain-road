@@ -62,6 +62,16 @@ class Camera:
         big = self.r.render()
         return cv2.resize(big, (self.cam["w"], self.cam["h"]), interpolation=cv2.INTER_AREA)
 
+    def skip_frames(self, n: int) -> None:
+        """Advance the per-frame noise stream as if `n` frames had been rendered.
+
+        Everything else in a frame is a function of `x` alone, and `frame` draws exactly one
+        noise offset per call. So a camera built like the drive's, skipped to frame k and
+        asked for frame(x_k), reproduces the drive's frame k without re-driving.
+        """
+        for _ in range(n):
+            self.rng.integers(0, NOISE_PAD, 2)
+
     def frame(self, x: float) -> np.ndarray:
         """BGR uint8 at distance x along the road, as the detector receives it.
 

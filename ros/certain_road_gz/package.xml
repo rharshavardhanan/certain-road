@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>certain_road_gz</name>
+  <version>0.1.0</version>
+  <description>
+    Gazebo Harmonic world for certain-road: the camera car (Ackermann steering, suspension,
+    the design dashcam), the ros_gz bridge and a launch file that loads a world folder
+    exported by sim/gazebo/export.py. Runs where only ROS 2 Jazzy and Gazebo Harmonic exist.
+  </description>
+  <maintainer email="rharshavardhanan@gmail.com">rharshavardhanan</maintainer>
+  <license>Proprietary</license>
+
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>ros_gz_sim</exec_depend>
+  <exec_depend>ros_gz_bridge</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

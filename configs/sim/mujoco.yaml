@@ -113,7 +113,9 @@ screen:
   size: [1920, 1080]
   caption_h: 96
   gutter: 4
-  fonts: {sans: /System/Library/Fonts/SFNS.ttf, mono: /System/Library/Fonts/SFNSMono.ttf}
+  # tried in order: the MacBook's faces, then the Jetson's (D094)
+  fonts: {sans: [/System/Library/Fonts/SFNS.ttf, /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf],
+          mono: [/System/Library/Fonts/SFNSMono.ttf, /usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf]}
   px: {title: 28, label: 22, body: 28, value: 60, count: 48, caption: 38, small: 18, chip: 30}
   rgb:
     bg: [11, 14, 19]
@@ -184,3 +186,16 @@ looks:
               trunk_r_m: [0.12, 0.22], canopy_r_m: [1.6, 2.8], canopy_blobs: [16, 27],
               blob_r_m: [0.5, 1.0], canopy_spread: [0.32, 0.32, 0.2], lean: 0.35, trunk_rgb: [0.30, 0.25, 0.20],
               greens: [[0.22, 0.27, 0.14], [0.27, 0.31, 0.16], [0.18, 0.22, 0.12], [0.31, 0.32, 0.19]]}
+
+# The survey report's detection gallery (sim/mujoco/gallery.py): one picture per confirmed
+# track, re-rendered from the run's logs. Sizes keep ~100 tracks of a poor road to a few MB
+# inside one offline HTML file (D020).
+gallery:
+  dir: gallery              # inside the run directory
+  crop_px: 360              # longer side of the crop around the box
+  context: 0.8              # crop margin as a share of the box's longer side
+  min_pad_px: 48            # least margin around a small box
+  frame_width_px: 640       # the whole frame, downscaled
+  box_px: 3                 # box line width, in the full-resolution frame
+  jpeg_quality: 80
+  verify_frames: 3          # survey samples re-detected to check the re-render is exact

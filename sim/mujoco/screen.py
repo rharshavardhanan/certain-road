@@ -37,10 +37,15 @@ SOURCE = {"pothole": "Model P", "linear_crack": "Model B", "alligator_crack": "M
 
 
 @lru_cache(maxsize=64)
-def _font(path: str, px: int, weight: str) -> ImageFont.FreeTypeFont:
-    try:
-        f = ImageFont.truetype(path, px)
-    except OSError:
+def _font(paths: str | tuple[str, ...], px: int, weight: str) -> ImageFont.FreeTypeFont:
+    """The first of `paths` this machine has: the Mac's faces, else Linux's (D094)."""
+    for path in (paths,) if isinstance(paths, str) else paths:
+        try:
+            f = ImageFont.truetype(path, px)
+            break
+        except OSError:
+            continue
+    else:
         return ImageFont.load_default(px)
     with contextlib.suppress(OSError, ValueError):  # not a variable font: its one weight
         f.set_variation_by_name(weight.encode())
@@ -48,7 +53,9 @@ def _font(path: str, px: int, weight: str) -> ImageFont.FreeTypeFont:
 
 
 @lru_cache(maxsize=8192)
-def _sprite(path: str, px: int, weight: str, s: str) -> tuple[np.ndarray, int, int]:
+def _sprite(
+    path: str | tuple[str, ...], px: int, weight: str, s: str
+) -> tuple[np.ndarray, int, int]:
     f = _font(path, px, weight)
     left, top, right, bottom = f.getbbox(s)
     im = Image.new("L", (max(1, right - left), max(1, bottom - top)))
@@ -71,7 +78,9 @@ class Ink:
     """Text in the screen's two faces. Positions are the top of the line, as in CSS."""
 
     def __init__(self, sc: dict):
-        self.fonts, self.px = sc["fonts"], sc["px"]
+        # a config list becomes a tuple, so `_font` can cache on it
+        self.fonts = {k: v if isinstance(v, str) else tuple(v) for k, v in sc["fonts"].items()}
+        self.px = sc["px"]
 
     def _key(self, size, mono, weight):
         px = self.px[size] if isinstance(size, str) else size

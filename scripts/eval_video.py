@@ -27,12 +27,14 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from certain_road.core.device import available_device  # noqa: E402
 from certain_road.core.paths import repo_root  # noqa: E402
 from certain_road.driving.confirm import Confirmer  # noqa: E402
 
 ROOT = repo_root()
 CFG = yaml.safe_load((ROOT / "configs" / "project.yaml").read_text())
 VCFG = yaml.safe_load((ROOT / "configs" / "eval" / "video.yaml").read_text())
+VCFG["device"] = available_device(VCFG["device"])  # mps on the Mac, cuda on the Jetson
 WARMUP = yaml.safe_load((ROOT / "configs" / "eval" / "thresholds.yaml").read_text())[
     "latency_warmup"
 ]

@@ -1,0 +1,135 @@
+# Gazebo Harmonic world, vehicle and bridge (sim/gazebo, ros/certain_road_gz). Every tunable.
+#
+# The road is NOT generated here. It is the MuJoCo demo's road (configs/sim/mujoco.yaml):
+# sim/mujoco/scene.py builds it under `look`, and sim/gazebo/convert.py turns the compiled
+# scene into Gazebo assets geom by geom. Same seeded layout, same baked photo textures, same
+# 3D pothole relief, kerbs, markings, trees and poles, and the same ground truth (Road.save).
+# The camera is the design camera, the `sim:` block of configs/project.yaml.
+
+look: v2
+out_dir: runs/gazebo          # one folder per road, <preset>_seed<seed>/, gitignored
+world_name: certain_road
+# Credits travel with every exported world (world.json, from configs/sim/mujoco.yaml's
+# credits) and on every annotated frame, as configs/sim/textures.yaml requires.
+
+export:
+  # Road tiles are MuJoCo's meshes named q<k> (sim/mujoco/scene.py): they get collision too.
+  collide_mesh_pattern: '^q\d+$'
+  texture_format: png         # png keeps the baked pixels exactly; jpg is about 6x smaller
+  jpg_quality: 95
+  png_compression: 3
+  texture_scale: 1.0          # resize of every exported texture; below 1 saves GPU memory
+  colour_step: 0.03125        # primitives whose RGBA agree at this step merge into one mesh
+  ellipsoid_segments: [12, 8] # around, pole to pole: tree canopy blobs
+  cylinder_segments: 16       # poles, trunks, sign posts
+  decimals: 4                 # OBJ coordinates in metres: 0.1 mm
+
+# Light and materials. MuJoCo's sun direction, sky and ambient are read from the look's own
+# config and scaled here. MuJoCo shades in display values with no gamma; Ogre 2 lights in
+# linear space, decodes textures as sRGB and writes sRGB, so a render scales with the light
+# as light^(1/2.2). Calibrated once by eye and by numbers against a MuJoCo look-v2 frame of
+# the same road at camera x = 100.07 m (never against detections): MuJoCo's lit road
+# averages 122 grey levels and its shadow is a third of lit (ambient + headlight 0.38 against
+# 1.14). Gazebo renders with sun intensity s and ambient a fit out = 255 (0.043 a + 0.0915 s)
+# ^(1/2.2) within 2 levels; 122 lit and 41 in shadow give s = 1.97 and a = 0.41.
+render:
+  engine: ogre2
+  sun_gain: 1.97              # x MuJoCo scene.sun_diffuse, as the light's <intensity>
+  ambient_gain: 1.37          # x MuJoCo scene.ambient (0.30 -> 0.41)
+  colour_gamma: 2.2           # plain MuJoCo colours are display values: linearised for Ogre
+  sun_specular: 0.05
+  cast_shadows: true
+  road: {roughness: 0.92, metalness: 0.0}
+  props: {roughness: 0.85, metalness: 0.0}
+
+physics:
+  plugin: gz-physics-dartsim-plugin
+  gravity_mps2: 9.8           # Gazebo's default; the suspension's static load uses it too
+  max_step_size_s: 0.001
+  real_time_factor: 1.0
+  friction: {road: 1.0, kerb: 0.8}
+  kerb_collision: true        # one box per side along the whole road; the visual stripes stay MuJoCo's
+  catch_plane: true           # a collision plane at the MuJoCo ground level, under everything
+
+# A small Indian hatchback, Maruti Swift class. Rear-wheel drive, Ackermann front steering
+# (gz-sim AckermannSteering), and four prismatic spring-damper suspension legs.
+vehicle:
+  name: car
+  chassis: {length_m: 3.85, width_m: 1.70, height_m: 0.55, mass_kg: 950}   # sprung mass
+  cabin: {length_m: 2.0, height_m: 0.50, setback_m: 0.25}   # cosmetic only, no collision
+  rgba: [0.62, 0.08, 0.08, 1.0]
+  cg_height_m: 0.55           # base_link origin above flat road at rest
+  wheelbase_m: 2.45
+  track_m: 1.50
+  wheel: {radius_m: 0.29, width_m: 0.18, mass_kg: 15, collision: sphere, mu: 1.0, mu2: 1.0}
+  hub_mass_kg: 15             # unsprung mass per corner besides the wheel
+  hub_radius_m: 0.08
+  rgba_wheel: [0.08, 0.08, 0.08, 1.0]
+  # Spring and damper per corner from a ride frequency and a damping ratio: k = m (2 pi f)^2,
+  # c = 2 zeta sqrt(k m), with m the sprung mass on that corner. The spring's rest length is
+  # set so the car sits at cg_height_m when stationary.
+  suspension: {enabled: true, ride_hz: 1.4, damping_ratio: 0.35, travel_m: 0.10}
+  steering: {limit_rad: 0.6, p_gain: 10.0, effort_nm: 1.0e6}   # DART needs an effort limit to hold position limits under velocity control
+  # No jerk limit: gz's jerk limiter has no look-ahead, so it overshoots and hunts. With 5 m/s^3
+  # the 20 km/h cruise swung 5.17-5.94 m/s at 0.7 Hz and pitched the body 0.4 deg (std).
+  drive: {max_velocity_mps: 15.0, max_acceleration_mps2: 2.0, max_jerk_mps3: null}
+  spawn: {x_m: 5.0, drop_m: 0.02}    # base_link x; the y is the road's driving lane
+  odom_hz: 100
+  joint_state_hz: 100
+
+# The camera's mounting. Height, pitch, HFOV and the default resolution are the design
+# camera's (configs/project.yaml sim:). It sits at the front bumper on a mast so that, as in
+# MuJoCo, the frame's bottom row meets the road at 2.2 m and no bonnet is in view.
+camera:
+  forward_m: 1.95             # from base_link, along x: the bumper is at chassis length / 2
+  rate_hz: 30                 # D088: 30 fps is the rate D075's confirmation was set on
+  low: {w: 640, h: 360, rate_hz: 15}   # documented launch override for a network link
+  clip_m: [0.1, 600.0]
+  anti_aliasing: 4
+  # noise: MuJoCo's camera_effects.sensor_noise (sigma in 0-255) becomes Gazebo's (0-1)
+  frame: camera_link
+  optical_frame: camera_optical_frame
+
+# ROS <-> Gazebo topics (ros_gz_bridge). `gz` names are what the SDF publishes.
+topics:
+  image: {ros: /camera/image_raw, gz: /camera/image_raw}
+  camera_info: {ros: /camera/camera_info, gz: /camera/camera_info}
+  cmd_vel: {ros: /cmd_vel, gz: /model/car/cmd_vel}
+  odom: {ros: /odom, gz: /model/car/odometry}            # true 3D pose (OdometryPublisher)
+  wheel_odom: {ros: /odom/wheel, gz: /model/car/wheel_odometry}  # Ackermann's dead reckoning
+  tf: {ros: /tf, gz: /model/car/tf}
+  joint_states: {ros: /joint_states, gz: /model/car/joint_state}
+  clock: {ros: /clock, gz: /clock}
+frames: {odom: odom, base: base_link}
+
+# The evidence drive (sim/gazebo/capture.py): constant /cmd_vel at the design speed,
+# every camera frame and the true pose saved, until the camera nears the road's end.
+capture:
+  cmd_hz: 20
+  end_margin_m: 15            # = MuJoCo drive.end_margin_m: stop before the view runs off
+  jpeg_quality: 95
+  wait_first_image_s: 120     # the road loads in 15-25 s on the Jetson; a launch that fails
+                              # must not hold the shared heavy lock
+  stall_s: 60                 # frames stopped this long mid-run: the simulation stalled, exit
+  stats_every_s: 2.0          # memory and real-time-factor samples
+  # --lane-keep uses configs/ros/demo.yaml's lane_keeper gains, lane_keeper_node's.
+  # --record-only (a closed loop drives): stop recording after this much simulated time,
+  # in case the car never reaches the end (a STOP it never leaves). The drive takes ~95 s.
+  record_max_sim_s: 400
+
+# Scoring the captured frames (sim/gazebo/evaluate.py). conf and the models are the video
+# lane's (configs/eval/video.yaml); iou_min, outline points and classes are MuJoCo's end:
+# and survey: blocks, so the two simulators are scored alike.
+evaluate:
+  reach_margin_m: 1.0         # ground truth is projected up to detect_range_m + this (MuJoCo's)
+  behind_m: 0.1               # an outline point this near the camera plane: not projectable
+  annotated_frames: 6         # saved as PNG: the frames with the most ground-truth potholes boxed
+  frame_spacing_m: 10.0       # ... no two of them nearer than this along the road
+  clip_s: 20                  # the mp4: this long, on the stretch with the most potholes in view
+  gt_rgb: [255, 255, 255]
+  font_scale: 0.6
+  # A wheel crosses a pothole where the relief under its contact point is at least this deep;
+  # the response is the largest change over window_s against the mean of the baseline_s before.
+  # The control samples the same on plain road every control_every_s, at cruise only.
+  ride: {wheel_drop_m: 0.01, baseline_s: 1.0, window_s: 1.0, control_every_s: 2.0,
+         min_speed_frac: 0.9}

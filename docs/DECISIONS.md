@@ -71,7 +71,7 @@ Current design spec: [`design.md`](design.md)
 | D047 | Jetson + GPS brought into scope as a 3-week partition sequenced last; 4-partition schedule 2026-08-18 → 2026-10-05; sensitivity analysis cut | Refined by D048 |
 | D048 | Jetson arrives 2026-08-18: risky bring-up pulled into a bounded weeks-1–4 parallel track; only `ingest`+`detect` ship to the edge | Accepted |
 | D049 | Project pivots to an autonomous road-inspection robot; perception feeds two independent pipelines; control transport is abstract | Accepted |
-| D050 | Simulator is a fourth `Transport`; robot for the demo, simulation for the trial matrix | Accepted |
+| D050 | Simulator is a fourth `Transport`; robot for the demo, simulation for the trial matrix | Refined by D096 |
 | D051 | CP cut from the sprint; survey ends at vision-estimated PCI; ADAS-inspired behaviours added; calibration split preserved | Superseded by D085 |
 | D052 | Deliverable is a vehicle-agnostic control unit demoed on the Jetson: recorded video → real YOLO → real CAN on vcan0; no robot, camera or transceiver required | Accepted |
 | D053 | External RDD2022 weights rejected: 0.9765 mAP50 on our test set indicates train/test overlap, so they cannot be measured | Accepted |
@@ -113,6 +113,12 @@ Current design spec: [`design.md`](design.md)
 | D090 | The demo's end screen scores confirmed tracks against ground truth (IoU > 0.1, both lanes) and runs both real allocators on D079's pricing, scored on D079's two objectives. Same seed, same result | Accepted |
 | D091 | Only damaged segments can be among the end screen's true worst N; all five presets run, and the drift alarm fires at 65–150 m on every road | Accepted |
 | D092 | The demo's look v2 adds 3D potholes, surface marks and harsher light with tree shadows, and is the default; v1 stays byte-identical as the fallback. Measured once: detection barely moves, and no false alarm comes from the new marks | Accepted |
+| D093 | A ROS 2 Jazzy demo on the Jetson wraps the 2D simulator in three nodes; ROS is one more `Transport`; the camera frame is rendered from the projection; no Gazebo (D050 stands) | Accepted |
+| D094 | The review demo runs on the Jetson: the MuJoCo survey demo and a live real-road viewer on CUDA; `mps` resolves to the machine's accelerator; textures rebuilt from their public sources | Accepted |
+| D095 | The ROS graph takes any camera: the real road clip streams in as a camera (open loop), every Command also leaves as a CAN frame on vcan0, and the 2D sim defaults to projection | Accepted |
+| D096 | A Gazebo Harmonic world, converted geom by geom from the MuJoCo look-v2 road, with a sprung Ackermann car; reverses D050's rejection of Gazebo for the demo | Accepted |
+| D097 | The Gazebo closed loop (car profile, car corridor, stand-in lane keeper) is built but not yet measured | Open |
+| D098 | The survey simulation report and RSL from Sharaf et al. (1987), pending mentor approval; built in part, not yet run on three roads | Open |
 
 ---
 
@@ -1337,7 +1343,7 @@ risk register: [`superpowers/plans/2026-09-05-robot-sprint.md`](superpowers/plan
 
 ## D050 — Simulator is a fourth `Transport`; robot for the demo, simulation for the trial matrix
 
-**2026-09-05 · Accepted · Refines D049**
+**2026-09-05 · Accepted · Refines D049 · Refined by D096 (Gazebo)**
 
 Both are built and neither replaces the other: the **robot demonstrates the concept live**,
 the **simulator produces the repeatable trials and the measurement table**.
@@ -3689,3 +3695,193 @@ or a linear crack. None sits on a tree shadow, a repair patch, an oil stain or b
 
 **Drift.** v2 moves the alarm to 80 m on good, moderate and mixed, and to 150 m on random,
 and removes it on poor. The clean opening stretch still sets it off, so D089 stands.
+
+## D093 — A ROS 2 Jazzy demo on the Jetson: three nodes around the 2D simulator; ROS is one more `Transport`
+
+**2026-10-06 · Accepted · extends D050; D050's rejection of Gazebo stands**
+
+The user asked for a ROS 2 demo running on the Jetson the same day. JetPack 7.2 ships
+Ubuntu 24.04, so the distribution is Jazzy. A Gazebo world, models and nodes is not a
+one-day build on a freshly installed stack, and D050's reasons for rejecting Gazebo still
+hold, so the existing 2D simulator is wrapped instead. `ros/certain_road_ros` holds three
+nodes, a launch file and an RViz layout; every tunable is in `configs/ros/demo.yaml`.
+
+- **`sim_node`** steps the bicycle model with the latest `/cmd_vel` and publishes the
+  camera frame, the ground-truth boxes for that frame, pose, path and TF. It runs the trial
+  matrix in turn, each scenario for its own frame count, as `run_scenario` does.
+- **`perception_node`** runs Model P for potholes and Model B for cracks (D082) on CUDA, or,
+  when torch, ultralytics or either weights file is missing, passes on the simulator's
+  projected boxes. That fallback says PROJECTION-ONLY in the log, on `/perception/source`
+  and on every annotated frame, so a recording cannot pass ground truth off as model output.
+- **`planner_node`** runs `build_perception`, `next_state` and `command_for` unchanged.
+  Only potholes steer (D049: cracks are survey material). A stale detection stream goes
+  through the same `next_state` failsafe and stops the robot.
+
+**ROS is one more `Transport` (D049, D050).** `RosTransport` implements
+`canbus.transport.Transport` and publishes each `Command` as a Twist in physical units,
+from `sim.model.command_velocity`; the vehicle reads it back with `command_from_velocity`.
+The conversion drops `Mode`, which a Twist cannot carry. A test pins that the round trip
+drives `step` identically. `driving/` cannot tell ROS from CAN.
+
+**The simulator gets a camera frame.** `sim/project.py` turns a pothole straight into a box,
+so there was no image to publish. `sim/camera_image.py` runs that projection backwards per
+pixel, and a test pins that a rendered pothole fills its projected box. Building it exposed
+that `project_pothole` under-reports a near pothole's width: it takes the width at the
+disc's centre distance, short by 1–2 % at the ~0.9 m decision distance and 7 % at 0.5 m.
+It is left unchanged because the trial matrix is asserted on it. The frames are flat-shaded,
+far from the RDD2022 photos the detectors learnt from, so a detector missing these potholes
+says nothing about real roads; `sim/mujoco` is the photographic renderer (D087).
+
+**Evidence, per episode.** `planner_node` writes each episode to
+`runs/ros/<UTC stamp>/episodes.jsonl`: whether it reached its `expect`, and whether its
+drive-state sequence matches `run_scenario` on the same scenario offline. Measured on the
+Jetson, 2026-10-06, projection-only: over two cycles of all eight scenarios, 17 complete
+episodes all reached their expected state and 16 matched frame for frame. The 17th lost its
+first frame, published before ROS discovery finished. `sim_node` now waits for every link
+of the loop before starting its clock; a re-run then gave episode 0 all 60 frames, matching.
+The loop runs at 9.97 Hz against a 10 Hz target.
+
+**Environment.** The nodes run on the project's own uv venv, built on the system Python
+3.12 with system site packages so that ROS's `rclpy` loads into it. The locked PyPI
+torch 2.13.0 is a CUDA 13 build on aarch64. The Orin (sm_87) is outside its build list, but
+its sm_80 kernels run: conv output matches the CPU to 6.6e-7 and NMS is identical.
+CLAUDE.md's "MPS, not CUDA" describes the MacBook; on the Jetson torch runs on CUDA. Jazzy's
+message libraries, built against numpy 1.26, were checked to work with the venv's numpy 2.5.
+
+**What it cannot show.** The weights are not on the Jetson yet, so every run so far is
+projection-only. D050's list stands: no motion blur, vibration, lighting, real command
+latency or actuator dynamics.
+
+## D094 — The review demo runs on the Jetson: MuJoCo survey demo and a live real-road viewer, on CUDA
+
+**2026-10-08 · Accepted · extends D087 and D093**
+
+The user asked for the mentor demo to show Model P and Model B detecting potholes live, as
+realistically as the Jetson allows. Three parts, in `ros/MENTOR-DEMO.md`: the MuJoCo survey
+demo (D087–D092) as the main simulation, because it has real photo textures and exact
+ground truth; a live viewer on the real RT Dashcam clip, because only real footage answers
+"does it work on a real road"; and D093's ROS loop, the only part where a decision moves
+the vehicle. Recorded footage cannot be steered, and the MuJoCo road is driven straight, so
+parts 1 and 2 show detection, not control.
+
+**`mps` resolves to the machine's accelerator.** The configs name the MacBook's `mps`.
+`core/device.available_device` returns the configured device where it exists, else `cuda`,
+else `mps`, else `cpu`; `cpu` is honoured as asked, since bit-reproducible evaluation needs
+it. `sim/mujoco/drive.py`, `scripts/eval_video.py` and `scripts/exp_video_extent.py` use it,
+so the same config runs on both machines and the recorded device is the one that ran. The
+screen's fonts became a list, the Mac's first and DejaVu second.
+
+**`scripts/live_video.py`.** Both models track every frame with ByteTrack, potholes from P
+and cracks from B (D082), confirmed by `eval_video.confirm_step` (D075) behind the horizon
+gate, and Model P's tracks are scored with `score_video_gt.score_tracks`, the rule the
+offline numbers use. No frame is skipped (D088), so the live window runs slower than real
+time; `--record` writes at the clip's rate. A run stopped early is scored on the stretch it
+played.
+
+**Inputs rebuilt on the Jetson, none copied from the Mac.** The weights came from the Kaggle
+kernel outputs; their SHA-256 match `results/LOCKED`. The clip came from YouTube again,
+1280x720, 30 fps, 290.9 s, as recorded. The 49 textures were rebuilt from QR4Change
+(Mendeley, SHA-256 checked) and BD-N6 (Zenodo, read by range request) with
+`scripts/fetch_trial_textures.py`, using `docs/texture-provenance.md`'s file map. The
+curated set had been downscaled to a 3000 px long side with the aspect kept, and the script
+resizes to the map's sizes, so geometry and `natural_px_per_m` hold. The pixels are not
+the zip's, so D092's byte-identical v1 check does not carry over to these textures. The
+drift reference needs the india_val image list; the committed `splits/india_val.txt` is
+that list (all 752 images with predictions are among its 772).
+
+**Measured on the Jetson, 2026-10-08, once.** MuJoCo poor seed 0, look v2: potholes 16/28 at
+44.9 false alarms/km, alligator 21/24, linear 14/27, drift alarm at 345 m. The Mac's run was
+15/28, 21/24, 15/27, no alarm. The textures differ in their pixels and the arithmetic in its
+device, and the results are close but not identical. The drive runs at 0.20x real time
+(per frame: render 49 ms, P 32 ms, B 31 ms) after a scene build of about 220 s. On the real
+clip, 120–180 s, Model P caught 12 of 17 counted potholes with 21 false alarms per minute
+(the Mac's eval_video run: 10 of 17, 20 per minute), at 12 fps, 0.4x real time. Nothing was
+tuned on these runs.
+
+## D095 — The ROS graph takes any camera: real road video in, decisions out as CAN frames
+
+**2026-10-08 · Accepted · extends D052 and D093**
+
+`perception_node` pairs frames with ground truth only when `/sim/ground_truth` is published,
+and reads each image's own size; the planner takes image size from `/camera/camera_info`.
+`video_node` streams the RT Dashcam clip as `/camera/image_raw`, in lockstep by default (each
+frame waits for its detections, so D075's 3-of-5 rule keeps its 30 fps premise, D088) or in
+real time with frames dropped and labelled. The clip is open loop: a recording cannot be
+steered, so it scores decisions, not avoidance, and the overlay says so on every frame.
+
+Every Command also leaves as a CAN frame: a composite transport sends it to `RosTransport` and
+`CanTransport` (D049), on socketcan/vcan0 by a ROS-side override in `configs/ros/demo.yaml`;
+`configs/canbus/transport.yaml` keeps the Mac's `virtual` default and owns the 0x101 ID and the
+provisional 4-byte layout. `can_monitor_node` decodes vcan0 onto `/can/decoded`.
+
+With the weights present, `auto` picked the detector for the 2D sim, which never fires on its
+flat-shaded frames, and every episode stayed NORMAL; the 2D sim now defaults to projection
+(`sim.perception_source`). The staleness failsafe is off for lockstep video only.
+
+Measured on the Jetson, 120–180 s of the clip: 1800 of 1800 frames at 9.9 fps (0.33x real
+time); 1800 decisions, 1800 CAN frames on candump, 1800 decoded, byte-identical. The planner
+left NORMAL during 12 of the 17 counted potholes, always with a manoeuvre; 27 of 53 manoeuvre
+onsets had no counted pothole in view, and the median manoeuvre lasts 2 frames. Perception
+stalls of 1–3 s occur on this shared machine and change speed, not decisions. The 2D sim:
+31 of 31 episodes reached their expected state and matched `run_scenario`, 60 frames each.
+
+## D096 — A Gazebo world converted from the MuJoCo road, with a sprung Ackermann car
+
+**2026-10-08 · Accepted · refines D050 (its rejection of Gazebo, for the demo); D050's other
+reasons stand**
+
+The user asked for a Gazebo world on the Jetson realistic enough that the models detect from
+pixels. `sim/gazebo/export.py` builds the MuJoCo look-v2 scene with the unchanged
+`sim.mujoco.scene.build` and converts it geom by geom: baked photo textures, pothole relief
+4–10 cm deep in visual and collision geometry, kerbs, markings, poles and trees. The ground
+truth is byte-identical to D092/D094's. `ros/certain_road_gz` holds a 950 kg car (2.45 m
+wheelbase, gz-sim AckermannSteering, four spring-damper legs at 1.4 Hz, the design camera at
+1.3 m and 10° down), the ros_gz bridge and a launch whose paths are all relative, so the world
+folder runs on another machine. Light was calibrated once to MuJoCo's brightness, never against
+detections; gz's jerk limiter was removed after it made the speed hunt.
+
+Measured on the Jetson, poor seed 0: Model P boxed 23 of the 28 ground-truth potholes that came
+into view in at least one frame, and confirmed tracks hit 16–20 of 28 (MuJoCo: 16/28); pothole
+false alarms 23.8–25.7 per km. RTF 0.78 at 1280x720/30 Hz, 15–24 s to the first image, about
+2 GB of RAM; Gazebo here is physics-bound (collision meshes cost ~16% of real time). A wheel
+crossing a pothole moved the body up to 11.7 mm, 0.68° pitch and 0.88° roll, with up to 71 mm
+of suspension travel; plain road, 0 mm. A real two-machine run has not been tested.
+
+## D097 — The Gazebo closed loop: built, not yet measured
+
+**2026-10-08 · Open**
+
+Committed mid-way when work paused: `gazebo.launch.py` (world, perception, planner, CAN, CAN
+monitor, `lane_keeper_node`, road markers, RViz), a car vehicle profile (`configs/sim/car.yaml`)
+and a car corridor (`configs/driving/corridor_car.yaml`) the planner selects by parameter, and
+a stand-in lane keeper that steers only while the planner is NORMAL or WARNING. Its tests pass
+and the 2D sim and video modes are unchanged (31/31 episodes above). The first closed-loop
+smoke test was stopped before it finished, so nothing about avoidance has been measured. To
+close: wheel–pothole crossings with the planner against a lane-keep-only baseline, false
+manoeuvres, CAN counts, RTF.
+
+## D098 — The survey simulation report and RSL: built in part
+
+**2026-10-08 · Open**
+
+`survey/rsl.py` inverts a published PCI–age curve per design.md §3 and refuses to run with an
+empty `source:`. The curve is Sharaf, Reichelt, Shahin and Sinha (1987), TRR 1123, pp. 30–39
+(PCI = 100 − b·age^m, m = 1.5), fitted to PAVER PCI on US Army roads: not Indian, and the input
+here is a vision-estimated PCI, so the RSL is an indication for ranking, not a forecast. The
+source was confirmed to exist and to state that model form. No Indian PCI–age model could be
+verified (search record in `configs/rsl/published_default.yaml`). Status there: **pending
+mentor approval**; `mode: pci_only` is the one-line alternative. Also committed mid-way:
+`dashboard/survey_report.py`, `sim/mujoco/gallery.py` (re-rendered frames of each confirmed
+track) and `scripts/survey_environments.py`. Not yet run on three roads, and the gallery is
+not finished.
+
+**Update to D097 and D098, 2026-10-08 (work paused when the lab closed; both stay Open).**
+D097: a closed-loop drive with the planner on was recorded over the first 230 m of poor seed
+0 at rtf 0.3 (`runs/ros/capture/gazebo_closed_loop_20261008T095519Z.mp4`, 1,326 decisions).
+vcan0 was down, so it carries no CAN frames, and the lane-keep-only baseline was not run, so
+avoidance is still unmeasured. D098: `scripts/survey_environments.py` built the three-road
+report (good, moderate and poor, seed 0; `runs/survey_environments/report.html`, 216 images);
+the pooled repair plan chose 7 segments and covered all 3 of the true worst 3. The report's
+numbers have not yet been reviewed beyond that. `ros/review_preflight.sh` checks a machine
+before the review; `ros/install_gazebo_can.sh` now installs a systemd unit that brings vcan0
+up at every boot.

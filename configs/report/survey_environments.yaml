@@ -1,0 +1,68 @@
+# The three-road survey report (scripts/survey_environments.py, certain_road.dashboard.survey_report).
+#
+# Three simulated MuJoCo roads of clearly different condition, surveyed one after another by the
+# real Model P and Model B, scored by certain_road.survey, given a remaining service life by
+# certain_road.survey.rsl, and pooled into one repair plan by the real allocators (D079, D090).
+# A demonstration on simulated roads, never a field result (D087).
+
+# Seed 0 for every road: the seed the docs' five-preset table (docs/mujoco-demo.md) and the
+# Jetson poor run (D094) used, so each road compares with a recorded result.
+roads:
+  - {preset: good, seed: 0}
+  - {preset: moderate, seed: 0}
+  # poor seed 0 was driven on the Jetson on 2026-10-08 (D094) and its logs are reused when
+  # complete. Its recording and live still were written to runs/demo_capture/ for the mentor
+  # demo; the runner never writes there, it only reads them as a fallback.
+  - preset: poor
+    seed: 0
+    recording_fallback: runs/demo_capture/mujoco_poor_seed0.mp4
+    still_fallback: runs/demo_capture/mujoco_poor_seed0_last.png
+
+look: v2                                 # configs/sim/mujoco.yaml default_look
+heavy_lock: /tmp/certain-road-heavy.lock # shared GPU machine: one heavy job at a time (flock)
+out_dir: runs/survey_environments        # report.html and report.json
+rsl_config: configs/rsl/published_default.yaml
+
+# The pooled plan. The budget is the end screen's share of the cost of repairing every segment
+# (configs/sim/mujoco.yaml end.budget_frac); the true worst N is D079's share of segments
+# (configs/project.yaml allocation.worst_k / n_segments), counted over damaged segments only
+# (D091). Both are read from those files, so they cannot drift from the end screen's.
+
+# Embedding: everything is inlined into one offline HTML file (D020).
+embed:
+  still_width_px: 960      # live-screen and end-screen stills, downscaled
+  jpeg_quality: 78
+  full_frames: true        # each gallery card can open its whole frame (adds ~40 KB per card)
+
+# Colours, light page only (D083). Class colours follow the live screen's boxes
+# (configs/sim/mujoco.yaml drive.colours_bgr); band colours follow its band_rgb.
+colours:
+  class:
+    pothole: "#e62828"
+    alligator_crack: "#ff8c00"
+    linear_crack: "#ffd700"
+  band:
+    Good: "#22a05c"
+    Satisfactory: "#80c450"
+    Fair: "#f2c434"
+    Poor: "#f08c30"
+    Very Poor: "#e24c3e"
+    Serious: "#a62c32"
+    Failed: "#60636a"
+  series:
+    vision: "#2a78d6"      # vision-estimated PCI (categorical slot 1)
+    reference: "#52514e"   # reference PCI, hollow ring in secondary ink
+    optimiser: "#eb6834"   # the T16 dashboard's optimiser colour
+    worst_first: "#eda100" # the T16 dashboard's worst-first colour
+
+# The per-road chart: vision-estimated and reference PCI per segment.
+chart:
+  width_px: 720
+  height_px: 220
+  pci_floor: 40            # y axis from here to 100, extended down to the lowest value's tens
+  tick_every_m: 100        # x-axis labels along the road
+  margin_px: {left: 44, right: 12, top: 12, bottom: 30}
+  marker_r_px: 5           # >= 8 px markers across (dataviz mark spec)
+  label_gap_px: 6          # y labels sit this far left of the plot
+  label_nudge_px: 4        # baseline shift to centre a label on its gridline
+  x_label_from_bottom_px: 10

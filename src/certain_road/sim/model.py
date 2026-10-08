@@ -18,7 +18,7 @@ from pathlib import Path
 
 import yaml
 
-from certain_road.canbus.protocol import Action, Command
+from certain_road.canbus.protocol import Action, Command, Mode
 
 
 @dataclass(frozen=True)
@@ -95,3 +95,32 @@ def step(state: RobotState, command: Command, dt: float, robot: Robot) -> RobotS
         heading=state.heading + (velocity / robot.wheelbase_m) * math.tan(steer_angle) * dt,
         speed=velocity,
     )
+
+
+def command_velocity(command: Command, robot: Robot) -> tuple[float, float]:
+    """`(linear_mps, yaw_rate_radps)` that `step` drives `command` at.
+
+    These are the physical units a ROS `/cmd_vel` Twist carries (D093), so a `Command`
+    can leave the planner as a Twist and arrive at the simulated vehicle unchanged.
+    """
+    if command.action is Action.STOP:
+        return 0.0, 0.0
+    sign = -1.0 if command.action is Action.REVERSE else 1.0
+    velocity = sign * command.speed * robot.max_speed_mps
+    yaw_rate = (velocity / robot.wheelbase_m) * math.tan(command.steer * robot.max_steer_rad)
+    return velocity, yaw_rate
+
+
+def command_from_velocity(linear_mps: float, yaw_rate_radps: float, robot: Robot) -> Command:
+    """The inverse of `command_velocity`, up to float rounding.
+
+    Lossy in two named ways: a Twist has no `Mode`, so every command reads back as
+    AUTONOMOUS; and a STOP carries no speed or steer, which `step` ignores anyway.
+    """
+    if linear_mps == 0.0:
+        return Command(Action.STOP, 0.0, 0.0, Mode.AUTONOMOUS)
+    action = Action.FORWARD if linear_mps > 0.0 else Action.REVERSE
+    speed = min(abs(linear_mps) / robot.max_speed_mps, 1.0)
+    steer_angle = math.atan(yaw_rate_radps * robot.wheelbase_m / linear_mps)
+    steer = max(-1.0, min(1.0, steer_angle / robot.max_steer_rad))
+    return Command(action, speed, steer, Mode.AUTONOMOUS)

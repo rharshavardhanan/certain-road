@@ -32,6 +32,7 @@ from pathlib import Path
 import numpy as np
 import yaml
 
+from certain_road.core.device import available_device
 from certain_road.core.geometry import project
 from certain_road.core.paths import repo_root
 from sim.mujoco.road import Road
@@ -41,6 +42,7 @@ sys.path.insert(0, str(repo_root() / "scripts"))
 from eval_video import confirm_step  # noqa: E402  D075, one definition
 
 VIDEO = yaml.safe_load((repo_root() / "configs/eval/video.yaml").read_text())
+VIDEO["device"] = available_device(VIDEO["device"])  # mps on the Mac, cuda on the Jetson
 PROJECT = yaml.safe_load((repo_root() / "configs/project.yaml").read_text())
 
 

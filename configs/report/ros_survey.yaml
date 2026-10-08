@@ -1,0 +1,57 @@
+# The ROS survey node (ros/certain_road_survey): the survey report from any ROS camera with
+# odometry, scored by the same rules as the MuJoCo survey (certain_road.survey.sample).
+#
+#   source ros/env.sh && ROS_DOMAIN_ID=43 ros2 launch certain_road_survey survey.launch.py
+#
+# Inputs: camera frames, their intrinsics, the perception node's detections (Model P for
+# potholes, Model B for cracks, D082) and odometry. Sample spacing, segment length, lane width
+# and deduct weights are configs/project.yaml's (edge.sample_every_m, scoring.*); the RSL is
+# configs/rsl/published_default.yaml's.
+
+topics:
+  image: /camera/image_raw
+  camera_info: /camera/camera_info
+  detections: /perception/detections
+  odom: /odom
+
+# The camera's mounting. Intrinsics come from camera_info. Height and pitch are the design
+# camera's (configs/project.yaml sim: 1.3 m, 10 deg), which the Gazebo car carries
+# (configs/sim/gazebo.yaml camera:); forward_of_odom_m is the Gazebo camera's offset ahead of
+# base_link (gazebo.yaml camera.forward_m).
+camera:
+  height_m: 1.3
+  pitch_deg: 10.0
+  forward_of_odom_m: 1.95
+
+# D006/D089: a sample counts boxes whose base lies in the lane strip roi_near_m to
+# roi_near_m + edge.sample_every_m ahead of the sample mark, within half a lane of the path
+# (= configs/sim/mujoco.yaml survey.roi_near_m).
+roi_near_m: 3.0
+
+# Where a detection is along the road. world_x: the camera's x in the odometry frame, for a
+# road laid along x from 0 (the Gazebo world converted from the MuJoCo road, D096), so
+# chainages compare with the MuJoCo run's. path: metres the camera travelled since the first
+# odometry message, for any other road.
+chainage: world_x
+
+frames_buffered: 90          # images kept while their detections are computed (3 s at 30 Hz)
+odom_history: 400            # odometry poses kept to place a frame at its own stamp
+
+out_dir: runs/ros_survey     # one folder per launch: survey.json, gallery.json, report.html
+label: Gazebo road           # the road's name on the report
+simulated: true              # a simulator camera: the report carries the demonstration caption
+
+# Pictures of each counted detection, as the MuJoCo gallery draws them.
+gallery:
+  crop_px: 360
+  context: 0.8
+  min_pad_px: 48
+  frame_width_px: 640
+  box_px: 3
+  jpeg_quality: 80
+  colours_bgr: {pothole: [40, 40, 230], linear_crack: [0, 215, 255], alligator_crack: [0, 140, 255]}
+
+# The repair plan's budget: a share of the cost of repairing every segment, as the MuJoCo end
+# screen spends it (configs/sim/mujoco.yaml end.budget_frac). Costs are D079's, priced on the
+# vision-estimated distressed area, since a camera topic has no reference area.
+budget_frac: 0.3
