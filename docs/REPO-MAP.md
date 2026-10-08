@@ -1,8 +1,8 @@
 # Repository map
 
-Generated 2026-10-06 16:51:22 +0530
+Generated 2026-10-08 10:44:52 +0530
 
-Commit `bb5c376` on `ros2-jazzy-demo`; 0 paths differ from it in the working tree.
+Commit `0256646` on `ros2-jazzy-demo`; 0 paths differ from it in the working tree.
 
 Do not edit by hand — rerun scripts/repo_map.py
 
@@ -46,7 +46,7 @@ Quoted from `docs/design.md`:
 >
 > The novelty is the **integration and the decision**, not the detector.
 
-Evidence at build time, beside the quotes' own status lines: 137 commits from 2026-08-06 to 2026-10-06; Python files: 1 in `kaggle/`, 9 in `ros/`, 35 in `scripts/`, 13 in `sim/`, 52 in `src/`, 52 in `tests/`.
+Evidence at build time, beside the quotes' own status lines: 138 commits from 2026-08-06 to 2026-10-08; Python files: 1 in `kaggle/`, 9 in `ros/`, 37 in `scripts/`, 13 in `sim/`, 53 in `src/`, 54 in `tests/`.
 
 ## 2. Pipeline
 
@@ -95,6 +95,7 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `src/certain_road/canbus/transport.py` | 99 | 2026-09-06 | 2026-09-06 | Where a `Command` actually goes. |  |
 | `src/certain_road/cli.py` | 430 | 2026-08-06 | 2026-09-06 | Single entrypoint. |  |
 | `src/certain_road/core/__init__.py` | 1 | 2026-08-06 | 2026-08-06 | core stage. |  |
+| `src/certain_road/core/device.py` | 25 | 2026-10-08 | 2026-10-08 | Which torch device this machine can actually run on. |  |
 | `src/certain_road/core/geometry.py` | 89 | 2026-09-22 | 2026-09-22 | T12 — ground-plane geometry: inverse perspective mapping and GPS helpers. |  |
 | `src/certain_road/core/paths.py` | 27 | 2026-08-06 | 2026-10-04 | Repository-relative path resolution. |  |
 | `src/certain_road/dashboard/__init__.py` | 1 | 2026-09-05 | 2026-09-05 | The single product screen. |  |
@@ -152,15 +153,17 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `scripts/check_repo.py` | 101 | 2026-10-04 | 2026-10-04 | Every repository check, in order: `uv run python scripts/check_repo.py` (or `make check`). |  |
 | `scripts/eval_locked.py` | 255 | 2026-09-22 | 2026-10-04 | T6 — locked evaluation on a held-out set. |  |
 | `scripts/eval_open.py` | 125 | 2026-09-22 | 2026-10-04 | T6 — open evaluation on a non-held-out set, under the frozen settings. |  |
-| `scripts/eval_video.py` | 304 | 2026-10-04 | 2026-10-04 | D075 — per-pothole confirmation on real road video, one model's pothole channel. | read-only lane |
+| `scripts/eval_video.py` | 306 | 2026-10-04 | 2026-10-08 | D075 — per-pothole confirmation on real road video, one model's pothole channel. | read-only lane |
 | `scripts/exhaustive_groups.py` | 112 | 2026-09-22 | 2026-10-04 | D062 — build scene groups from an EXHAUSTIVE comparison, not a hash prefilter. |  |
 | `scripts/exhaustive_leak_check.py` | 125 | 2026-09-22 | 2026-10-04 | D062 — prove the India holdout is clean by comparing *every* pair. |  |
 | `scripts/exp_allocation.py` | 558 | 2026-09-22 | 2026-10-04 | T12 — does conformal robustness change which roads get repaired? |  |
 | `scripts/exp_conformal.py` | 488 | 2026-09-28 | 2026-10-04 | T10 — conformal risk control on the pothole miss rate, from locked predictions. |  |
 | `scripts/exp_drift.py` | 318 | 2026-09-28 | 2026-10-04 | T11 — does the drift alarm notice when Model A leaves its domain? |  |
-| `scripts/exp_video_extent.py` | 459 | 2026-10-04 | 2026-10-04 | Why Model B is silent on the degraded stretch of the Bengaluru clip. | read-only lane |
+| `scripts/exp_video_extent.py` | 461 | 2026-10-04 | 2026-10-08 | Why Model B is silent on the degraded stretch of the Bengaluru clip. | read-only lane |
+| `scripts/fetch_trial_textures.py` | 139 | 2026-10-08 | 2026-10-08 | Rebuild data/raw/trial_textures from the public CC BY sources (D094). |  |
 | `scripts/kaggle_push.py` | 175 | 2026-09-22 | 2026-10-04 | T5 — build and push a Kaggle training kernel. |  |
 | `scripts/kaggle_watch.py` | 59 | 2026-09-22 | 2026-10-04 | T5 — poll a Kaggle kernel, then pull its output. |  |
+| `scripts/live_video.py` | 298 | 2026-10-08 | 2026-10-08 | Model P and Model B live on a real road video, against its hand-counted ground truth (D094). |  |
 | `scripts/make_fixtures.py` | 30 | 2026-08-06 | 2026-08-06 | Write synthetic artifacts to runs/synthetic/ for manual pipeline exercise. |  |
 | `scripts/make_report.py` | 769 | 2026-10-03 | 2026-10-04 | T17 — generate results/RESULTS.md from the result files. |  |
 | `scripts/mps_sanity.py` | 129 | 2026-09-22 | 2026-10-04 | T4 — can this Mac train, and does MPS agree with CPU? |  |
@@ -201,12 +204,12 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `configs/eval/class_maps.yaml` | 38 | 2026-08-15 | 2026-09-06 | Remaps external model class indices onto our frozen taxonomy: 0 = linear_crack, 1 = alligator_crack, 2 = pothole Indices DO NOT align across taxonomies. |  |
 | `configs/eval/gt/2DV-cYmIvT4_claude.csv` | 50 | 2026-10-04 | 2026-10-04 | Potholes in 2DV-cYmIvT4 (RT Dashcam, CC BY), window 120-180 s. | read-only lane |
 | `configs/eval/thresholds.yaml` | 15 | 2026-08-15 | 2026-08-15 | mAP is computed over the full precision-recall curve, so it uses a minimal floor. |  |
-| `configs/eval/video.yaml` | 40 | 2026-10-04 | 2026-10-04 | D075 — per-pothole confirmation on road video (scripts/eval_video.py). | read-only lane |
+| `configs/eval/video.yaml` | 56 | 2026-10-04 | 2026-10-08 | D075 — per-pothole confirmation on road video (scripts/eval_video.py). | read-only lane |
 | `configs/project.yaml` | 115 | 2026-09-22 | 2026-09-28 | RoadSight project configuration. |  |
 | `configs/repo_map.yaml` | 103 | 2026-10-04 | 2026-10-04 | scripts/repo_map.py -> docs/REPO-MAP.md. |  |
 | `configs/ros/demo.yaml` | 81 | 2026-10-06 | 2026-10-06 | ROS 2 Jazzy demo (ros/certain_road_ros, D093): the 2D simulator, the detectors and the drive decision as three nodes. |  |
 | `configs/sim/camera_image.yaml` | 15 | 2026-10-06 | 2026-10-06 | Colours and texture for src/certain_road/sim/camera_image.py: the flat-shaded camera frame the 2D simulator renders for the ROS demo (D093). |  |
-| `configs/sim/mujoco.yaml` | 186 | 2026-10-05 | 2026-10-05 | MuJoCo live survey demo (sim/mujoco). |  |
+| `configs/sim/mujoco.yaml` | 188 | 2026-10-05 | 2026-10-08 | MuJoCo live survey demo (sim/mujoco). |  |
 | `configs/sim/robot.yaml` | 23 | 2026-09-05 | 2026-09-05 | Simulated robot and camera geometry. |  |
 | `configs/sim/textures.yaml` | 84 | 2026-10-05 | 2026-10-05 | Textures for the MuJoCo demo (sim/mujoco/textures.py). |  |
 | `configs/train/yolov8n.yaml` | 24 | 2026-08-07 | 2026-08-07 | YOLOv8n on the RDD2022 India subset (D025). |  |
@@ -230,6 +233,7 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `tests/test_canbus_transport.py` | 89 | 2026-09-06 | 2026-09-06 | The transport layer, exercised on a real CAN bus. |  |
 | `tests/test_cli.py` | 14 | 2026-08-06 | 2026-09-05 | no docstring |  |
 | `tests/test_conformal.py` | 113 | 2026-09-22 | 2026-09-22 | T10 — the CRC guarantee is only worth as much as these tests. |  |
+| `tests/test_core_device.py` | 28 | 2026-10-08 | 2026-10-08 | available_device: the configured device where it exists, else this machine's accelerator. |  |
 | `tests/test_dashboard.py` | 181 | 2026-09-29 | 2026-10-04 | The dashboard reads files and runs the T12 optimiser; it must never hide either objective. |  |
 | `tests/test_dataset_convert.py` | 200 | 2026-08-06 | 2026-10-04 | no docstring |  |
 | `tests/test_dataset_fetch.py` | 103 | 2026-08-06 | 2026-09-05 | no docstring |  |
@@ -240,6 +244,7 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `tests/test_driving_perceive.py` | 90 | 2026-10-04 | 2026-10-04 | `build_perception`: the rules the simulator and the runtime share. |  |
 | `tests/test_eval_locked_links.py` | 64 | 2026-10-04 | 2026-10-04 | A fresh locked run must not commit a link that escapes the repository (D084). |  |
 | `tests/test_eval_video.py` | 58 | 2026-10-04 | 2026-10-04 | D075 — per-track 3-of-5 confirmation behind a horizon gate. | read-only lane |
+| `tests/test_fetch_trial_textures.py` | 39 | 2026-10-08 | 2026-10-08 | The texture rebuild reads docs/texture-provenance.md's file map completely (D094). |  |
 | `tests/test_fixtures.py` | 67 | 2026-08-06 | 2026-09-05 | no docstring |  |
 | `tests/test_geometry.py` | 88 | 2026-09-22 | 2026-10-04 | T12 — IPM must invert exactly, and must agree with the simulator's camera. |  |
 | `tests/test_kaggle_guard.py` | 157 | 2026-09-22 | 2026-10-04 | The last line of defence before a six-hour run reads its first image. |  |
@@ -437,7 +442,7 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `docs/CHALLENGES.md` | 203 | 2026-10-05 | 2026-10-05 | Challenges |  |
 | `docs/DA2-EVIDENCE.md` | 351 | 2026-10-05 | 2026-10-05 | DA-2 evidence |  |
 | `docs/DA2-SCOPE-CHANGE.md` | 101 | 2026-10-05 | 2026-10-05 | Scope change, DA-1 to DA-2 |  |
-| `docs/DECISIONS.md` | 3748 | 2026-08-06 | 2026-10-06 | Decision log |  |
+| `docs/DECISIONS.md` | 3795 | 2026-08-06 | 2026-10-08 | Decision log |  |
 | `docs/MENTOR-WALKTHROUGH.md` | 1403 | 2026-09-05 | 2026-09-22 | certain-road — a walkthrough |  |
 | `docs/ONBOARDING.md` | 67 | 2026-10-04 | 2026-10-05 | Onboarding |  |
 | `docs/colab-training-guide.md` | 220 | 2026-09-07 | 2026-09-07 | Training on Colab (T4) |  |
@@ -446,7 +451,7 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `docs/datasets/water-pothole-viability.md` | 136 | 2026-09-22 | 2026-09-22 | Water-pothole dataset — viability verdict |  |
 | `docs/design.md` | 630 | 2026-09-22 | 2026-09-22 | certain-road — Design Specification |  |
 | `docs/detector-benchmark.md` | 79 | 2026-09-06 | 2026-09-06 | Detector benchmark — India test set |  |
-| `docs/mujoco-demo.md` | 154 | 2026-10-05 | 2026-10-05 | The MuJoCo survey demo |  |
+| `docs/mujoco-demo.md` | 156 | 2026-10-05 | 2026-10-08 | The MuJoCo survey demo |  |
 | `docs/superpowers/plans/2026-08-15-detector-evaluation-harness.md` | 270 | 2026-08-15 | 2026-08-15 | Detector Evaluation Harness Implementation Plan |  |
 | `docs/superpowers/plans/2026-09-05-day5-corridor-sim.md` | 146 | 2026-09-05 | 2026-09-05 | Day 5 (hardware-free) — driving corridor + simulator core |  |
 | `docs/superpowers/plans/2026-09-05-robot-sprint.md` | 433 | 2026-09-05 | 2026-09-05 | CertainRoad Robot — 15-Day Sprint Plan |  |
@@ -484,7 +489,14 @@ What is each file for, and when was it first and last committed? Purpose is the 
 
 ### `data/`
 
-`data/` is absent (unknown).
+What does the gitignored `data/` hold? It is never committed, so it has no commit dates or docstrings; listed by directory to depth 2.
+
+| Directory | Files | Size |
+|---|---|---|
+| `data/raw/` | 49 files | 119,823,792 bytes |
+| `data/raw/trial_textures/` | 49 files | 119,823,792 bytes |
+| `data/video/` | 2 files | 93,005,601 bytes |
+| `data/yolo/` | 1 files | 25,476 bytes |
 
 ### Repository root and other
 
@@ -503,6 +515,7 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `TASK_LOG.md` | 348 | 2026-09-22 | 2026-10-04 | RoadSight — task log |  |
 | `pyproject.toml` | 65 | 2026-08-06 | 2026-10-05 | no docstring |  |
 | `requirements.txt` | 399 | 2026-09-22 | 2026-10-05 | This file was autogenerated by uv via the following command: uv export --format requirements-txt --no-hashes |  |
+| `ros/MENTOR-DEMO.md` | 154 | 2026-10-08 | 2026-10-08 | Mentor demo: what to show, in what order, and what to say |  |
 | `ros/README.md` | 71 | 2026-10-06 | 2026-10-06 | ROS 2 demo (D093) |  |
 | `ros/WORKLOG-2026-10-06.md` | 326 | 2026-10-06 | 2026-10-06 | ROS 2 demo on the Jetson: work log, 2026-10-06 |  |
 | `ros/certain_road_ros/certain_road_ros/__init__.py` | 6 | 2026-10-06 | 2026-10-06 | ROS 2 Jazzy demo of the drive pipeline (D093). |  |
@@ -524,12 +537,12 @@ What is each file for, and when was it first and last committed? Purpose is the 
 | `sim/mujoco/__init__.py` | 1 | 2026-10-05 | 2026-10-05 | MuJoCo live survey demo. |  |
 | `sim/mujoco/camera.py` | 87 | 2026-10-05 | 2026-10-05 | Render what the dashcam would record, not what the renderer draws. |  |
 | `sim/mujoco/demo.py` | 193 | 2026-10-05 | 2026-10-05 | MuJoCo survey demo CLI. |  |
-| `sim/mujoco/drive.py` | 281 | 2026-10-05 | 2026-10-05 | Drive the design camera down the road and detect with the real models, frame by frame. |  |
+| `sim/mujoco/drive.py` | 283 | 2026-10-05 | 2026-10-08 | Drive the design camera down the road and detect with the real models, frame by frame. |  |
 | `sim/mujoco/evaluate.py` | 125 | 2026-10-05 | 2026-10-05 | Step 4: what the drive found against what was there, and what a budget would repair. |  |
 | `sim/mujoco/relief.py` | 104 | 2026-10-05 | 2026-10-05 | Look v2's 3D potholes: the road mesh sinks wherever the texture shows a pothole. |  |
 | `sim/mujoco/road.py` | 246 | 2026-10-05 | 2026-10-05 | Seeded road layout and clustered damage, and its ground truth. |  |
 | `sim/mujoco/scene.py` | 276 | 2026-10-05 | 2026-10-05 | Assemble the MuJoCo scene for one road: surface tiles, kerbs, shoulders, sky, sun, haze, poles, a wall, signs, and the vehicle carrying the camera. |  |
-| `sim/mujoco/screen.py` | 562 | 2026-10-05 | 2026-10-05 | The live screen: four panels and a caption bar, legible from 3 m on a projector. |  |
+| `sim/mujoco/screen.py` | 571 | 2026-10-05 | 2026-10-08 | The live screen: four panels and a caption bar, legible from 3 m on a projector. |  |
 | `sim/mujoco/surface.py` | 319 | 2026-10-05 | 2026-10-05 | Bake the road surface into texture tiles: asphalt, markings, then damage. |  |
 | `sim/mujoco/survey.py` | 254 | 2026-10-05 | 2026-10-05 | The live survey: every 5 m sample scored through certain_road.survey, segment by segment. |  |
 | `sim/mujoco/textures.py` | 185 | 2026-10-05 | 2026-10-05 | Trial-photo textures: curated, prepared, and checked against the training data. |  |
@@ -636,13 +649,15 @@ What does `certain_road.core` expose, and is anything outside the package using 
 | Module | Symbol | Signature | Docstring first line | Imported outside |
 |---|---|---|---|---|
 | `certain_road.core` | (module) |  | core stage. |  |
+| `certain_road.core.device` | (module) |  | Which torch device this machine can actually run on. |  |
+|  | `available_device` | `available_device(preferred: str) -> str` | no docstring | 2 code, 1 test files |
 | `certain_road.core.geometry` | (module) |  | T12 — ground-plane geometry: inverse perspective mapping and GPS helpers. |  |
 |  | `ground_point` | `ground_point(u: float, v: float, *, f: float, cx: float, cy: float, cam_h: float, pitch: float) -> tuple[float, float] \| None` | Pixel (u, v) -> ground (X forward, Y left) in metres, or None. | 1 code, 3 test files |
 |  | `project` | `project(forward: float, left: float, *, f: float, cx: float, cy: float, cam_h: float, pitch: float) -> tuple[float, float] \| None` | Ground (X forward, Y left) -> pixel (u, v). Exact inverse of `ground_point`. | tests only (3) |
 |  | `haversine_m` | `haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float` | Great-circle distance in metres. | 1 code, 1 test files |
 |  | `interp_track` | `interp_track(ts: list[float], lat: list[float], lon: list[float], t: float) -> tuple[float, float]` | Position at time `t`, linearly interpolated between fixes. | tests only (1) |
 | `certain_road.core.paths` | (module) |  | Repository-relative path resolution. |  |
-|  | `repo_root` | `repo_root() -> Path` | Walk upward from this file until the directory holding pyproject.toml. | 36 code, 14 test files |
+|  | `repo_root` | `repo_root() -> Path` | Walk upward from this file until the directory holding pyproject.toml. | 38 code, 15 test files |
 |  | `data_dir` | `data_dir() -> Path` | no docstring | **possibly unused** |
 |  | `raw_dir` | `raw_dir() -> Path` | no docstring | 4 code, 0 test files |
 |  | `processed_dir` | `processed_dir() -> Path` | no docstring | 1 code, 0 test files |
@@ -868,7 +883,7 @@ What can be run, with which arguments, reading and writing what? Paths and confi
 | `audit_raw.py` | T1 — audit RDD2022 as it ships, before any conversion touches it. | none | `data/raw/RDD2022/*/train/annotations/xmls`<br>`data/raw/RDD2022/*/train/images` | `results/T1/raw_audit.json`<br>`results/T1/raw_audit.md` | — | 2026-10-06 15:49 |
 | `bph_internal_leakage.py` | D073 — are BharatPotHole's own eval splits held out, and how diverse is it? | none | `data/raw/bharatpothole/BharatPotHole/BharatPotHole/*/images` | `results/T9/bph_internal_leakage.json` | — | 2026-10-06 15:49 |
 | `build_dashboard.py` | T16 — build the offline dashboard: one self-contained HTML file (D020). | none | `configs/project.yaml`<br>`results/LOCKED/A_india_full.json`<br>`results/T10/conformal.json`<br>`results/T11/drift.json`<br>`results/T12/allocation.json`<br>`results/T12/allocation.png`<br>`results/T12/demo_network.json`<br>`results/T7/A_vs_B_india_test.json`<br>`results/T9/B_vs_P_india_test_LOCKED.json`<br>`results/T9/B_vs_P_india_val.json` | `results/dashboard/index.html` | `allocation.worst_k` | 2026-10-06 15:49 |
-| `build_pool.py` | T2 — build the YOLO image pool, the split lists, and the split audit. | none | `configs/data/*.yaml`<br>`configs/data/model_a.yaml`<br>`configs/data/model_b.yaml`<br>`configs/project.yaml`<br>`data/raw/RDD2022/*/train/annotations/xmls/*.xml`<br>`data/raw/RDD2022/*/train/images/*.jpg`<br>`data/yolo/images`<br>`data/yolo/labels`<br>`results/T2/india_scene_groups.json`<br>`results/T2/nonindia_excluded.json` | `configs/data`<br>`data/yolo/*.txt`<br>`results/T2/split_audit.json`<br>`results/T2/split_audit.md` | `countries.india` = `India`<br>`countries.nonindia`<br>`paths.splits` = `splits`<br>`paths.yolo` = `data/yolo`<br>`seed`<br>`split` | 2026-10-06 15:49 |
+| `build_pool.py` | T2 — build the YOLO image pool, the split lists, and the split audit. | none | `configs/data/*.yaml`<br>`configs/data/model_a.yaml`<br>`configs/data/model_b.yaml`<br>`configs/project.yaml`<br>`data/raw/RDD2022/*/train/annotations/xmls/*.xml`<br>`data/raw/RDD2022/*/train/images/*.jpg`<br>`data/yolo/images`<br>`data/yolo/labels`<br>`results/T2/india_scene_groups.json`<br>`results/T2/nonindia_excluded.json` | `configs/data`<br>`data/yolo/*.txt`<br>`results/T2/split_audit.json`<br>`results/T2/split_audit.md` | `countries.india` = `India`<br>`countries.nonindia`<br>`paths.splits` = `splits`<br>`paths.yolo` = `data/yolo`<br>`seed`<br>`split` | 2026-10-08 10:17 |
 | `build_pothole_pool.py` | D072 — a pothole-only pool for Model P. | none | `configs/project.yaml`<br>`data/raw/bharatpothole/BharatPotHole/BharatPotHole/*/images`<br>`data/raw/bharatpothole/BharatPotHole/BharatPotHole/*/labels/*.txt`<br>`data/yolo/*.txt`<br>`data/yolo/images/*.jpg`<br>`data/yolo/labels/*.txt` | `data/yolo_pothole/images/*.jpg`<br>`data/yolo_pothole/labels/*.txt`<br>`data/yolo_pothole/manifest.json`<br>`data/yolo_pothole/p_bph_val.txt`<br>`data/yolo_pothole/p_train.txt`<br>`data/yolo_pothole/p_val.txt` | `paths.yolo` = `data/yolo`<br>`pothole_class` | outputs absent |
 | `check_bharatpothole.py` | D072 — does BharatPotHole overlap the India holdout? | none | `configs/project.yaml`<br>`data/raw/bharatpothole/BharatPotHole/BharatPotHole/*/images`<br>`data/yolo/*.txt`<br>`data/yolo/images/*.jpg` | `results/T9/bharatpothole_overlap.json` | `paths.yolo` = `data/yolo` | 2026-10-06 15:49 |
 | `check_repo.py` | Every repository check, in order: `uv run python scripts/check_repo.py` (or `make check`). | none | `scripts` | — | `generated`<br>`output` | outputs absent |
@@ -881,8 +896,10 @@ What can be run, with which arguments, reading and writing what? Paths and confi
 | `exp_conformal.py` | T10 — conformal risk control on the pothole miss rate, from locked predictions. | none | `configs/project.yaml`<br>`data/yolo/*.txt`<br>`data/yolo/images/*.jpg`<br>`data/yolo/labels/*.txt`<br>`results/LOCKED/A_india_full_run/val/predictions.json`<br>`results/LOCKED/B_india_heldout_run/val/predictions.json`<br>`results/LOCKED/P_india_heldout_run/val/predictions.json`<br>`results/T2/india_scene_groups.json`<br>`results/T6_A_nonindia_val/val/predictions.json` | `results/T10/conformal.json`<br>`results/T10/conformal.md`<br>`results/T10/false_alarms_vs_alpha.png`<br>`results/T10/resampled_risk_hist.png`<br>`results/T10/risk_vs_alpha.png` | `conformal`<br>`paths.yolo` = `data/yolo`<br>`pothole_class` | 2026-10-06 15:49 |
 | `exp_drift.py` | T11 — does the drift alarm notice when Model A leaves its domain? | none | `configs/project.yaml`<br>`data/yolo/*.txt`<br>`results/LOCKED/A_india_full_run/val/predictions.json`<br>`results/T6_A_nonindia_val/val/predictions.json` | `results/T11/delay_hist.png`<br>`results/T11/drift.json`<br>`results/T11/drift.md`<br>`results/T11/martingale_traces.png` | `drift`<br>`paths.yolo` = `data/yolo` | 2026-10-06 15:49 |
 | `exp_video_extent.py` (read-only lane) | Why Model B is silent on the degraded stretch of the Bengaluru clip. | `video` (required) | `configs/eval/video.yaml`<br>`configs/project.yaml`<br>`data/yolo/*`<br>`data/yolo/*.txt`<br>`data/yolo/india_train.txt`<br>`data/yolo/labels/*.txt`<br>`results/video/*/drift.png`<br>`results/video/*/scale.png` | `results/video/*/extent.json`<br>`runs/video/*/frame_scores.npz` | `device`<br>`drift`<br>`eval`<br>`extent`<br>`models.B`<br>`models.P`<br>`paths.yolo` = `data/yolo` | 2026-10-06 15:49 |
+| `fetch_trial_textures.py` | Rebuild data/raw/trial_textures from the public CC BY sources (D094). | none | `docs/texture-provenance.md` | `data/raw/trial_textures/*` | — | 2026-10-08 10:01 |
 | `kaggle_push.py` | T5 — build and push a Kaggle training kernel. | none | `configs/project.yaml`<br>`kaggle/train/train.py` | `kaggle/build/*/job.json`<br>`kaggle/build/*/kernel-metadata.json`<br>`kaggle/build/*/train.py` | `classes`<br>`kaggle.dataset_slug` = `roadsight-rdd-yolo`<br>`kaggle.username` = `harshavardhananr`<br>`train_A.model` = `yolov8s.pt`<br>`train_B` | outputs absent |
-| `kaggle_watch.py` | T5 — poll a Kaggle kernel, then pull its output. | none | `configs/project.yaml` | `runs/kaggle/*` | `kaggle.username` = `harshavardhananr` | outputs absent |
+| `kaggle_watch.py` | T5 — poll a Kaggle kernel, then pull its output. | none | `configs/project.yaml` | `runs/kaggle/*` | `kaggle.username` = `harshavardhananr` | 2026-10-08 10:02 |
+| `live_video.py` | Model P and Model B live on a real road video, against its hand-counted ground truth (D094). | `video` (required)<br>`--record`<br>`--headless`<br>`--until-s` | `configs/sim/mujoco.yaml` | `runs/video_live/*/live_summary.json` | `conf`<br>`confirm`<br>`device`<br>`drive`<br>`horizon_frac`<br>`live`<br>`models`<br>`tracker` | 2026-10-08 10:38 |
 | `make_fixtures.py` | Write synthetic artifacts to runs/synthetic/ for manual pipeline exercise. | none | — | `runs/synthetic/artifacts/detections.parquet`<br>`runs/synthetic/artifacts/frames.parquet` | — | outputs absent |
 | `make_report.py` | T17 — generate results/RESULTS.md from the result files. | none | `configs/eval/gt/2DV-cYmIvT4_claude.csv`<br>`docs/DECISIONS.md`<br>`results/LOCKED/A_india_full.json`<br>`results/LOCKED/P_india_heldout.json`<br>`results/T1/raw_audit.json`<br>`results/T10/conformal.json`<br>`results/T10/feasibility.json`<br>`results/T11/drift.json`<br>`results/T12/allocation.json`<br>`results/T13`<br>`results/T14`<br>`results/T15`<br>`results/T2/exhaustive_india_vs_nonindia_val.json`<br>`results/T2/exhaustive_leak.json`<br>`results/T2/split_audit.json`<br>`results/T6/localisation.json`<br>`results/T6_A_nonindia_val/metrics.json`<br>`results/T7/A_vs_B_india_test.json`<br>`results/T9/B_vs_P_india_test_LOCKED.json`<br>`results/T9/B_vs_P_india_val.json`<br>`results/T9/bharatpothole_overlap.json`<br>`results/T9/bph_internal_leakage.json`<br>`results/video`<br>`results/video/2DV-cYmIvT4/B/summary.json`<br>`results/video/2DV-cYmIvT4/P/summary.json`<br>`results/video/2DV-cYmIvT4/extent.json`<br>`results/video/2DV-cYmIvT4/gt_score.json` | `results/RESULTS.md` | — | 2026-10-06 15:49 |
 | `mps_sanity.py` | T4 — can this Mac train, and does MPS agree with CPU? | none | `configs/data/model_a.yaml`<br>`runs/t4/sanity_*/results.csv` | `results/mps_sanity.json` | — | 2026-10-06 15:49 |
@@ -898,7 +915,7 @@ What can be run, with which arguments, reading and writing what? Paths and confi
 | `t7_compare.py` | T7 — Model A vs Model B on india_test, same scorer, same settings. | none | `configs/project.yaml`<br>`data/yolo`<br>`results/LOCKED/A_india_full_run/val`<br>`results/LOCKED/B_india_heldout_run/val` | `results/T7/A_vs_B_india_test.json` | `classes`<br>`eval`<br>`paths.yolo` = `data/yolo` | 2026-10-06 15:49 |
 | `t9_b_vs_p.py` | D072 — Model B vs Model P on india_val, pothole only, one scorer, one eval block. | `--b-weights`<br>`--p-weights`<br>`--split` = SPLIT<br>`--b-preds`<br>`--p-preds`<br>`--gt-root` = POTHOLE_DIR<br>`--groups` = repo_root() / 'results/T2/india_scene_groups.json'<br>`--image-level-too`<br>`--out` = 'B_vs_P_india_val.json' | `configs/project.yaml`<br>`data/yolo/*.txt`<br>`data/yolo_pothole`<br>`results/T2/india_scene_groups.json` | `results/T9/*`<br>`results/T9/*_*_run/data.yaml` | `classes`<br>`eval`<br>`paths.yolo` = `data/yolo`<br>`pothole_class` | 2026-10-06 15:49 |
 | `train_progress.py` | Show YOLO training progress at a glance. | none | `runs/detect/models/yolo` | — | — | outputs absent |
-| `verify_run.py` | T5b post-run verification — what the kernel actually read and produced. | `--slug` = 'roadsight-train-a'<br>`--run` = 'model_a'<br>`--train-splits` = ['nonindia_train']<br>`--val-split` = 'nonindia_val'<br>`--allow-india-train` | `configs/project.yaml`<br>`data/yolo/*.txt` | `results/T5/*_verification.json`<br>`runs/kaggle/*` | `kaggle.username` = `harshavardhananr`<br>`paths.yolo` = `data/yolo` | 2026-10-06 15:49 |
+| `verify_run.py` | T5b post-run verification — what the kernel actually read and produced. | `--slug` = 'roadsight-train-a'<br>`--run` = 'model_a'<br>`--train-splits` = ['nonindia_train']<br>`--val-split` = 'nonindia_val'<br>`--allow-india-train` | `configs/project.yaml`<br>`data/yolo/*.txt` | `results/T5/*_verification.json`<br>`runs/kaggle/*` | `kaggle.username` = `harshavardhananr`<br>`paths.yolo` = `data/yolo` | 2026-10-08 10:02 |
 
 ## 6. Task status
 
@@ -908,10 +925,10 @@ Where does each spec task stand, and what decided it? Expected outputs are the w
 |---|---|---|---|---|---|---|
 | T0 | RoadSight spec adopted with four amendments <sub>(commit a23bf6a)</sub> | **unknown** | commit a23bf6a names it, but no output path found in scripts' writes, results/, or RESULTS.md | — | `a23bf6a` 2026-09-22 | mostly done |
 | T1 | Data audit <sub>(RESULTS.md heading)</sub> | **partial** | `results/T1/qa/*__*.jpg` missing; `results/T1/qa/_montage_*.jpg` missing; `results/T1/raw_audit.json` present (1 file); `results/T1/raw_audit.md` present (1 file) | `audit_raw.py`, `qa_raw.py` | `ac1acd8` 2026-09-22 | done |
-| T2 | Data audit <sub>(RESULTS.md heading)</sub> | **partial** | `configs/data` present (9 files); `data/yolo/*.txt` missing; `results/T2/exhaustive_india_vs_nonindia_val.json` present (1 file); `results/T2/exhaustive_leak.json` present (1 file); `results/T2/split_audit.json` present (1 file); `results/T2/split_audit.md` present (1 file) | `build_pool.py` | `66204f9` 2026-09-22 | done |
+| T2 | Data audit <sub>(RESULTS.md heading)</sub> | **done** | `configs/data` present (9 files); `data/yolo/*.txt` present (1 file); `results/T2/exhaustive_india_vs_nonindia_val.json` present (1 file); `results/T2/exhaustive_leak.json` present (1 file); `results/T2/split_audit.json` present (1 file); `results/T2/split_audit.md` present (1 file) | `build_pool.py` | `66204f9` 2026-09-22 | done |
 | T3 | stage only what Kaggle needs, and nothing it must never see. <sub>(`scripts/stage_upload.py`)</sub> | **not run** | `data/kaggle_upload/*.txt` missing; `data/kaggle_upload/images` missing; `data/kaggle_upload/labels` missing; `data/kaggle_upload/manifest.json` missing | `stage_upload.py` | `2ae772b` 2026-09-22 | done |
 | T4 | can this Mac train, and does MPS agree with CPU? <sub>(`scripts/mps_sanity.py`)</sub> | **done** | `results/mps_sanity.json` present (1 file) | `mps_sanity.py` | `54a32ec` 2026-09-22 | done |
-| T5 | build and push a Kaggle training kernel. <sub>(`scripts/kaggle_push.py`)</sub> | **partial** | `kaggle/build/*/job.json` missing; `kaggle/build/*/kernel-metadata.json` missing; `kaggle/build/*/train.py` missing; `results/T5/*_verification.json` present (2 files); `runs/kaggle/*` missing | `kaggle_push.py`, `kaggle_watch.py`, `verify_run.py` | `c7f66e7` 2026-09-22 | T5a running |
+| T5 | build and push a Kaggle training kernel. <sub>(`scripts/kaggle_push.py`)</sub> | **partial** | `kaggle/build/*/job.json` missing; `kaggle/build/*/kernel-metadata.json` missing; `kaggle/build/*/train.py` missing; `results/T5/*_verification.json` present (2 files); `runs/kaggle/*` present (6 files) | `kaggle_push.py`, `kaggle_watch.py`, `verify_run.py` | `c7f66e7` 2026-09-22 | T5a running |
 | T6 | Model A: non-India validation against India <sub>(RESULTS.md heading)</sub> | **done** | `results/*/data.yaml` present (1 file); `results/*/metrics.json` present (1 file); `results/LOCKED/*_*.json` present (3 files); `results/LOCKED/*_*_run/data.yaml` present (3 files); `results/LOCKED/*_*_run/gt_root/*.txt` present (1 file); `results/LOCKED/*_*_run/gt_root/images` present (0 files); `results/LOCKED/*_*_run/gt_root/labels/*.txt` present (2312 files); `results/LOCKED/A_india_full.json` present (1 file); `results/T6/gap_analysis.json` present (1 file); `results/T6/localisation.json` present (1 file); `results/T6_A_nonindia_val/metrics.json` present (1 file) | `eval_locked.py`, `eval_open.py`, `t6_localisation.py`, `t6_report.py` | `8abd0fd` 2026-09-22 | blocked |
 | T7 | Model A vs Model B on india_test <sub>(RESULTS.md heading)</sub> | **done** | `results/T7/A_vs_B_india_test.json` present (1 file) | `t7_compare.py` | `13bfc17` 2026-09-22 | blocked |
 | T8 | unknown <sub>(no source)</sub> | **unknown** | no output path found in scripts' writes, results/, or RESULTS.md | — | — | deferred |
@@ -1169,6 +1186,14 @@ What was committed on 2026-10-06, naming which tasks and decisions? Commits that
 |---|---|---|---|---|
 | `bb5c376` | D093: ROS 2 Jazzy demo on the Jetson - three nodes around the 2D simulator, ROS as a Transport | — | D093 | (root) 1 · configs 2 · docs 1 · ros 17 · src 2 · tests 3 |
 
+### 2026-10-08
+
+What was committed on 2026-10-08, naming which tasks and decisions? Commits that only regenerate this map are left out.
+
+| Commit | Subject | Tasks | Decisions | Files touched (by area) |
+|---|---|---|---|---|
+| `0256646` | D094: the review demo runs on the Jetson - MuJoCo survey demo and a live real-road viewer on CUDA | — | D075, D094 | configs 2 · docs 2 · ros 1 · scripts 4 · sim 2 · src 1 · tests 2 |
+
 ### Decisions
 
 Where did each decision come from, and what cites it? Title and status are the index row in `docs/DECISIONS.md`; the commit is the first that added its `## Dnnn` heading; citing files exclude the log itself.
@@ -1224,7 +1249,7 @@ Where did each decision come from, and what cites it? Title and status are the i
 | D047 | Jetson + GPS brought into scope as a 3-week partition sequenced last; 4-partition schedule 2026-08-18 → 2026-10-05; sensitivity analysis cut | Refined by D048 | `d7a391e 2026-09-05` | `docs/MENTOR-WALKTHROUGH.md`, `docs/superpowers/plans/archive/2026-08-16-seven-week-schedule.md` |
 | D048 | Jetson arrives 2026-08-18: risky bring-up pulled into a bounded weeks-1–4 parallel track; only `ingest`+`detect` ship to the edge | Accepted | `d7a391e 2026-09-05` | `docs/DA2-EVIDENCE.md`, `docs/superpowers/plans/2026-09-05-robot-sprint.md`, `src/certain_road/perception/source.py` |
 | D049 | Project pivots to an autonomous road-inspection robot; perception feeds two independent pipelines; control transport is abstract | Accepted | `8c38584 2026-09-05` | `README.md`, `configs/canbus/transport.yaml`, `configs/driving/corridor.yaml`, `configs/ros/demo.yaml`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-09-05-day5-corridor-sim.md`, `docs/superpowers/plans/archive/README.md`, `ros/WORKLOG-2026-10-06.md`, `ros/certain_road_ros/certain_road_ros/planner_node.py`, `ros/certain_road_ros/certain_road_ros/transport.py`, `src/certain_road/artifacts/schema.py`, `src/certain_road/driving/corridor.py`, `src/certain_road/runtime/recorder.py`, `src/certain_road/sim/run.py`, `tests/test_driving_corridor.py` |
-| D050 | Simulator is a fourth `Transport`; robot for the demo, simulation for the trial matrix | Accepted | `69e4b45 2026-09-05` | `README.md`, `docs/DA2-EVIDENCE.md`, `results/figures/MANIFEST.md`, `ros/README.md`, `ros/WORKLOG-2026-10-06.md`, `ros/certain_road_ros/certain_road_ros/transport.py`, `src/certain_road/driving/corridor.py`, `tests/test_driving_corridor.py` |
+| D050 | Simulator is a fourth `Transport`; robot for the demo, simulation for the trial matrix | Accepted | `69e4b45 2026-09-05` | `README.md`, `docs/DA2-EVIDENCE.md`, `results/figures/MANIFEST.md`, `ros/MENTOR-DEMO.md`, `ros/README.md`, `ros/WORKLOG-2026-10-06.md`, `ros/certain_road_ros/certain_road_ros/transport.py`, `src/certain_road/driving/corridor.py`, `tests/test_driving_corridor.py` |
 | D051 | CP cut from the sprint; survey ends at vision-estimated PCI; ADAS-inspired behaviours added; calibration split preserved | Superseded by D085 | `09dcb26 2026-09-05` | `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/detector-benchmark.md`, `docs/superpowers/plans/2026-09-05-robot-sprint.md`, `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `results/RESULTS.md`, `src/certain_road/runtime/pipeline.py`, `src/certain_road/survey/__init__.py`, `tests/test_eval_video.py` |
 | D052 | Deliverable is a vehicle-agnostic control unit demoed on the Jetson: recorded video → real YOLO → real CAN on vcan0; no robot, camera or transceiver required | Accepted | `ed1593f 2026-09-06` | `configs/canbus/transport.yaml`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `ros/WORKLOG-2026-10-06.md`, `src/certain_road/canbus/transport.py`, `src/certain_road/perception/source.py` |
 | D053 | External RDD2022 weights rejected: 0.9765 mAP50 on our test set indicates train/test overlap, so they cannot be measured | Accepted | `d6f7367 2026-09-06` | `README.md`, `docs/CHALLENGES.md`, `docs/MENTOR-WALKTHROUGH.md`, `docs/superpowers/plans/2026-09-22-workspace-cleanup.md`, `docs/superpowers/specs/2026-09-22-workspace-cleanup-design.md` |
@@ -1248,25 +1273,26 @@ Where did each decision come from, and what cites it? Title and status are the i
 | D072 | Overall 3-class mAP is not the target; pothole AP and per-pothole video detection are | Accepted | `b1b04e4 2026-09-22` | `docs/superpowers/plans/2026-09-22-kernel-preflight.md`, `scripts/build_pothole_pool.py`, `scripts/check_bharatpothole.py`, `scripts/t9_b_vs_p.py` |
 | D073 | BharatPotHole is 162 drives, not 7,074 images; neither its val nor its test split is held out, so neither is used for evaluation | Accepted | `b138f0f 2026-09-22` | `docs/superpowers/plans/2026-09-22-kernel-preflight.md`, `results/RESULTS.md`, `scripts/bph_internal_leakage.py`, `scripts/make_report.py`, `scripts/t9_b_vs_p.py` |
 | D074 | Model P selected over Model B on india_val; the advantage survives scene-group resampling there but does not transfer to locked india_test, where the two are indistinguishable | Accepted | `1599a2f 2026-09-22` | `README.md`, `configs/eval/video.yaml`, `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-09-28-t10-t12.md`, `docs/superpowers/plans/2026-09-28-video-extent.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `results/RESULTS.md`, `results/dashboard/index.html`, `results/video/2DV-cYmIvT4/P/summary.json`, `scripts/eval_video.py`, `scripts/exp_conformal.py`, `scripts/exp_video_extent.py`, `scripts/make_report.py`, `src/certain_road/dashboard/render.py` |
-| D075 | Video evaluation confirms per track (same ID, 3 of the last 5 frames, behind a horizon gate) and reports tracks, not potholes; qualifies D006 and D051 for evaluation only | Accepted | `d23691c 2026-10-04` | `configs/eval/video.yaml`, `configs/sim/mujoco.yaml`, `docs/CHALLENGES.md`, `docs/mujoco-demo.md`, `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `results/RESULTS.md`, `results/figures/MANIFEST.md`, `results/video/2DV-cYmIvT4/B/summary.json`, `results/video/2DV-cYmIvT4/P/summary.json`, `results/video/2DV-cYmIvT4/gt_score.json`, `scripts/eval_video.py`, `scripts/make_report.py`, `scripts/score_video_gt.py`, `sim/mujoco/drive.py`, `tests/test_eval_video.py` |
+| D075 | Video evaluation confirms per track (same ID, 3 of the last 5 frames, behind a horizon gate) and reports tracks, not potholes; qualifies D006 and D051 for evaluation only | Accepted | `d23691c 2026-10-04` | `configs/eval/video.yaml`, `configs/sim/mujoco.yaml`, `docs/CHALLENGES.md`, `docs/mujoco-demo.md`, `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `results/RESULTS.md`, `results/figures/MANIFEST.md`, `results/video/2DV-cYmIvT4/B/summary.json`, `results/video/2DV-cYmIvT4/P/summary.json`, `results/video/2DV-cYmIvT4/gt_score.json`, `scripts/eval_video.py`, `scripts/live_video.py`, `scripts/make_report.py`, `scripts/score_video_gt.py`, `sim/mujoco/drive.py`, `tests/test_eval_video.py` |
 | D076 | The T10 tau grid never reached the measured floor, so D070's feasible-alpha prose contradicted its own table; fixed, and Model P's floors measured | Accepted | `a3badf4 2026-09-24` | `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-09-28-eval-video.md`, `docs/superpowers/plans/2026-09-28-t10-t12.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `results/RESULTS.md`, `results/figures/MANIFEST.md`, `scripts/exp_conformal.py`, `scripts/make_report.py` |
 | D077 | T10 complete: Model B's certificate holds over 200 group-aware re-partitions, non-India calibration fails in every one, and every tight certificate costs a flood of false alarms | Accepted | `f511ec1 2026-09-28` | `configs/project.yaml`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `results/RESULTS.md`, `results/figures/MANIFEST.md`, `scripts/exp_allocation.py`, `scripts/make_report.py` |
 | D078 | T11: the spec's plain martingale is blind to a shift after 500 in-domain frames; a CUSUM reset at matched null false-alarm rate detects 197/200 with median delay 77 frames | Accepted | `fe1b608 2026-09-28` | `configs/eval/video.yaml`, `configs/project.yaml`, `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/mujoco-demo.md`, `docs/superpowers/plans/2026-09-28-video-extent.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `results/RESULTS.md`, `results/T11/drift.json`, `results/T11/drift.md`, `results/dashboard/index.html`, `results/figures/MANIFEST.md`, `scripts/exp_drift.py`, `scripts/exp_video_extent.py`, `scripts/make_report.py`, `sim/mujoco/drive.py`, `sim/mujoco/screen.py` |
 | D079 | T12: conformal robustness changes repair decisions and helps modestly; maximising benefit defers the worst roads, so the dashboard must report both objectives | Accepted | `df7e5e6 2026-09-28` | `configs/project.yaml`, `configs/sim/mujoco.yaml`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/mujoco-demo.md`, `docs/superpowers/plans/2026-09-28-video-extent.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `results/RESULTS.md`, `results/T12/findings.md`, `results/figures/MANIFEST.md`, `scripts/exp_allocation.py`, `scripts/make_report.py`, `sim/mujoco/evaluate.py`, `sim/mujoco/survey.py`, `src/certain_road/dashboard/plans.py`, `src/certain_road/dashboard/render.py`, `tests/test_dashboard.py`, `tests/test_mujoco_evaluate.py` |
 | D080 | Scope: a detection count measures discrete defects the detector recognises, not surface condition, and silence is not a good road; Model B's near-silence on degraded Bengaluru road is its training domain, not scale | Accepted | `d23691c 2026-10-04` | `configs/eval/gt/2DV-cYmIvT4_claude.csv`, `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `results/RESULTS.md`, `results/figures/MANIFEST.md`, `results/video/2DV-cYmIvT4/gt_score.json`, `scripts/make_report.py`, `scripts/score_video_gt.py`, `sim/mujoco/drive.py` |
 | D081 | On dashcam video P fires where B does not (100 vs 9 tracks) while on india_test they are indistinguishable; whether P transfers or only fires more is Open until GT scoring; run both on Chennai footage and report both | Accepted · transfer claim Open | `d23691c 2026-10-04` | `docs/CHALLENGES.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `results/RESULTS.md`, `scripts/make_report.py`, `scripts/score_video_gt.py`, `tests/test_make_report.py` |
-| D082 | Potholes come from Model P and cracks from Model B, and their pothole outputs are never summed; settles the channel D081 left open; no T12 number reflects it yet; D081's transfer claim stays Open | Accepted · T12 re-run Open | `d23691c 2026-10-04` | `configs/ros/demo.yaml`, `configs/sim/mujoco.yaml`, `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/mujoco-demo.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `docs/superpowers/plans/2026-10-04-repo-map.md`, `results/RESULTS.md`, `results/T12/demo_network.json`, `results/dashboard/index.html`, `results/figures/MANIFEST.md`, `ros/WORKLOG-2026-10-06.md`, `ros/certain_road_ros/certain_road_ros/perception_node.py`, `scripts/exp_allocation.py`, `scripts/make_report.py`, `sim/mujoco/drive.py`, `src/certain_road/dashboard/render.py`, `tests/test_dashboard.py`, `tests/test_make_report.py`, `tests/test_mujoco_drive.py` |
+| D082 | Potholes come from Model P and cracks from Model B, and their pothole outputs are never summed; settles the channel D081 left open; no T12 number reflects it yet; D081's transfer claim stays Open | Accepted · T12 re-run Open | `d23691c 2026-10-04` | `configs/eval/video.yaml`, `configs/ros/demo.yaml`, `configs/sim/mujoco.yaml`, `docs/CHALLENGES.md`, `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/mujoco-demo.md`, `docs/superpowers/plans/2026-09-28-video-gt.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `docs/superpowers/plans/2026-10-04-repo-map.md`, `results/RESULTS.md`, `results/T12/demo_network.json`, `results/dashboard/index.html`, `results/figures/MANIFEST.md`, `ros/WORKLOG-2026-10-06.md`, `ros/certain_road_ros/certain_road_ros/perception_node.py`, `scripts/exp_allocation.py`, `scripts/live_video.py`, `scripts/make_report.py`, `sim/mujoco/drive.py`, `src/certain_road/dashboard/render.py`, `tests/test_dashboard.py`, `tests/test_make_report.py`, `tests/test_mujoco_drive.py` |
 | D083 | T16: the dashboard stays one offline HTML file (D020 over the spec); the optimiser's and worst-first's plans always side by side; T12 numbers carry the Model B recall caveat | Accepted | `5e7058c 2026-10-03` | `docs/DA2-EVIDENCE.md`, `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-09-29-t16-dashboard.md`, `docs/superpowers/plans/2026-10-03-d082.md`, `docs/superpowers/plans/2026-10-03-t17-results.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `results/RESULTS.md`, `results/figures/MANIFEST.md`, `scripts/make_report.py`, `tests/test_make_report.py` |
 | D084 | The locked Model P run's 2,312 absolute symlinks stay as committed (results/LOCKED is never rewritten); eval_locked.py now links relatively; a test pins every escaping link and home-directory path, and configs/data stays absolute by decision | Accepted | `d231467 2026-10-04` | `README-DA2.md`, `docs/ONBOARDING.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `scripts/eval_locked.py`, `tests/test_eval_locked_links.py`, `tests/test_repo_hygiene.py` |
 | D085 | Conformal prediction, cut by D051 under sprint pressure, was reinstated by the RoadSight spec adopted at T0 (a23bf6a), which made the certified miss rate the core claim; no separate decision recorded the reversal | Accepted | `03f6318 2026-10-04` | `docs/DA2-SCOPE-CHANGE.md`, `docs/superpowers/plans/2026-10-04-cleanup.md`, `docs/superpowers/plans/2026-10-04-da2-evidence.md` |
-| D086 | Simulator textures are QR4Change and BD-N6 photos (CC BY 4.0), never used in training; audited clean by norm_vec (max 0.8887) and ORB crop matching (max 8 inliers) | Accepted | `70e4328 2026-10-05` | `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `docs/superpowers/plans/2026-10-05-da2-screenshots-and-zip.md`, `docs/texture-provenance.md` |
+| D086 | Simulator textures are QR4Change and BD-N6 photos (CC BY 4.0), never used in training; audited clean by norm_vec (max 0.8887) and ORB crop matching (max 8 inliers) | Accepted | `70e4328 2026-10-05` | `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `docs/superpowers/plans/2026-10-05-da2-screenshots-and-zip.md`, `docs/texture-provenance.md`, `scripts/fetch_trial_textures.py`, `tests/test_fetch_trial_textures.py` |
 | D087 | A MuJoCo demo simulator for the DA-2 review (`sim/mujoco/`): synthetic road from the D086 photos, real detectors and survey code, design camera; not T13 | Accepted | `1e130f8 2026-10-05` | `docs/mujoco-demo.md`, `src/certain_road/sim/camera_image.py` |
-| D088 | The MuJoCo demo detects at 30 fps, the rate D075's 3-of-5 rule was set on; at 10 fps confirmation collapsed. Gate at the design detect range; the survey still scores 5 m samples (D006) | Accepted | `73dbc9a 2026-10-05` | `configs/sim/mujoco.yaml`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md` |
+| D088 | The MuJoCo demo detects at 30 fps, the rate D075's 3-of-5 rule was set on; at 10 fps confirmation collapsed. Gate at the design detect range; the survey still scores 5 m samples (D006) | Accepted | `73dbc9a 2026-10-05` | `configs/sim/mujoco.yaml`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md`, `ros/MENTOR-DEMO.md`, `scripts/live_video.py` |
 | D089 | The demo's survey counts D006's ROI, the 5 m strip of the driving lane 3–8 m ahead, scored by certain_road.survey; the reference PCI takes the same path. The real drift monitor fires on clean road, not on the mixed preset's bad stretch, so that moment is captioned as a band drop | Accepted | `a6e7317 2026-10-05` | `docs/mujoco-demo.md`, `docs/superpowers/plans/2026-10-04-mujoco-demo.md` |
 | D090 | The demo's end screen scores confirmed tracks against ground truth (IoU > 0.1, both lanes) and runs both real allocators on D079's pricing, scored on D079's two objectives. Same seed, same result | Accepted | `fcdbf90 2026-10-05` | `docs/mujoco-demo.md` |
 | D091 | Only damaged segments can be among the end screen's true worst N; all five presets run, and the drift alarm fires at 65–150 m on every road | Accepted | `71b6318 2026-10-05` | `docs/superpowers/plans/2026-10-04-mujoco-demo.md` |
-| D092 | The demo's look v2 adds 3D potholes, surface marks and harsher light with tree shadows, and is the default; v1 stays byte-identical as the fallback. Measured once: detection barely moves, and no false alarm comes from the new marks | Accepted | `754c276 2026-10-05` | `configs/sim/mujoco.yaml`, `docs/mujoco-demo.md`, `docs/superpowers/plans/2026-10-05-mujoco-realism.md` |
-| D093 | A ROS 2 Jazzy demo on the Jetson wraps the 2D simulator in three nodes; ROS is one more `Transport`; the camera frame is rendered from the projection; no Gazebo (D050 stands) | Accepted | `bb5c376 2026-10-06` | `.gitignore`, `configs/ros/demo.yaml`, `configs/sim/camera_image.yaml`, `ros/README.md`, `ros/WORKLOG-2026-10-06.md`, `ros/certain_road_ros/certain_road_ros/__init__.py`, `ros/certain_road_ros/certain_road_ros/planner_node.py`, `ros/certain_road_ros/certain_road_ros/transport.py`, `ros/certain_road_ros/launch/demo.launch.py`, `ros/certain_road_ros/package.xml`, `ros/certain_road_ros/setup.py`, `src/certain_road/sim/camera_image.py`, `src/certain_road/sim/model.py`, `tests/test_ros_package.py`, `tests/test_sim_camera_image.py`, `tests/test_sim_model.py` |
+| D092 | The demo's look v2 adds 3D potholes, surface marks and harsher light with tree shadows, and is the default; v1 stays byte-identical as the fallback. Measured once: detection barely moves, and no false alarm comes from the new marks | Accepted | `754c276 2026-10-05` | `configs/sim/mujoco.yaml`, `docs/mujoco-demo.md`, `docs/superpowers/plans/2026-10-05-mujoco-realism.md`, `ros/MENTOR-DEMO.md` |
+| D093 | A ROS 2 Jazzy demo on the Jetson wraps the 2D simulator in three nodes; ROS is one more `Transport`; the camera frame is rendered from the projection; no Gazebo (D050 stands) | Accepted | `bb5c376 2026-10-06` | `.gitignore`, `configs/ros/demo.yaml`, `configs/sim/camera_image.yaml`, `ros/README.md`, `ros/WORKLOG-2026-10-06.md`, `ros/certain_road_ros/certain_road_ros/__init__.py`, `ros/certain_road_ros/certain_road_ros/planner_node.py`, `ros/certain_road_ros/certain_road_ros/transport.py`, `ros/certain_road_ros/launch/demo.launch.py`, `ros/certain_road_ros/package.xml`, `ros/certain_road_ros/setup.py`, `src/certain_road/core/device.py`, `src/certain_road/sim/camera_image.py`, `src/certain_road/sim/model.py`, `tests/test_ros_package.py`, `tests/test_sim_camera_image.py`, `tests/test_sim_model.py` |
+| D094 | The review demo runs on the Jetson: the MuJoCo survey demo and a live real-road viewer on CUDA; `mps` resolves to the machine's accelerator; textures rebuilt from their public sources | Accepted | `0256646 2026-10-08` | `configs/eval/video.yaml`, `configs/sim/mujoco.yaml`, `docs/mujoco-demo.md`, `ros/MENTOR-DEMO.md`, `scripts/fetch_trial_textures.py`, `scripts/live_video.py`, `sim/mujoco/screen.py`, `src/certain_road/core/device.py`, `tests/test_fetch_trial_textures.py` |
 
 ## 8. Model and artifact registry
 
@@ -1274,6 +1300,10 @@ Which weights exist, how were they trained, and what did locked evaluation measu
 
 | Weights | Bytes | Recorded sha256 | Training args | Locked eval |
 |---|---|---|---|---|
+| `runs/kaggle/roadsight-train-b/export/model_b/best.pt` | 22,517,098 | `f6177e36b755…` (results/LOCKED/B_india_heldout.json) | unknown | india_heldout, 2312 images: mAP50 0.3718, mAP50-95 0.1578 (results/LOCKED/B_india_heldout.json) |
+| `runs/kaggle/roadsight-train-b/runs/model_b/weights/best.pt` | 22,517,098 | none recorded | unknown | — |
+| `runs/kaggle/roadsight-train-p/export/model_p/best.pt` | 22,516,906 | `b336e44c5ba4…` (results/LOCKED/P_india_heldout.json) | unknown | india_heldout, 2312 images: mAP50 0.3416, mAP50-95 0.1314 (results/LOCKED/P_india_heldout.json) |
+| `runs/kaggle/roadsight-train-p/runs/model_p/weights/best.pt` | 22,516,906 | none recorded | unknown | — |
 
 Which model is deployed for which class? Read from D082's rule in `docs/DECISIONS.md`; the weights are the ones that model was locked-evaluated with.
 
@@ -1301,6 +1331,7 @@ Which modules does each test file import?
 | `tests/test_canbus_transport.py` | `certain_road.canbus.protocol`, `certain_road.canbus.transport`, `certain_road.core.paths` |
 | `tests/test_cli.py` | `certain_road.cli` |
 | `tests/test_conformal.py` | `certain_road.assess.conformal` |
+| `tests/test_core_device.py` | `certain_road.core.device` |
 | `tests/test_dashboard.py` | `certain_road.dashboard.plans`, `certain_road.dashboard.render`, `certain_road.dashboard.results` |
 | `tests/test_dataset_convert.py` | `certain_road.perception.dataset.convert`, `certain_road.perception.dataset.voc` |
 | `tests/test_dataset_fetch.py` | `certain_road.perception.dataset`, `certain_road.perception.dataset.fetch` |
@@ -1311,6 +1342,7 @@ Which modules does each test file import?
 | `tests/test_driving_perceive.py` | `certain_road.artifacts.schema`, `certain_road.driving.confirm`, `certain_road.driving.corridor`, `certain_road.driving.perceive` |
 | `tests/test_eval_locked_links.py` | `scripts/eval_locked.py` |
 | `tests/test_eval_video.py` | `scripts/eval_video.py` |
+| `tests/test_fetch_trial_textures.py` | `certain_road.core.paths`, `scripts/fetch_trial_textures.py` |
 | `tests/test_fixtures.py` | `certain_road.artifacts.io`, `certain_road.artifacts.schema`, `certain_road.perception.dataset.convert` |
 | `tests/test_geometry.py` | `certain_road.core.geometry` |
 | `tests/test_kaggle_guard.py` | — |
@@ -1349,7 +1381,7 @@ Which `src/` modules with public symbols does no test import directly?
 | Module |
 |---|
 
-pytest, run at build time: **469 passed, 17 skipped, 1 warning** (exit 0).
+pytest, run at build time: **483 passed, 16 skipped, 1 warning** (exit 0).
 
 import-linter: 8 contracts in `.importlinter`; lint-imports reports **Contracts: 8 kept, 0 broken.** (exit 0).
 
@@ -1362,9 +1394,8 @@ Which tasks have outputs missing, and what unblocks them? Unblockers are the 'Bl
 | Task | Status | Missing | Unblocked by |
 |---|---|---|---|
 | T1 | **partial** | `results/T1/qa/*__*.jpg`<br>`results/T1/qa/_montage_*.jpg` | U2: RDD2022 archive or permission to download (TASK_LOG.md: **satisfied** — all 7 countries present under `data/raw/RDD2022/`) |
-| T2 | **partial** | `data/yolo/*.txt` | unknown |
 | T3 | **not run** | `data/kaggle_upload/*.txt`<br>`data/kaggle_upload/images`<br>`data/kaggle_upload/labels`<br>`data/kaggle_upload/manifest.json` | U1: Kaggle auth (TASK_LOG.md: **satisfied** — `~/.kaggle/access_token` (ACCESS_TOKEN auth), user `harshavardhananr`) |
-| T5 | **partial** | `kaggle/build/*/job.json`<br>`kaggle/build/*/kernel-metadata.json`<br>`kaggle/build/*/train.py`<br>`runs/kaggle/*` | U1: Kaggle auth (TASK_LOG.md: **satisfied** — `~/.kaggle/access_token` (ACCESS_TOKEN auth), user `harshavardhananr`) |
+| T5 | **partial** | `kaggle/build/*/job.json`<br>`kaggle/build/*/kernel-metadata.json`<br>`kaggle/build/*/train.py` | U1: Kaggle auth (TASK_LOG.md: **satisfied** — `~/.kaggle/access_token` (ACCESS_TOKEN auth), user `harshavardhananr`) |
 | T13 | **not run** | `results/T13` | U3: Webots R2025a installed (TASK_LOG.md: **missing** — no `/Applications/Webots.app`) |
 | T14 | **not run** | `results/T14` | U4: Jetson SSH alias `jetson` (optional) (TASK_LOG.md: unknown) |
 | T15 | **not run** | `results/T15` | U5: Chennai recordings (video + sensor `.jsonl`) (TASK_LOG.md: not yet needed) |
@@ -1464,3 +1495,5 @@ In what order do the scripts rebuild everything? A script runs after every scrip
 | 29 | `uv run python scripts/make_report.py` | local | T17 | `audit_raw.py`, `bph_internal_leakage.py`, `build_pool.py`, `check_bharatpothole.py`, `eval_locked.py`, `eval_video.py`, `exhaustive_leak_check.py`, `exp_allocation.py`, `exp_conformal.py`, `exp_drift.py`, `exp_video_extent.py`, `score_video_gt.py`, `t10_feasibility.py`, `t6_localisation.py`, `t7_compare.py`, `t9_b_vs_p.py` |
 | 30 | `uv run python scripts/make_fixtures.py` | local | — | — |
 | 31 | `uv run python scripts/audit_duplicates.py` | local | — | `build_pool.py` |
+| 32 | `uv run python scripts/fetch_trial_textures.py` | local | — | — |
+| 33 | `uv run python scripts/live_video.py <video>` | local | — | — |
