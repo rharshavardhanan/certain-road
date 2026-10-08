@@ -1,0 +1,100 @@
+# PCI -> RSL: remaining service life from a published deterioration curve (design.md §3, D018).
+#
+# STATUS: PENDING MENTOR APPROVAL. The design leaves the choice of curve, or `mode: pci_only`,
+# to the mentor (D018). Switching is a one-line change: `mode: pci_only`.
+#
+# The stage refuses to run while `source:` is empty (certain_road.survey.rsl.load_config).
+#
+# What the curve is, and what it is not:
+# - It was fitted to PAVER PCI (the method ASTM D6433 standardised) on roads of US Army
+#   installations in the 1980s. It was not developed for Indian roads, traffic or climate.
+# - This pipeline's input is a *vision-estimated PCI*: a monotone proxy that follows the
+#   structure of a condition index but is not D6433 (survey/scoring.py). Feeding it through a
+#   curve fitted on PAVER PCI assumes the two scales agree; nothing here has measured that.
+#   The resulting RSL is "the life Sharaf et al.'s curve gives a pavement at that index",
+#   an indication for ranking, never a forecast for a real road.
+#
+# Search record (2026-10-08). An Indian PCI-age model was preferred and not found in a form
+# that could be verified: Thube, Jain & Parida (2007, IRC Highway Research Bulletin, low-volume
+# roads; PCI against time, CVPD, rainfall and subgrade moisture) is not available online to
+# check its coefficients, and needs inputs a camera survey does not have; Kerala non-urban
+# models (Springer LNCE, 2024) are paywalled and need ravelling density; Sidess, Ravina & Oged
+# (2021, Int. J. Pavement Eng. 22(13):1625-1636, Israel; PCI = 100 - A*age^k) is paywalled and
+# its coefficient table could not be read; the Indian HDM-4 calibrations (Jain, Aggarwal &
+# Parida 2005) model individual distresses and roughness, not PCI. The source below is a
+# peer-reviewed, openly readable paper by the PAVER group whose coefficients were checked
+# against the paper's own worked numbers.
+
+status: pending mentor approval
+mode: curve            # curve: invert the deterioration curve below | pci_only: band recommendations
+
+source: >-
+  Sharaf, E. A., Reichelt, E., Shahin, M. Y., and Sinha, K. C. (1987). Development of a
+  Methodology to Estimate Pavement Maintenance and Repair Costs for Different Ranges of
+  Pavement Condition Index. Transportation Research Record 1123, pp. 30-39. Transportation
+  Research Board, National Research Council, Washington, D.C.
+  https://onlinepubs.trb.org/Onlinepubs/trr/1987/1123/1123-004.pdf
+
+where: >-
+  Model form C = 100 - b x^m, C the PCI and x the pavement age in months: p. 33 ("Pavement
+  Performance"). Exponent m = 1.5, the best fit "for all pavement classes at all
+  installations", and end of service life at PCI 70: p. 36. Slopes b: Table 5, "Cost and
+  performance data for different M&R alternatives on thin overlay pavement: Fort Eustis",
+  section "Performance", p. 35.
+
+verified: >-
+  2026-10-08: the PDF was read from the TRB URL above (SHA-256 162a6608...0dce04, 10 pages,
+  pp. 30-39); Table 5 was read from the page image, not OCR. The four slopes reproduce every
+  number the paper derives from them: age to PCI 70 is 96.0 months for surface treatment
+  ("approximately 96 months or 8 yr", p. 36) and 12.8, 14.6 and 16.9 years for thin overlay,
+  thick overlay and reconstruction ("13, 15, and 17 yr", p. 36); surface treatment gives PCI
+  93.1 at 36 months and 75.0 at 85 months ("a PCI value of 93 at the third year ... and a
+  PCI value of 75 at the 7th year (age = 85 months)", p. 36). tests/test_rsl.py pins these.
+
+domain: >-
+  Asphalt-surfaced roads of US Army installations (Table 5: Fort Eustis, Virginia), PAVER PCI,
+  ages from new to the end of service life at PCI 70 (17 years for a new asphalt pavement).
+  The paper notes that where a class lacked data the slope was back-calculated from an
+  estimated service life with m = 1.5 (p. 36); it does not say which Table 5 slopes those are.
+  Below PCI 70 the source defines the pavement as at the end of its service life, so RSL is 0
+  there. Not calibrated for India.
+
+# The curve used: Table 5, "Reconstruction (new Asphalt Pavement)": PCI = 100 - 0.0104 (age)^1.5.
+# The surveyed road's construction history is unknown, so the new-pavement curve is the one
+# whose meaning does not depend on a past treatment.
+curve:
+  name: reconstruction (new asphalt pavement), Table 5
+  pci_new: 100           # the curve's value at age 0 (the "100" in C = 100 - b x^m)
+  slope: 0.0104          # b
+  exponent: 1.5          # m
+  age_unit: months       # x is in months (p. 33)
+  pci_terminal: 70       # end of service life (p. 36)
+
+# Every curve Table 5 gives, kept for the record and for the test that checks the transcription.
+table5_slopes:
+  surface_treatment: 0.0319
+  thin_overlay: 0.0158
+  thick_overlay: 0.0129
+  reconstruction_new_asphalt: 0.0104
+
+# D019: a segment whose worst-case RSL is below this is a hard must-fix. Shown as a flag only:
+# the existing allocators do not implement the must-fix constraint.
+must_fix_rsl_years: 1.0
+
+# mode: pci_only. Recommendations straight from the condition band, no RSL. The five treatments
+# are design.md §3's list ("do-nothing / preventive seal / thin overlay / mill-and-overlay /
+# reconstruction"); assigning them to the seven bands in order of severity is the design's
+# placeholder, not a cited source, and is pending mentor approval like the curve.
+pci_only:
+  source: >-
+    docs/design.md §3, Optimiser: "Treatment by PCI band -- do-nothing / preventive seal /
+    thin overlay / mill-and-overlay / reconstruction. Config table." Band-to-treatment
+    assignment by severity order; not from a published source.
+  treatments:
+    Good: do nothing
+    Satisfactory: preventive seal
+    Fair: thin overlay
+    Poor: mill and overlay
+    Very Poor: reconstruction
+    Serious: reconstruction
+    Failed: reconstruction

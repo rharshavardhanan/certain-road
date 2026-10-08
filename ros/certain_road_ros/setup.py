@@ -23,6 +23,10 @@ setup(
             f"sim_node = {PACKAGE}.sim_node:main",
             f"perception_node = {PACKAGE}.perception_node:main",
             f"planner_node = {PACKAGE}.planner_node:main",
+            f"video_node = {PACKAGE}.video_node:main",
+            f"can_monitor_node = {PACKAGE}.can_monitor_node:main",
+            f"lane_keeper_node = {PACKAGE}.lane_keeper_node:main",
+            f"road_markers_node = {PACKAGE}.road_markers_node:main",
         ],
     },
 )

@@ -3,7 +3,9 @@
 Every `dt` of the scenario it steps the bicycle model with the latest /cmd_vel
 (`certain_road.sim.model.step`), then publishes what the robot now sees and where it
 is: the rendered camera frame (`certain_road.sim.camera_image`), the ground-truth boxes
-`certain_road.sim.project` gives for that same frame, the pose, TF and the path.
+`certain_road.sim.project` gives for that same frame, the pose, TF and the path. The
+camera's size and pinhole intrinsics go out once, latched, on /camera/camera_info, which
+is where the planner reads the image size from.
 
 Scenarios are `certain_road.sim.scenario.SCENARIOS`, run in turn, each for its own frame
 count as `run_scenario` runs it. A latched /sim/scenario message marks each start, so
@@ -21,7 +23,7 @@ from geometry_msgs.msg import Point, PoseStamped, TransformStamped, Twist, Vecto
 from nav_msgs.msg import Path
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import CameraInfo, Image
 from std_msgs.msg import ColorRGBA, Header, String
 from tf2_ros import StaticTransformBroadcaster, TransformBroadcaster
 from vision_msgs.msg import Detection2DArray
@@ -34,6 +36,7 @@ from certain_road.sim.project import project_pothole
 from certain_road.sim.scenario import SCENARIOS
 from certain_road_ros.common import (
     LATCHED,
+    camera_info_msg,
     demo_config,
     detections_msg,
     image_msg,
@@ -79,6 +82,10 @@ class SimNode(Node):
         self.pub_path = self.create_publisher(Path, t["path"], _IMAGE_QUEUE)
         self.pub_markers = self.create_publisher(MarkerArray, t["world_markers"], _IMAGE_QUEUE)
         self.pub_scenario = self.create_publisher(String, t["scenario"], LATCHED)
+        self.pub_info = self.create_publisher(CameraInfo, t["camera_info"], LATCHED)
+        cam = self.robot.camera
+        info_header = Header(stamp=self.get_clock().now().to_msg(), frame_id=self.frames["camera"])
+        self.pub_info.publish(camera_info_msg(cam.img_w, cam.img_h, info_header, cam.hfov_rad))
         self.create_subscription(Twist, t["cmd_vel"], self._on_cmd, _CMD_QUEUE)
         self.tf = TransformBroadcaster(self)
         self.static_tf = StaticTransformBroadcaster(self)

@@ -39,15 +39,21 @@ def iou(a, b) -> float:
     return inter / union if union > 0 else 0.0
 
 
-def detection_scores(road: Road, records: list[dict], cfg: dict, cam: dict | None = None) -> dict:
-    """Per-class recall and false alarms per km of the confirmed tracks in a drive log."""
+def match_tracks(
+    road: Road, records: list[dict], cfg: dict, cam: dict | None = None
+) -> tuple[set[int], set[int], dict[tuple[str, int], tuple[str, set[int]]]]:
+    """Which instances came into view, which were hit, and what each confirmed track hit.
+
+    Returns (seen, hit, tracks), tracks mapping (model, track id) to (class, the ids of the
+    instances of its own class it overlapped). A track that hit nothing is a false alarm.
+    """
     cam = cam or design_camera()
     e, horizon = cfg["end"], gate_row(cam)
     reach = PROJECT["edge"]["detect_range_m"] + 1.0
     by_id = {i.id: i for i in road.instances}
     seen: set[int] = set()
     hit: set[int] = set()
-    tracks: dict[tuple[str, int], tuple[str, bool]] = {}  # (model, id) -> (class, hit?)
+    tracks: dict[tuple[str, int], tuple[str, set[int]]] = {}
     for k, r in enumerate(records):
         confirmed = [d for d in r["dets"] if d["confirmed"]]
         if not confirmed and k % e["seen_every_frames"]:
@@ -65,14 +71,22 @@ def detection_scores(road: Road, records: list[dict], cfg: dict, cam: dict | Non
                 if by_id[gid].cls == d["cls"] and iou(box, b[1:]) > e["iou_min"]
             ]
             hit.update(mine)
-            tracks[key] = (d["cls"], tracks.get(key, (d["cls"], False))[1] or bool(mine))
+            # the latest class wins, as it always has: B can relabel a crack mid-track
+            tracks[key] = (d["cls"], tracks.get(key, (d["cls"], set()))[1] | set(mine))
     seen |= hit  # a hit instance was in view, whatever its own box said
+    return seen, hit, tracks
+
+
+def detection_scores(road: Road, records: list[dict], cfg: dict, cam: dict | None = None) -> dict:
+    """Per-class recall and false alarms per km of the confirmed tracks in a drive log."""
+    by_id = {i.id: i for i in road.instances}
+    seen, hit, tracks = match_tracks(road, records, cfg, cam)
     km = (records[-1]["x_m"] - records[0]["x_m"]) / 1000 if records else 0.0
     out = {"km": round(km, 4), "per_class": {}}
     for c in CLASSES:
         n = sum(by_id[i].cls == c for i in seen)
         h = sum(by_id[i].cls == c for i in hit)
-        fa = sum(1 for cls, ok in tracks.values() if cls == c and not ok)
+        fa = sum(1 for cls, ids in tracks.values() if cls == c and not ids)
         out["per_class"][c] = {
             "instances": n,
             "hit": h,

@@ -1,26 +1,31 @@
-"""What the three nodes share: the demo config, latched QoS and message conversions.
+"""What the nodes share: the demo config, QoS profiles, message conversions and pairing.
 
-Conversions only. No node logic lives here, so each node file reads as its own
-composition root.
+Conversions and plumbing only. No node logic lives here, so each node file reads as its
+own composition root.
 """
 
 from __future__ import annotations
 
 import array
 import math
+from collections import OrderedDict
+from datetime import UTC, datetime
 from functools import cache
 from pathlib import Path
 
 import numpy as np
 import yaml
+from builtin_interfaces.msg import Time
+from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 from geometry_msgs.msg import Quaternion
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import CameraInfo, Image
 from std_msgs.msg import Header
 from vision_msgs.msg import Detection2D, Detection2DArray, ObjectHypothesisWithPose
 
 from certain_road.artifacts.schema import Detection
 from certain_road.core.paths import repo_root
+from certain_road_ros.video import FrameInfo
 
 # Late joiners (RViz, a restarted planner) get the last value: scenario and source.
 LATCHED = QoSProfile(
@@ -30,8 +35,17 @@ LATCHED = QoSProfile(
 )
 # Keep only the newest frame: a slow consumer skips frames rather than falling behind.
 LATEST = QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE)
+# Matches any publisher, reliable or best effort, latched or not, but replays no history. A
+# camera that streams camera_info with every frame (a Gazebo bridge) arrives this way; a
+# latched one (sim_node, video_node) arrives through LATCHED.
+ANY_LIVE = QoSProfile(
+    depth=1,
+    durability=DurabilityPolicy.VOLATILE,
+    reliability=ReliabilityPolicy.BEST_EFFORT,
+)
 
 _CHANNELS = 3
+_FRAME_INFO_NAME = "video"
 
 
 def repo_path(*parts: str) -> Path:
@@ -41,6 +55,119 @@ def repo_path(*parts: str) -> Path:
 @cache
 def demo_config() -> dict:
     return yaml.safe_load(repo_path("configs", "ros", "demo.yaml").read_text())
+
+
+def profile(vehicle: str = "", corridor: str = "") -> tuple[str, Path, str, Path]:
+    """(vehicle, its profile file, corridor, its file) from configs/ros/demo.yaml `profiles`.
+
+    An empty vehicle is the default (the indoor robot); an empty corridor is the vehicle's
+    own. An unknown name raises: a wrong profile must not drive silently."""
+    p = demo_config()["profiles"]
+    vehicle = vehicle or p["default"]
+    corridor = corridor or vehicle
+    if vehicle not in p["vehicles"]:
+        raise ValueError(f"vehicle must be one of {sorted(p['vehicles'])}, got {vehicle!r}")
+    if corridor not in p["corridors"]:
+        raise ValueError(f"corridor must be one of {sorted(p['corridors'])}, got {corridor!r}")
+    return (
+        vehicle,
+        repo_path(p["vehicles"][vehicle]),
+        corridor,
+        repo_path(p["corridors"][corridor]),
+    )
+
+
+def run_dir(stamp: str = "") -> Path:
+    """`runs/ros/<stamp>/`, made if needed. The launch files pass one stamp to every node so
+    a run's logs share a folder; a node started on its own takes the current UTC time."""
+    stamp = stamp or datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    out = repo_path(demo_config()["planner"]["log_dir"], stamp)
+    out.mkdir(parents=True, exist_ok=True)
+    return out
+
+
+def stamp_key(stamp: Time) -> tuple[int, int]:
+    return (stamp.sec, stamp.nanosec)
+
+
+class StampPairer:
+    """Pairs each primary message (a frame) with companions carrying the same stamp.
+
+    `add_primary` names the companions that frame needs, decided when it arrives (a
+    companion topic with no publisher is not waited for). The frame is released, with its
+    companions, as soon as all of them are in, whichever arrives last. At most `depth`
+    frames wait and `depth` messages per companion are kept; the oldest go first, as in
+    message_filters' TimeSynchronizer.
+    """
+
+    def __init__(self, companions: list[str], depth: int) -> None:
+        self.depth = depth
+        self._have: dict[str, OrderedDict] = {c: OrderedDict() for c in companions}
+        self._waiting: OrderedDict = OrderedDict()
+
+    def add_companion(self, name: str, key: tuple, msg: object) -> list[tuple]:
+        held = self._have[name]
+        held[key] = msg
+        while len(held) > self.depth:
+            held.popitem(last=False)
+        return self._release(key)
+
+    def add_primary(self, key: tuple, msg: object, needs: set[str]) -> list[tuple]:
+        self._waiting[key] = (msg, frozenset(needs))
+        while len(self._waiting) > self.depth:
+            self._waiting.popitem(last=False)
+        return self._release(key)
+
+    def _release(self, key: tuple) -> list[tuple]:
+        """[(primary, {companion: msg})] for the frame at `key` once it has what it needs.
+        Companions it did not wait for come along if they are already in."""
+        if key not in self._waiting:
+            return []
+        msg, needs = self._waiting[key]
+        if any(key not in self._have[c] for c in needs):
+            return []
+        del self._waiting[key]
+        return [(msg, {c: held.pop(key) for c, held in self._have.items() if key in held})]
+
+
+def camera_info_msg(
+    width: int, height: int, header: Header, hfov_rad: float | None = None
+) -> CameraInfo:
+    """The image size, and pinhole intrinsics when the camera has them.
+
+    With `hfov_rad` (the simulated camera, square pixels, principal point at the centre, as
+    `certain_road.sim.project` assumes) K and P are filled in. Without it (a downloaded
+    video: no camera model) K stays all zeros, which ROS reads as "uncalibrated"."""
+    msg = CameraInfo(header=header, width=width, height=height, distortion_model="plumb_bob")
+    msg.d = [0.0] * 5
+    msg.r = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+    if hfov_rad is not None:
+        f = (width / 2.0) / math.tan(hfov_rad / 2.0)
+        cx, cy = width / 2.0, height / 2.0
+        msg.k = [f, 0.0, cx, 0.0, f, cy, 0.0, 0.0, 1.0]
+        msg.p = [f, 0.0, cx, 0.0, 0.0, f, cy, 0.0, 0.0, 0.0, 1.0, 0.0]
+    return msg
+
+
+def frame_info_msg(info: FrameInfo, header: Header) -> DiagnosticArray:
+    """A `FrameInfo` as a stamped DiagnosticArray: one status, its message the strip text,
+    its level WARN while a counted pothole is in view, so `ros2 topic echo` and rqt's
+    monitor read it too. No custom message type, so no extra build step."""
+    status = DiagnosticStatus(
+        level=DiagnosticStatus.WARN if info.gt_in_view else DiagnosticStatus.OK,
+        name=_FRAME_INFO_NAME,
+        message=info.strip,
+        hardware_id=info.clip,
+        values=[KeyValue(key=k, value=v) for k, v in info.to_values().items()],
+    )
+    return DiagnosticArray(header=header, status=[status])
+
+
+def frame_info_from(msg: DiagnosticArray) -> FrameInfo | None:
+    for status in msg.status:
+        if status.name == _FRAME_INFO_NAME:
+            return FrameInfo.from_values({kv.key: kv.value for kv in status.values})
+    return None
 
 
 def yaw_quaternion(yaw: float) -> Quaternion:
