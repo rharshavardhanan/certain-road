@@ -38,3 +38,6 @@ results/**/qa/
 /ros/build/
 /ros/install/
 /ros/log/
+
+# Review backups: copies of recordings and reports (ros/record_backup.sh collect)
+/review_backup/

@@ -119,6 +119,7 @@ Current design spec: [`design.md`](design.md)
 | D096 | A Gazebo Harmonic world, converted geom by geom from the MuJoCo look-v2 road, with a sprung Ackermann car; reverses D050's rejection of Gazebo for the demo | Accepted |
 | D097 | The Gazebo closed loop (car profile, car corridor, stand-in lane keeper) is built but not yet measured | Open |
 | D098 | The survey simulation report and RSL from Sharaf et al. (1987), pending mentor approval; built in part, not yet run on three roads | Open |
+| D099 | Lighting presets (noon, morning, evening, overcast) for the Gazebo world, written as world_<name>.sdf beside world.sdf | Accepted |
 
 ---
 
@@ -3885,3 +3886,25 @@ the pooled repair plan chose 7 segments and covered all 3 of the true worst 3. T
 numbers have not yet been reviewed beyond that. `ros/review_preflight.sh` checks a machine
 before the review; `ros/install_gazebo_can.sh` now installs a systemd unit that brings vcan0
 up at every boot.
+
+**D097 measured, 2026-10-08 (stays Open: the result is negative).** Over the first 230 m of
+poor seed 0 at rtf 0.3 (`sim/gazebo/avoidance.py`, `runs/gazebo/poor_seed0/avoidance.json`):
+4 potholes lie in the driving lane. With the planner on, wheels went over 3 of them (#23, #25,
+#27) in both runs; with the lane keeper alone, 2 (#23, #27). The planner began 26 manoeuvres
+(83 frames AVOID_LEFT, 2 AVOID_RIGHT of 1,371) and its left swerve put a wheel into #25. So
+the closed loop runs end to end, and does not yet avoid: the car corridor, urgency thresholds
+and swerve size were derived, not tuned, and the false swerves come from detector flicker.
+CAN in the loop: 1,371 decisions, 1,371 frames decoded correctly on vcan0. Hits are counted at
+any speed, since the planner slows to avoid; the ride evaluation's cruise filter would hide
+them.
+
+## D099 — Lighting presets for the Gazebo world
+
+**2026-10-08 · Accepted · extends D096**
+
+`configs/sim/gazebo.yaml` `lighting` holds noon (the calibrated light), morning, evening and
+overcast; `python -m sim.gazebo.export ... --sdf-only --light all` writes
+`world_<name>.sdf` beside `world.sdf`, sharing its meshes, and the launch takes
+`world:=<folder>/world_<name>.sdf`. They scale the calibrated sun and ambient, move the sun and
+recolour the sky; they were chosen by eye, and their effect on detection is not measured.
+`ros/record_backup.sh` records a demo's screen or gathers all recordings into review_backup/.

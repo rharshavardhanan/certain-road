@@ -29,8 +29,11 @@
 - **Part 5** (D096, D097): the Gazebo world is the MuJoCo road converted to meshes; Model P
   boxed 23 of the 28 potholes that came into view, and a wheel crossing a pothole moves the
   body up to 11.7 mm, 0.68° pitch. The closed loop runs (camera → P + B → planner → lane
-  keeper → car, CAN on). **Whether it avoids more potholes than a drive without the planner
-  has not been measured yet** (D097 is Open); say so. The lane keeper is a stand-in driver,
+  keeper → car, CAN on). **Measured over the first 230 m, it does not avoid potholes yet:** with the planner the
+  wheels went over 3 of the 4 in-lane potholes, without it (lane keeper only) 2 of 4; its
+  left swerves put a wheel into pothole #25, and it began 26 swerves, mostly at nothing.
+  CAN works in the loop: 1,371 decisions, 1,371 frames decoded. Say this plainly: the
+  pipeline runs end to end, and the measurement shows what needs tuning next (D097). The lane keeper is a stand-in driver,
   not under test. Gazebo runs at 0.3x real time here so perception sees every frame.
 - **Part 6** (D098): road lifespan uses Sharaf, Reichelt, Shahin and Sinha (1987, TRR 1123),
   a US PAVER model, **pending your approval**: no Indian PCI–age model could be verified.

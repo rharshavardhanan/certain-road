@@ -109,12 +109,16 @@ def linear(rgba, gamma: float) -> list[float]:
     return [float(c) ** gamma for c in rgba[:3]] + [float(rgba[3])]
 
 
-def world_sdf(parts: list[dict], look: dict, gz: dict, road_box: dict) -> str:
+def world_sdf(
+    parts: list[dict], look: dict, gz: dict, road_box: dict, lighting: dict | None = None
+) -> str:
     """The world file's text, from `manifest` rows.
 
     `look`: the MuJoCo look's config (sun, sky, ambient, kerbs); `gz`: gazebo.yaml.
     `road_box`: {length_m, half_width_m, floor_z} of the carriageway: the kerb collision
     boxes run along it, and the catch plane sits at the lowest drawn geometry (MuJoCo's ground).
+    `lighting`: a preset from gazebo.yaml `lighting` (sun direction, scales on the calibrated
+    sun and ambient, sky colour, shadows); None or {} is the calibrated noon light.
     """
     rd, ph = gz["render"], gz["physics"]
     sc = look["scene"]
@@ -134,17 +138,19 @@ def world_sdf(parts: list[dict], look: dict, gz: dict, road_box: dict) -> str:
     plugin(world, "gz-sim-scene-broadcaster-system", "gz::sim::systems::SceneBroadcaster")
     plugin(world, "gz-sim-sensors-system", "gz::sim::systems::Sensors", render_engine=rd["engine"])
     scene = sub(world, "scene")
-    ambient = sc["ambient"] * rd["ambient_gain"]
+    lt = lighting or {}
+    shadows = rd["cast_shadows"] and lt.get("shadows", True)
+    ambient = sc["ambient"] * rd["ambient_gain"] * lt.get("ambient_scale", 1.0)
     sub(scene, "ambient", [ambient, ambient, ambient, 1.0])
-    sub(scene, "background", [*sc["sky"]["horizon"], 1.0])
-    sub(scene, "shadows", "true" if rd["cast_shadows"] else "false")
+    sub(scene, "background", [*lt.get("sky", sc["sky"]["horizon"]), 1.0])
+    sub(scene, "shadows", "true" if shadows else "false")
     sub(scene, "grid", "false")
     sun = sub(world, "light", type="directional", name="sun")
-    sub(sun, "cast_shadows", "true" if rd["cast_shadows"] else "false")
+    sub(sun, "cast_shadows", "true" if shadows else "false")
     sub(sun, "diffuse", [1.0, 1.0, 1.0, 1.0])  # SDF clamps colours to 1: strength is intensity
-    sub(sun, "intensity", sc["sun_diffuse"] * rd["sun_gain"])
+    sub(sun, "intensity", sc["sun_diffuse"] * rd["sun_gain"] * lt.get("sun_scale", 1.0))
     sub(sun, "specular", [rd["sun_specular"]] * 3 + [1.0])
-    d = np.asarray(sc["sun_dir"], float)
+    d = np.asarray(lt.get("sun_dir", sc["sun_dir"]), float)
     sub(sun, "direction", d / np.linalg.norm(d))
 
     model = sub(world, "model", name="road")
