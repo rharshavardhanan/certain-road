@@ -11,12 +11,12 @@
 
 | # | Part | Live command | Recording |
 |---|---|---|---|
-| 1 | MuJoCo road simulation | `.venv/bin/python -m sim.mujoco.demo --preset poor --seed 0` | `runs/demo_capture/mujoco_poor_seed0.mp4` |
-| 2 | Real road video, P + B live | `.venv/bin/python scripts/live_video.py data/video/2DV-cYmIvT4.mp4` | `runs/demo_capture/real_road_120-180s.mp4` |
-| 3 | Real road through ROS, decisions as CAN frames | `ros2 launch certain_road_ros video.launch.py` + `candump vcan0` or `ros2 topic echo /can/decoded` | `runs/ros/capture/video_rviz_*.mp4` |
-| 4 | ROS 2D closed loop | `ros2 launch certain_road_ros demo.launch.py` | `runs/ros/capture/demo_*.mp4` |
-| 5 | Gazebo: realistic 3D road, car with suspension, closed loop | `ros2 launch certain_road_ros gazebo.launch.py preset:=poor seed:=0 rtf:=0.3 rviz:=true` | `runs/ros/capture/gazebo_closed_loop_*.mp4` |
-| 6 | Survey report: three roads, vision-estimated PCI, road lifespan, priority, frames | open `runs/survey_environments/` HTML in Firefox | (the report is the artefact) |
+| 1 | MuJoCo road simulation | `bash ros/demos/1_mujoco_survey.sh [good|moderate|poor]` | `runs/demo_capture/mujoco_poor_seed0.mp4` |
+| 2 | Real road video, P + B live | `bash ros/demos/2_real_road_live.sh` | `runs/demo_capture/real_road_120-180s.mp4` |
+| 3 | Real road through ROS, decisions as CAN frames | `bash ros/demos/3_ros_video_can.sh` (opens a CAN window) | `runs/ros/capture/video_rviz_*.mp4` |
+| 4 | ROS 2D closed loop | `bash ros/demos/4_ros_2d_loop.sh` | `runs/ros/capture/demo_*.mp4` |
+| 5 | Gazebo: realistic 3D road, car with suspension, closed loop | `bash ros/demos/5_gazebo_closed_loop.sh [noon|morning|evening|overcast]` (opens a CAN window) | `runs/ros/capture/gazebo_closed_loop_*.mp4` |
+| 6 | Survey report: three roads, vision-estimated PCI, road lifespan, priority, frames | `bash ros/demos/6_survey_report.sh` | (the report is the artefact) |
 
 **What parts 3, 5 and 6 add, and their honest status (2026-10-08):**
 
