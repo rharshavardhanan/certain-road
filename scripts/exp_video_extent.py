@@ -46,12 +46,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from exp_drift import frame_scores  # noqa: E402  (the reference bag, built as T11 builds it)
 
 from certain_road.assess.drift import frame_score, run_stream  # noqa: E402
+from certain_road.core.device import available_device  # noqa: E402
 from certain_road.core.paths import repo_root  # noqa: E402
 
 ROOT = repo_root()
 CFG = yaml.safe_load((ROOT / "configs" / "project.yaml").read_text())
 EVAL, DR = CFG["eval"], CFG["drift"]
 VCFG = yaml.safe_load((ROOT / "configs" / "eval" / "video.yaml").read_text())
+VCFG["device"] = available_device(VCFG["device"])  # mps on the Mac, cuda on the Jetson
 X, DV = VCFG["extent"], VCFG["drift"]
 YOLO_DIR = ROOT / CFG["paths"]["yolo"]
 

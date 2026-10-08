@@ -114,6 +114,7 @@ Current design spec: [`design.md`](design.md)
 | D091 | Only damaged segments can be among the end screen's true worst N; all five presets run, and the drift alarm fires at 65–150 m on every road | Accepted |
 | D092 | The demo's look v2 adds 3D potholes, surface marks and harsher light with tree shadows, and is the default; v1 stays byte-identical as the fallback. Measured once: detection barely moves, and no false alarm comes from the new marks | Accepted |
 | D093 | A ROS 2 Jazzy demo on the Jetson wraps the 2D simulator in three nodes; ROS is one more `Transport`; the camera frame is rendered from the projection; no Gazebo (D050 stands) | Accepted |
+| D094 | The review demo runs on the Jetson: the MuJoCo survey demo and a live real-road viewer on CUDA; `mps` resolves to the machine's accelerator; textures rebuilt from their public sources | Accepted |
 
 ---
 
@@ -3746,3 +3747,49 @@ message libraries, built against numpy 1.26, were checked to work with the venv'
 **What it cannot show.** The weights are not on the Jetson yet, so every run so far is
 projection-only. D050's list stands: no motion blur, vibration, lighting, real command
 latency or actuator dynamics.
+
+## D094 — The review demo runs on the Jetson: MuJoCo survey demo and a live real-road viewer, on CUDA
+
+**2026-10-08 · Accepted · extends D087 and D093**
+
+The user asked for the mentor demo to show Model P and Model B detecting potholes live, as
+realistically as the Jetson allows. Three parts, in `ros/MENTOR-DEMO.md`: the MuJoCo survey
+demo (D087–D092) as the main simulation, because it has real photo textures and exact
+ground truth; a live viewer on the real RT Dashcam clip, because only real footage answers
+"does it work on a real road"; and D093's ROS loop, the only part where a decision moves
+the vehicle. Recorded footage cannot be steered, and the MuJoCo road is driven straight, so
+parts 1 and 2 show detection, not control.
+
+**`mps` resolves to the machine's accelerator.** The configs name the MacBook's `mps`.
+`core/device.available_device` returns the configured device where it exists, else `cuda`,
+else `mps`, else `cpu`; `cpu` is honoured as asked, since bit-reproducible evaluation needs
+it. `sim/mujoco/drive.py`, `scripts/eval_video.py` and `scripts/exp_video_extent.py` use it,
+so the same config runs on both machines and the recorded device is the one that ran. The
+screen's fonts became a list, the Mac's first and DejaVu second.
+
+**`scripts/live_video.py`.** Both models track every frame with ByteTrack, potholes from P
+and cracks from B (D082), confirmed by `eval_video.confirm_step` (D075) behind the horizon
+gate, and Model P's tracks are scored with `score_video_gt.score_tracks`, the rule the
+offline numbers use. No frame is skipped (D088), so the live window runs slower than real
+time; `--record` writes at the clip's rate. A run stopped early is scored on the stretch it
+played.
+
+**Inputs rebuilt on the Jetson, none copied from the Mac.** The weights came from the Kaggle
+kernel outputs; their SHA-256 match `results/LOCKED`. The clip came from YouTube again,
+1280x720, 30 fps, 290.9 s, as recorded. The 49 textures were rebuilt from QR4Change
+(Mendeley, SHA-256 checked) and BD-N6 (Zenodo, read by range request) with
+`scripts/fetch_trial_textures.py`, using `docs/texture-provenance.md`'s file map. The
+curated set had been downscaled to a 3000 px long side with the aspect kept, and the script
+resizes to the map's sizes, so geometry and `natural_px_per_m` hold. The pixels are not
+the zip's, so D092's byte-identical v1 check does not carry over to these textures. The
+drift reference needs the india_val image list; the committed `splits/india_val.txt` is
+that list (all 752 images with predictions are among its 772).
+
+**Measured on the Jetson, 2026-10-08, once.** MuJoCo poor seed 0, look v2: potholes 16/28 at
+44.9 false alarms/km, alligator 21/24, linear 14/27, drift alarm at 345 m. The Mac's run was
+15/28, 21/24, 15/27, no alarm. The textures differ in their pixels and the arithmetic in its
+device, and the results are close but not identical. The drive runs at 0.20x real time
+(per frame: render 49 ms, P 32 ms, B 31 ms) after a scene build of about 220 s. On the real
+clip, 120–180 s, Model P caught 12 of 17 counted potholes with 21 false alarms per minute
+(the Mac's eval_video run: 10 of 17, 20 per minute), at 12 fps, 0.4x real time. Nothing was
+tuned on these runs.

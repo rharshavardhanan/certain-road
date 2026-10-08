@@ -113,7 +113,9 @@ screen:
   size: [1920, 1080]
   caption_h: 96
   gutter: 4
-  fonts: {sans: /System/Library/Fonts/SFNS.ttf, mono: /System/Library/Fonts/SFNSMono.ttf}
+  # tried in order: the MacBook's faces, then the Jetson's (D094)
+  fonts: {sans: [/System/Library/Fonts/SFNS.ttf, /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf],
+          mono: [/System/Library/Fonts/SFNSMono.ttf, /usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf]}
   px: {title: 28, label: 22, body: 28, value: 60, count: 48, caption: 38, small: 18, chip: 30}
   rgb:
     bg: [11, 14, 19]

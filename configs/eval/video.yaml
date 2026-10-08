@@ -38,3 +38,19 @@ drift:
   count_conf: 0.05         # "no detection" in the figure means nothing at or above this
   equivalence_images: 20   # india_val images re-scored through the video path
   equivalence_tol: 0.001   # max |delta frame_score| allowed before the stream is trusted
+
+# The live viewer for the review demo (scripts/live_video.py, D094): Model P and Model B on
+# this clip as it plays, against the hand-counted ground truth. Confirmation, tracker,
+# conf and horizon are the settings above; classes and colours are configs/sim/mujoco.yaml's
+# drive block (D082), so the live view and the MuJoCo demo read alike.
+live:
+  gt: configs/eval/gt/2DV-cYmIvT4_claude.csv
+  window_s: [120, 180]         # the ground truth's window; see the CSV header
+  credit: "RT Dashcam, YouTube 2DV-cYmIvT4, CC BY"
+  display: [1600, 900]         # window size; the frame keeps its aspect
+  banner_px: 34
+  panel_px: 64
+  font_scale: 0.62
+  gt_rgb_in_view: [60, 60, 220]   # BGR strip while a counted pothole is in view
+  gt_rgb_clear: [70, 70, 70]
+  end_hold_s: 8
