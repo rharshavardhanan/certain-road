@@ -43,7 +43,7 @@ th, td { text-align:left; padding: 0.45rem 0.75rem 0.45rem 0; border-bottom:1px 
 thead th { font-weight:600; font-size:0.8125rem; color: var(--ink-2); border-bottom-color: var(--axis); }
 tbody th { font-weight: 450; }
 .num { text-align: right; }
-th.num, td.num { padding-left: 1rem; padding-right: 0; }
+th.num, td.num { padding-left: 1rem; padding-right: 0.9rem; }
 caption { caption-side: top; text-align:left; font-size:0.8125rem; color: var(--ink-2); padding-bottom: 0.4rem; }
 table.compare { max-width: 56rem; }
 .compare .how { display:block; font-size:0.8125rem; color: var(--ink-2); }
@@ -89,5 +89,6 @@ figure { margin: 1rem 0; }
 .not-run { border:1px dashed var(--axis); border-radius: var(--radius); padding: 0.75rem 1rem; color: var(--ink-2); }
 footer { max-width: 76rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; border-top:1px solid var(--grid);
   font-size: 0.8125rem; color: var(--ink-2); }
-@media (max-width: 40rem) { h1 { font-size: 1.4rem; } .filters { top: 0; } }
+@media (max-width: 40rem) { h1 { font-size: 1.4rem; } .bar { position: static; } .filters { top: 0; } }
 @media print { .bar, .filters { display:none; } .card { break-inside: avoid; } }
+#rsl p, #rsl li, #method li { max-width: 80ch; }

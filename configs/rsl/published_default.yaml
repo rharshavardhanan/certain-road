@@ -87,9 +87,10 @@ must_fix_rsl_years: 1.0
 # placeholder, not a cited source, and is pending mentor approval like the curve.
 pci_only:
   source: >-
-    docs/design.md §3, Optimiser: "Treatment by PCI band -- do-nothing / preventive seal /
-    thin overlay / mill-and-overlay / reconstruction. Config table." Band-to-treatment
-    assignment by severity order; not from a published source.
+    docs/design.md §3, Optimiser: treatment by condition band, a config table of five
+    treatments (do-nothing / preventive seal / thin overlay / mill-and-overlay /
+    reconstruction). Band-to-treatment assignment by severity order; not from a published
+    source.
   treatments:
     Good: do nothing
     Satisfactory: preventive seal

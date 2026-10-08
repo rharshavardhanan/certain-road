@@ -108,7 +108,9 @@ capture:
   cmd_hz: 20
   end_margin_m: 15            # = MuJoCo drive.end_margin_m: stop before the view runs off
   jpeg_quality: 95
-  wait_first_image_s: 600     # the scene can take minutes to load on the Jetson
+  wait_first_image_s: 120     # the road loads in 15-25 s on the Jetson; a launch that fails
+                              # must not hold the shared heavy lock
+  stall_s: 60                 # frames stopped this long mid-run: the simulation stalled, exit
   stats_every_s: 2.0          # memory and real-time-factor samples
   # --lane-keep uses configs/ros/demo.yaml's lane_keeper gains, lane_keeper_node's.
   # --record-only (a closed loop drives): stop recording after this much simulated time,

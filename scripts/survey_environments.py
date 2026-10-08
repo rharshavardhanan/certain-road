@@ -83,6 +83,12 @@ def drive_complete(d: Path, sim: dict) -> tuple[bool, str]:
     return True, f"complete: {frames} frames"
 
 
+def gallery_current(d: Path) -> bool:
+    """A gallery exists and was made from this run's log, not an earlier drive's."""
+    g, log = d / "gallery.json", d / "detections.jsonl"
+    return g.exists() and g.stat().st_mtime >= log.stat().st_mtime
+
+
 def heavy(cmd: list[str], cfg: dict, use_lock: bool, log: Path) -> float:
     """Run a heavy step under the shared lock; return its wall time, lock wait included."""
     full = (["flock", cfg["heavy_lock"]] if use_lock else []) + cmd
@@ -109,8 +115,7 @@ def load_road(road: dict, d: Path, cfg: dict, sim: dict) -> RoadRun:
     survey = json.loads((d / "survey.json").read_text())
     end = json.loads((d / "end.json").read_text())
     summary = json.loads((d / "drive_summary.json").read_text())
-    gallery_path = d / "gallery.json"
-    gallery = json.loads(gallery_path.read_text()) if gallery_path.exists() else None
+    gallery = json.loads((d / "gallery.json").read_text()) if gallery_current(d) else None
     images = {}
     for t in (gallery or {}).get("tracks", []):
         for k in ("crop", "frame"):
@@ -194,7 +199,7 @@ def main() -> int:
         if not ok:
             print(f"{name}: no complete drive ({why}); left out of the report", file=sys.stderr)
             continue
-        if not args.report_only and (args.force or not (d / "gallery.json").exists()):
+        if not args.report_only and (args.force or not gallery_current(d)):
             cmd = [py, "-m", "sim.mujoco.gallery", "--preset", road["preset"]]
             cmd += ["--seed", str(road["seed"]), "--look", cfg["look"]]
             s = heavy(cmd, cfg, not args.no_lock, log)

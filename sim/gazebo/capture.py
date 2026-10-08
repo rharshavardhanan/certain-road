@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import queue
 import sys
 import threading
@@ -59,6 +60,16 @@ def mem_available_mb() -> float:
     return float("nan")
 
 
+def alive(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
 def gz_rss_mb() -> float:
     """Resident memory of every `gz sim` process (server, and GUI if any), summed."""
     total = 0.0
@@ -87,6 +98,7 @@ def run(
     launch_t0: float | None,
     lane_keep: bool = False,
     record_only: bool = False,
+    launch_pid: int | None = None,
 ) -> dict:
     import rclpy
     from geometry_msgs.msg import Twist
@@ -253,8 +265,13 @@ def run(
     mem_before = mem_available_mb()
     while rclpy.ok():
         rclpy.spin_once(node, timeout_sec=0.1)
+        # Never outlive a failed launch: it would hold the shared heavy lock for nothing.
+        if launch_pid is not None and not alive(launch_pid):
+            raise SystemExit(f"the launch (pid {launch_pid}) has exited: stopping")
         if st["first_wall"] is None and time.time() - start > cap["wait_first_image_s"]:
             raise SystemExit("no camera image: is world.launch.py running?")
+        if not st["done"] and st["walls"] and time.time() - st["walls"][-1] > cap["stall_s"]:
+            raise SystemExit(f"no camera frame for {cap['stall_s']} s: the simulation stalled")
         if st["done"] and st["end_wall"] is not None and time.time() - st["end_wall"] > 1.0:
             break
     for _ in threads:
@@ -328,6 +345,7 @@ def main() -> None:
     ap.add_argument(
         "--launch-t0", type=float, help="epoch seconds the launch started, for load time"
     )
+    ap.add_argument("--launch-pid", type=int, help="stop at once if this process exits")
     args = ap.parse_args()
     world = args.world.resolve()
     s = run(
@@ -337,6 +355,7 @@ def main() -> None:
         args.launch_t0,
         args.lane_keep,
         args.record_only,
+        args.launch_pid,
     )
     print(json.dumps({k: v for k, v in s.items() if k != "samples"}, indent=1))
 

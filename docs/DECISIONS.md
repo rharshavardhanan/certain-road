@@ -3874,3 +3874,14 @@ mentor approval**; `mode: pci_only` is the one-line alternative. Also committed 
 `dashboard/survey_report.py`, `sim/mujoco/gallery.py` (re-rendered frames of each confirmed
 track) and `scripts/survey_environments.py`. Not yet run on three roads, and the gallery is
 not finished.
+
+**Update to D097 and D098, 2026-10-08 (work paused when the lab closed; both stay Open).**
+D097: a closed-loop drive with the planner on was recorded over the first 230 m of poor seed
+0 at rtf 0.3 (`runs/ros/capture/gazebo_closed_loop_20261008T095519Z.mp4`, 1,326 decisions).
+vcan0 was down, so it carries no CAN frames, and the lane-keep-only baseline was not run, so
+avoidance is still unmeasured. D098: `scripts/survey_environments.py` built the three-road
+report (good, moderate and poor, seed 0; `runs/survey_environments/report.html`, 216 images);
+the pooled repair plan chose 7 segments and covered all 3 of the true worst 3. The report's
+numbers have not yet been reviewed beyond that. `ros/review_preflight.sh` checks a machine
+before the review; `ros/install_gazebo_can.sh` now installs a systemd unit that brings vcan0
+up at every boot.

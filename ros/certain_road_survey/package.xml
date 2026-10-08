@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>certain_road_survey</name>
+  <version>0.1.0</version>
+  <description>
+    The survey half of certain-road over ROS 2: from any camera with odometry and the
+    perception node's detections, D006 survey samples scored by certain_road.survey into a
+    vision-estimated PCI per segment, a remaining service life, a repair plan and one offline
+    HTML report with a picture of every counted detection.
+  </description>
+  <maintainer email="rharshavardhanan@gmail.com">rharshavardhanan</maintainer>
+  <license>Proprietary</license>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>vision_msgs</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

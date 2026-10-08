@@ -114,7 +114,10 @@ def segment_rows(roads: list[RoadRun], rsl_cfg: RslConfig, pricing: Pricing) -> 
                 if ref is not None and rsl_cfg.curve is not None
                 else None
             )
-            area = float(s.get("area_ref_m2", 0.0))
+            # D090 prices on the reference distressed area; without a reference (a camera
+            # topic), on the area the survey itself measured
+            priced_on = "reference" if "area_ref_m2" in s else "vision"
+            area = float(s["area_ref_m2"] if priced_on == "reference" else s.get("area_m2", 0.0))
             rows.append(
                 {
                     "id": len(rows),
@@ -130,7 +133,9 @@ def segment_rows(roads: list[RoadRun], rsl_cfg: RslConfig, pricing: Pricing) -> 
                     "pci_ref": None if ref is None else float(ref),
                     "band_ref": None if ref is None else band(float(ref)),
                     "counts": s.get("counts", {}),
-                    "area_ref_m2": area,
+                    "area_ref_m2": area if priced_on == "reference" else None,
+                    "priced_area_m2": area,
+                    "priced_on": priced_on,
                     "cost": pricing.mobilisation_cost + pricing.cost_per_m2 * area,
                     "rsl": a.rsl_years,
                     "rsl_lo": a.rsl_lo,
@@ -180,12 +185,12 @@ def pooled_plan(rows: list[dict], pricing: Pricing) -> dict:
                 "worst_covered": sum(i in ids for i in worst),
             }
         out["plans"][name] = plan
-    out["order"], out["why"] = explain(rows, segs, chosen, budget)
+    out["order"], out["why"] = explain(segs, chosen, budget)
     return out
 
 
 def explain(
-    rows: list[dict], segs: list[Segment], chosen: dict[str, list[int]], budget: float
+    segs: list[Segment], chosen: dict[str, list[int]], budget: float
 ) -> tuple[list[int], dict[int, dict[str, str]]]:
     """Worst-first order, and one sentence per segment per plan saying why it was or was not funded.
 
@@ -387,7 +392,13 @@ def segment_table(road: RoadRun, rows: list[dict], plan: dict, rsl_cfg: RslConfi
         if has_ref:
             cells += [num(r["pci_ref"]), band_chip(r["band_ref"], colours)]
             if rsl_cfg.mode == "curve":
-                cells.append(num(r["rsl_ref"]) + " yr" if r["rsl_ref"] is not None else "&ndash;")
+                cells.append(
+                    "&ndash;"
+                    if r["rsl_ref"] is None
+                    else "0 yr"
+                    if r["rsl_ref"] == 0.0
+                    else f"{r['rsl_ref']:.1f} yr"
+                )
         cells += [
             f"{n.get('pothole', 0)} &middot; {n.get('alligator_crack', 0)} &middot; "
             f"{n.get('linear_crack', 0)}",
@@ -432,14 +443,16 @@ def gallery_section(road: RoadRun, cfg: dict) -> str:
     colours = cfg["colours"]["class"]
     tracks = sorted(
         g["tracks"],
-        key=lambda t: (t["location"] or {}).get("chainage_m", t["first_x_cam_m"]),
+        key=lambda t: (t["location"] or {}).get("chainage_m", t["best"]["x_cam_m"]),
     )
     cards = []
     for t in tracks:
         loc = t["location"]
         crop = road.images.get(t.get("crop", ""))
         frame = road.images.get(t.get("frame", "")) if cfg["embed"]["full_frames"] else None
-        if t["false_alarm"]:
+        if t.get("false_alarm") is None:
+            truth = '<span class="muted">No ground truth here: not checked.</span>'
+        elif t["false_alarm"]:
             near = (loc or {}).get("nearest_instance")
             truth = '<span class="fa">False alarm</span>'
             if near:
@@ -463,7 +476,8 @@ def gallery_section(road: RoadRun, cfg: dict) -> str:
             side = "left" if loc["lateral_m"] >= 0 else "right"
             where = (
                 f"<strong>{loc['chainage_m']:.1f} m</strong> along the road &middot; "
-                f"{abs(loc['lateral_m']):.1f} m {side} of the centre line &middot; "
+                f"{abs(loc['lateral_m']):.1f} m {side} of "
+                f"{esc(loc.get('lateral_ref', 'the centre line'))} &middot; "
                 f"{esc(loc['lane'])} &middot; {seg}"
             )
         img = (
@@ -483,25 +497,105 @@ def gallery_section(road: RoadRun, cfg: dict) -> str:
             if t["counted_in_survey"]
             else "not in a survey sample's ROI"
         )
+        if t.get("track") is None:
+            seen = f"Picture from the survey sample with the camera at {t['best']['x_cam_m']:.1f} m"
+        else:
+            seen = (
+                f"Track {t['track']}, confirmed in {t['confirmed_frames']} "
+                f"frame{'' if t['confirmed_frames'] == 1 else 's'}; picture from "
+                f"frame {t['best']['frame']}, camera at {t['best']['x_cam_m']:.1f} m"
+            )
+        truth_key = {None: "na", True: "fa", False: "hit"}[t.get("false_alarm")]
         cards.append(
-            f'<article class="card" data-cls="{esc(t["cls"])}" '
-            f'data-truth="{"fa" if t["false_alarm"] else "hit"}">{img}'
+            f'<article class="card" data-cls="{esc(t["cls"])}" data-truth="{truth_key}">{img}'
             f'<div class="card-body"><p class="what"><span class="sw" style="background:'
             f'{esc(colours[t["cls"]])}"></span>{esc(CLASS_NAMES[t["cls"]])} '
             f'<span class="muted">Model {t["model"]} &middot; confidence {t["best"]["score"]:.2f}'
             f"</span></p><p>{where}</p><p>{truth}</p>"
-            f'<p class="muted small">Track {t["track"]}, confirmed in {t["confirmed_frames"]} '
-            f"frames; picture from frame {t['best']['frame']}, camera at "
-            f"{t['best']['x_cam_m']:.1f} m; {survey}.</p>{whole}</div></article>"
+            f'<p class="muted small">{seen}; {survey}.</p>{whole}</div></article>'
         )
+    if not cards:
+        return '<p class="note">No confirmed detection on this road.</p>'
     return f'<div class="gallery">{"".join(cards)}</div>'
+
+
+def method_points(roads: list[RoadRun]) -> list[str]:
+    """What was real and what was not, saying only what holds for the roads on this page."""
+    methods = {((r.gallery or {}).get("replay") or {}).get("method", "") for r in roads}
+    mujoco = any(r.look for r in roads)
+    out = [
+        "<li><strong>Real:</strong> Model P (potholes) and Model B (cracks), never summed "
+        "(D082); <code>core.geometry</code>'s IPM; <code>certain_road.survey</code> scoring, "
+        "segments, RSL and allocation"
+        + ("; ByteTrack and D075's 3-of-5 confirmation" if mujoco else "")
+        + ".</li>"
+    ]
+    if mujoco:
+        out.append(
+            "<li><strong>Simulated:</strong> the MuJoCo roads, their damage, light and camera "
+            "motion (D087, D092). The ground truth is exact because the road was generated.</li>"
+        )
+    elif any(r.simulated for r in roads):
+        out.append("<li><strong>Simulated:</strong> the road and the camera.</li>")
+    if any(r.detection for r in roads):
+        out.append(
+            "<li><strong>Detection scoring</strong> (D090): a confirmed track hits an instance "
+            "when its box overlaps the instance's projected box by IoU above 0.1 in some frame and "
+            "the classes agree; recall counts instances that came nearer than the 12 m gate; a "
+            "false alarm is a confirmed track that hit nothing of its class, per km driven. Both "
+            "lanes count.</li>"
+        )
+    else:
+        out.append(
+            "<li><strong>No ground truth:</strong> no recall, false-alarm rate or reference PCI "
+            "can be given for these roads.</li>"
+        )
+    if any(m.startswith("re-rendered") for m in methods):
+        out.append(
+            "<li><strong>Pictures</strong> are re-rendered from each run's log at the logged "
+            "camera position with the drive's camera settings and its per-frame noise stream "
+            "replayed, then checked by re-detecting survey samples (see each road).</li>"
+        )
+    if any(m.startswith("saved live") for m in methods):
+        out.append(
+            "<li><strong>Pictures</strong> were saved live from the camera topic, the frame "
+            "each counted box was detected in.</li>"
+        )
+    return out
+
+
+def gallery_intro(road: RoadRun) -> str:
+    """The gallery's heading and how its pictures and places were got, per source."""
+    tracks = (road.gallery or {}).get("tracks") or []
+    if tracks and all(t.get("track") is None for t in tracks):
+        return (
+            "<h3>Every detection the survey counted on this road</h3>"
+            '<p class="lede">One card per box counted in a 5 m survey sample, in order along the '
+            f"road. {esc(replay_note(road))} Location: the IPM ground point under the box's "
+            "bottom centre (<code>core.geometry.ground_point</code>, the configured camera "
+            "height and pitch, flat road) in the sample's own frame, placed along the road by "
+            "odometry: the near edge of the damage as the camera saw it.</p>"
+        )
+    return (
+        "<h3>Every confirmed detection on this road</h3>"
+        '<p class="lede">One card per confirmed track (D075), in order along the road. '
+        f"{esc(replay_note(road))} Location: the IPM ground point under each box's bottom "
+        "centre (<code>core.geometry.ground_point</code>, design camera, flat road), median "
+        "over the track's confirmed frames: the near edge of the damage as the camera saw "
+        "it.</p>"
+    )
 
 
 def replay_note(road: RoadRun) -> str:
     g = road.gallery or {}
     checks = (g.get("replay") or {}).get("verification") or []
+    if not g.get("tracks"):
+        return "Nothing to picture on this road."
+    method = (g.get("replay") or {}).get("method", "")
+    if method.startswith("saved live"):
+        return "Pictures saved live from the camera topic."
     if not checks:
-        return "Re-render not verified on this road."
+        return "Pictures not checked against the log on this road."
     same = all(c["same_boxes"] for c in checks)
     px = max((c["max_px_diff"] or 0.0) for c in checks)
     return f"Re-render checked on {len(checks)} survey samples: " + (
@@ -530,9 +624,13 @@ def road_summary(road: RoadRun, rows: list[dict]) -> dict:
         "mean_pci_ref": mean_ref,
         "worst_pci": min(est) if est else None,
         "worst_band": band(min(est)) if est else None,
-        "mae": statistics.mean(abs(r["pci"] - r["pci_ref"]) for r in mine) if ref else None,
+        "mae": (
+            statistics.mean(abs(r["pci"] - r["pci_ref"]) for r in mine if r["pci_ref"] is not None)
+            if ref
+            else None
+        ),
         "tracks": len(tracks),
-        "false_alarm_tracks": sum(t["false_alarm"] for t in tracks),
+        "false_alarm_tracks": sum(t.get("false_alarm") is True for t in tracks),
     }
 
 
@@ -610,8 +708,13 @@ def render_page(roads, rows, plan, totals, summaries, rsl_cfg, pricing, cfg, sta
         found = ""
         if det:
             found = "".join(
-                f"<li>{esc(CLASS_NAMES[c])}: {det[c]['hit']} of {det[c]['instances']} found, "
-                f"{num(det[c]['false_alarms_per_km'])} false alarms/km</li>"
+                f"<li>{esc(CLASS_NAMES[c])}: "
+                + (
+                    f"{det[c]['hit']} of {det[c]['instances']} found"
+                    if det[c]["instances"]
+                    else "none on this road"
+                )
+                + f", {num(det[c]['false_alarms_per_km'])} false alarms/km</li>"
                 for c in CLASSES
             )
         cards.append(
@@ -630,7 +733,7 @@ def render_page(roads, rows, plan, totals, summaries, rsl_cfg, pricing, cfg, sta
     def objective_cells(name):
         q = p[name]
         if not have_truth:
-            return "<td class='num'>&ndash;</td><td class='num'>&ndash;</td>"
+            return ""
         share = q.get("share_of_oracle")
         return (
             f"<td class='num'><strong>{q['worst_covered']} of {len(worst)}</strong></td>"
@@ -661,9 +764,14 @@ def render_page(roads, rows, plan, totals, summaries, rsl_cfg, pricing, cfg, sta
     compare = (
         "<div class='table-wrap'><table class='compare'><thead><tr><th scope='col'>Plan</th>"
         "<th scope='col' class='num'>Segments</th><th scope='col' class='num'>Spend</th>"
-        f"<th scope='col' class='num'>True worst {len(worst)} repaired <span class='sim'>sim"
-        "</span></th><th scope='col' class='num'>True benefit repaired <span class='sim'>sim"
-        "</span></th></tr></thead><tbody>"
+        + (
+            f"<th scope='col' class='num'>True worst {len(worst)} repaired <span class='sim'>"
+            "sim</span></th><th scope='col' class='num'>True benefit repaired "
+            "<span class='sim'>sim</span></th>"
+            if have_truth
+            else ""
+        )
+        + "</tr></thead><tbody>"
         + "".join(
             f"<tr><th scope='row'><span class='sw' style='background:"
             f"{esc(cfg['colours']['series'][k])}'></span>{label} <span class='how'>{how}</span>"
@@ -692,24 +800,47 @@ def render_page(roads, rows, plan, totals, summaries, rsl_cfg, pricing, cfg, sta
             f"<tr><td class='num'>{n}</td><th scope='row'>{esc(r['road'])} &middot; seg "
             f"{r['segment']}<span class='muted small'> {r['x0_m']:.0f}&ndash;{r['x1_m']:.0f} m"
             f"</span>{worst_tag}</th><td class='num'><strong>{r['pci']:.1f}</strong></td>"
-            f"<td>{band_chip(r['band'], cfg['colours'])}</td><td class='num'>{ref}</td>"
-            f"<td>{rsl_cell(r, rsl_cfg)}{flag}</td><td class='num'>{r['cost']:,.0f}</td>"
+            f"<td>{band_chip(r['band'], cfg['colours'])}</td>"
+            + (f"<td class='num'>{ref}</td>" if have_truth else "")
+            + f"<td>{rsl_cell(r, rsl_cfg)}{flag}</td><td class='num'>{r['cost']:,.0f}</td>"
             f"<td>{plan_marks(i, plan)}</td><td class='why'><p><span class='mark m-wf'>"
             f"Worst-first</span> {w['worst_first']}</p><p><span class='mark m-opt'>Optimiser"
             f"</span> {w['optimiser']}</p></td></tr>"
         )
     life_head = "Recommendation" if rsl_cfg.mode == "pci_only" else "RSL"
+    n = len(roads)
+    across = "the road" if n == 1 else f"all {COUNT_WORDS[n] if n < len(COUNT_WORDS) else n} roads"
+    priced = (
+        "reference distressed area, as the end screen prices it (D090); only a simulation knows "
+        "that area"
+        if all(r["priced_on"] == "reference" for r in rows)
+        else "distressed area as the survey measured it (no reference area here)"
+        if all(r["priced_on"] == "vision" for r in rows)
+        else "reference distressed area where a simulation knows it, else the survey's own"
+    )
+    ref_head = (
+        '<th scope="col" class="num">Reference <span class="sim">sim</span></th>'
+        if have_truth
+        else ""
+    )
+    objectives = (
+        "Each is scored on D079's two objectives against the reference PCI: how many of the "
+        f"true worst {len(worst)} damaged segments it repairs, and the true benefit (100 "
+        "&minus; reference PCI) it repairs. Neither objective is simply right: the optimiser "
+        "buys the most improvement per unit cost and can defer the worst road; worst-first "
+        "repairs the worst road first and buys less overall (D079)."
+        if have_truth
+        else "With no ground truth here neither plan can be scored against the truth. D079's "
+        "finding still applies: the optimiser buys the most improvement per unit cost and can "
+        "defer the worst road; worst-first repairs the worst road first."
+    )
     priority = f"""
 <section id="priority">
-<h2>Repair priority across all {len(roads)} roads</h2>
+<h2>Repair priority across {across}</h2>
 <p class="lede">All {len(rows)} segments pooled under one budget: {pricing.budget_frac * 100:.0f}%
 of the cost of repairing every one ({plan["budget"]:,.0f} cost units). Both plans are the real
 allocators of <code>certain_road.survey.allocation</code>, ranking on the vision-estimated PCI
-(priority = 100 &minus; vision-estimated PCI). Each is scored on D079's two objectives against
-the reference PCI: how many of the true worst {len(worst)} damaged segments it repairs, and
-the true benefit (100 &minus; reference PCI) it repairs. Neither objective is simply right:
-the optimiser buys the most improvement per unit cost and can defer the worst road; worst-first
-repairs the worst road first and buys less overall (D079).</p>
+(priority = 100 &minus; vision-estimated PCI). {objectives}</p>
 {headline}
 {compare}
 <p class="note">Funded by both: {listing(both)}. Only the optimiser: {listing(only_opt)}. Only
@@ -718,11 +849,10 @@ worst-first: {listing(only_wf)}.</p>
 <p class="lede">Worst-first's own order. Its sentences replay its pass (the replay is checked
 against the real function); the optimiser chooses a set, not an order, so its sentences say what
 it weighed. Cost is D079's (arbitrary units): mobilisation {pricing.mobilisation_cost:,.0f} plus
-{pricing.cost_per_m2:,.0f} per m&sup2; of reference distressed area, as the end screen prices it
-(D090); only a simulation knows that area.</p>
+{pricing.cost_per_m2:,.0f} per m&sup2; of {priced}.</p>
 <div class="table-wrap"><table class="ranked"><thead><tr><th scope="col" class="num">#</th>
 <th scope="col">Road &middot; segment</th><th scope="col" class="num">Vision-estimated PCI</th>
-<th scope="col">Band</th><th scope="col" class="num">Reference <span class="sim">sim</span></th>
+<th scope="col">Band</th>{ref_head}
 <th scope="col">{life_head}</th><th scope="col" class="num">Cost</th><th scope="col">Funded by
 </th><th scope="col">Why</th></tr></thead><tbody>{"".join(ranked)}</tbody></table></div>
 </section>"""
@@ -770,7 +900,8 @@ it weighed. Cost is D079's (arbitrary units): mobilisation {pricing.mobilisation
         road_html.append(
             f"""<section id="road-{i}" class="road">
 <h2>{esc(r.label)}</h2>
-<p class="lede">{r.length_m:.0f} m, look {esc(r.look)}. {" &middot; ".join(facts)}.</p>
+<p class="lede">{r.length_m:.0f} m{", look " + esc(r.look) if r.look else ""}.
+{" &middot; ".join(facts)}.</p>
 {chart(r, rows, cfg)}
 {segment_table(r, rows, plan, rsl_cfg, cfg)}
 <p class="note">Counted: boxes whose base fell in a 5 m sample's ROI, the driving lane 3&ndash;8 m
@@ -778,11 +909,7 @@ ahead (D006, D089): potholes (P), alligator (A) and linear (L) cracks. The refer
 ground truth projected and scored by the same code (simulation only).</p>
 {det}
 <div class="stills">{stills}</div>
-<h3>Every confirmed detection on this road</h3>
-<p class="lede">One card per confirmed track (D075), in order along the road. {esc(replay_note(r))}
-Location: the IPM ground point under each box's bottom centre (<code>core.geometry.ground_point
-</code>, design camera, flat road), median over the track's confirmed frames: the near edge of the
-damage as the camera saw it.</p>
+{gallery_intro(r)}
 {gallery_section(r, cfg)}
 </section>"""
         )
@@ -796,7 +923,8 @@ damage as the camera saw it.</p>
             f"gives an equivalent age, and its RSL is the time left until the curve reaches its "
             f"end of service life, PCI {cv.pci_terminal:g} on the source's scale. A new pavement "
             f"has {service_life_years(cv):.1f} years; at or below PCI {cv.pci_terminal:g} the "
-            "RSL is 0. RSL rises with PCI, so an interval maps through its ends unchanged.</p>"
+            "RSL is 0. RSL rises with the vision-estimated PCI, so an interval maps through "
+            "its ends unchanged.</p>"
         )
     else:
         method = (
@@ -816,8 +944,9 @@ leaves the choice of curve, or <code>mode: pci_only</code>, to the mentor (D018)
 installation roads; the input here is a vision-estimated PCI, a proxy that follows a condition
 index's structure without D6433's deduct curves (<code>survey/scoring.py</code>). Nothing has
 measured whether the two scales agree.</li>
-<li><strong>Not calibrated for India,</strong> its traffic or its climate. An Indian PCI&ndash;age
-model was preferred and none could be verified (the search is recorded in the config).</li>
+<li><strong>Not calibrated for India,</strong> its traffic or its climate. An Indian deterioration
+model (condition index against age) was preferred and none could be verified (the search is
+recorded in the config).</li>
 <li><strong>No interval yet.</strong> The RSL interval needs a vision-estimated PCI interval;
 the segment-level conformal stage that would supply it is designed, not built. Every RSL
 here is a point, and the code refuses to invent an interval.</li>
@@ -835,25 +964,11 @@ the flag is shown for reading, not used.</li>
         if any(r.detection for r in roads)
         else ""
     )
-    method_section = f"""
-<section id="method">
-<h2>How these numbers were made</h2>
-<ul>
-<li><strong>Real:</strong> Model P (potholes) and Model B (cracks), never summed (D082);
-ByteTrack and D075's 3-of-5 confirmation; <code>core.geometry</code>'s IPM;
-<code>certain_road.survey</code> scoring, segments, RSL and allocation.</li>
-<li><strong>Simulated:</strong> the road, its damage, light and camera motion (D087, D092).
-The ground truth is exact because the road was generated.</li>
-<li><strong>Detection scoring</strong> (D090): a confirmed track hits an instance when its box
-overlaps the instance's projected box by IoU above 0.1 in some frame and the classes agree;
-recall counts instances that came nearer than the 12 m gate; a false alarm is a confirmed track
-that hit nothing of its class, per km driven. Both lanes count.</li>
-<li><strong>Pictures</strong> are re-rendered from each run's log at the logged camera position
-with the drive's camera settings and its per-frame noise stream replayed, then checked by
-re-detecting survey samples (see each road).</li>
-</ul>
-{totals_html}
-</section>"""
+    method_section = (
+        '<section id="method"><h2>How these numbers were made</h2><ul>'
+        + "".join(method_points(roads))
+        + f"</ul>{totals_html}</section>"
+    )
     credits = (
         "Textures CC BY 4.0: QR4Change, Maske et al. 2025 (potholes); BD-N6, Hossain et al. "
         "(cracks, asphalt). docs/texture-provenance.md."
@@ -861,7 +976,7 @@ re-detecting survey samples (see each road).</li>
         else ""
     )
     page = TEMPLATE.format(
-        title=esc(cfg.get("title", "Survey of three simulated roads")),
+        title=esc(title(roads)),
         nav=nav,
         banner=banner,
         attribution=esc(ATTRIBUTION),
@@ -876,6 +991,16 @@ re-detecting survey samples (see each road).</li>
         js=JS,
     )
     return page
+
+
+COUNT_WORDS = ("no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine")
+
+
+def title(roads: list[RoadRun]) -> str:
+    n = len(roads)
+    word = COUNT_WORDS[n] if n < len(COUNT_WORDS) else str(n)
+    kind = "simulated " if any(r.simulated for r in roads) else ""
+    return f"Survey of {word} {kind}road{'' if n == 1 else 's'}"
 
 
 def downscale_jpeg(data: bytes, width: int, quality: int) -> bytes:

@@ -16,7 +16,8 @@ frame on vcan0. Starts:
 Every node runs on /clock (use_sim_time). Arguments:
 
     preset:=poor seed:=0       the exported world runs/gazebo/<preset>_seed<seed> (or world:=)
-    rtf:=0.3                   Gazebo's real-time factor (empty: the world's 1.0)
+    rtf:=0.3                   Gazebo's real-time factor (rtf:=1.0 is the world's own; ros2
+                               launch rejects an empty rtf:=)
     planner:=true              false: the baseline, no perception or planner; the stand-in
                                drives the cruise speed and holds the lane, reacting to nothing
     gazebo:=true               false: the world runs elsewhere (another PC on this ROS domain)
@@ -48,7 +49,7 @@ ARGS = {
     "preset": ("poor", "road preset"),
     "seed": ("0", "road seed"),
     "world": ("", "exported world folder (overrides preset and seed)"),
-    "rtf": ("0.3", "Gazebo real-time factor; empty keeps the world's"),
+    "rtf": ("0.3", "Gazebo real-time factor, e.g. 0.3; 1.0 is the world's own"),
     "planner": ("true", "false: lane-keep-only baseline, no perception or planner"),
     "gazebo": ("true", "false: the world runs on another machine"),
     "can": ("", "auto|true|false"),

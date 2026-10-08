@@ -285,7 +285,8 @@ def build_gallery(run_dir: Path, road: Road, cfg: dict, n_verify: int) -> dict:
     by_frame = {r["frame"]: r for r in records}
     wanted.update({k: by_frame[k]["x_m"] for k in checks})
     t1 = time.perf_counter()
-    camera, _ = drive_camera(road, cfg)
+    # nothing to picture or check (a clean road): skip the scene build, a few minutes here
+    camera = drive_camera(road, cfg)[0] if wanted else None
     t2 = time.perf_counter()
     models = {}
     if checks:
@@ -301,7 +302,7 @@ def build_gallery(run_dir: Path, road: Road, cfg: dict, n_verify: int) -> dict:
     by_best: dict[int, list[dict]] = {}
     for t in tracks:
         by_best.setdefault(t["best"]["frame"], []).append(t)
-    for k, bgr in replay(camera, wanted):
+    for k, bgr in replay(camera, wanted) if wanted else ():
         if k in checks:
             v = compare(by_frame[k]["survey"], redetect(bgr, models, cfg))
             verification.append({"frame": k, "x_m": by_frame[k]["x_m"], **v})

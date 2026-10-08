@@ -18,7 +18,7 @@ Arguments:
                config/car.yaml's camera_low (640x360, 15 Hz) suits a network link.
   bridge       false: Gazebo and the car only
   rtf          real-time factor to run at (e.g. 0.3, so a slow consumer sees every frame of
-               simulated time); empty keeps the world's (1.0). Set through gz-sim's
+               simulated time); not given, the world's own (1.0). Set through gz-sim's
                set_physics service once the world is up; the SDF is not changed
   use_sim_time default true
   verbosity    gz sim -v level

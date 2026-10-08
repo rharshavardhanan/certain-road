@@ -70,7 +70,8 @@ class LaneKeeperNode(Node):
         who = "ALONE (baseline: no planner)" if self.alone else "following the planner"
         self.get_logger().info(
             f"STAND-IN DRIVER, not under test: {who}; vehicle {vehicle}, lane y "
-            f"{self.lane_y} m, steers in {self.cfg['steers_in']}, cruise {self.cruise:.3f} m/s"
+            f"{self.lane_y} m, steers in {self.cfg['steers_in']}, cruise {self.cruise:.3f} m/s; "
+            f"logs: {self.out}"
         )
 
     def _on_planner(self, msg: Twist) -> None:

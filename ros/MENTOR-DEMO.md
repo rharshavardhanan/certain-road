@@ -1,5 +1,46 @@
 # Mentor demo: what to show, in what order, and what to say
 
+## Review day: start here
+
+1. Power on the Jetson, log in, open a terminal: `cd ~/certain-road`
+2. `bash ros/review_preflight.sh`: every line should say OK (about 5 s, no GPU). If
+   `vcan0` fails, run `bash ros/install_gazebo_can.sh` once (sudo).
+3. Show the parts below in order. Every part has a recording that plays at real speed;
+   play it if the live run is slow or anything misbehaves. In each new terminal, run
+   `source ros/env.sh` first.
+
+| # | Part | Live command | Recording |
+|---|---|---|---|
+| 1 | MuJoCo road simulation | `.venv/bin/python -m sim.mujoco.demo --preset poor --seed 0` | `runs/demo_capture/mujoco_poor_seed0.mp4` |
+| 2 | Real road video, P + B live | `.venv/bin/python scripts/live_video.py data/video/2DV-cYmIvT4.mp4` | `runs/demo_capture/real_road_120-180s.mp4` |
+| 3 | Real road through ROS, decisions as CAN frames | `ros2 launch certain_road_ros video.launch.py` + `candump vcan0` or `ros2 topic echo /can/decoded` | `runs/ros/capture/video_rviz_*.mp4` |
+| 4 | ROS 2D closed loop | `ros2 launch certain_road_ros demo.launch.py` | `runs/ros/capture/demo_*.mp4` |
+| 5 | Gazebo: realistic 3D road, car with suspension, closed loop | `ros2 launch certain_road_ros gazebo.launch.py preset:=poor seed:=0 rtf:=0.3 rviz:=true` | `runs/ros/capture/gazebo_closed_loop_*.mp4` |
+| 6 | Survey report: three roads, vision-estimated PCI, road lifespan, priority, frames | open `runs/survey_environments/` HTML in Firefox | (the report is the artefact) |
+
+**What parts 3, 5 and 6 add, and their honest status (2026-10-08):**
+
+- **Part 3** (D095): the real clip streamed as a ROS camera; every decision also leaves as a
+  CAN frame on `vcan0` (ID 0x101, 4 bytes: action, speed, signed steer, mode; a provisional
+  layout). 1800 frames → 1800 decisions → 1800 CAN frames, decoded byte for byte. The
+  planner reacted during 12 of the 17 counted potholes; 27 of its 53 manoeuvre onsets had no
+  counted pothole in view, and manoeuvres flicker (median 2 frames). Open loop: a recording
+  cannot be steered.
+- **Part 5** (D096, D097): the Gazebo world is the MuJoCo road converted to meshes; Model P
+  boxed 23 of the 28 potholes that came into view, and a wheel crossing a pothole moves the
+  body up to 11.7 mm, 0.68° pitch. The closed loop runs (camera → P + B → planner → lane
+  keeper → car, CAN on). **Whether it avoids more potholes than a drive without the planner
+  has not been measured yet** (D097 is Open); say so. The lane keeper is a stand-in driver,
+  not under test. Gazebo runs at 0.3x real time here so perception sees every frame.
+- **Part 6** (D098): road lifespan uses Sharaf, Reichelt, Shahin and Sinha (1987, TRR 1123),
+  a US PAVER model, **pending your approval**: no Indian PCI–age model could be verified.
+  The alternative is `mode: pci_only` in `configs/rsl/published_default.yaml`. Ask the
+  mentor which they want.
+
+---
+
+The original three-part plan follows; its numbers still hold.
+
 Everything here runs on the Jetson Orin Nano (JetPack 7.2, CUDA), measured on 2026-10-08.
 About 8 minutes in three parts. Each part answers a different question.
 

@@ -148,3 +148,28 @@ def test_set_physics_keeps_the_step_and_retries(tmp_path):
     script = launch_args.set_physics_script("w", step, 0.3, 5, 2.0)
     assert step == 0.002 and "/world/w/set_physics" in script
     assert "max_step_size: 0.002, real_time_factor: 0.3" in script and "seq 5" in script
+
+
+def test_avoid_episodes_are_runs_of_consecutive_decisions():
+    from sim.gazebo.closed_loop import episodes
+
+    states = ["normal", "avoid_left", "avoid_left", "normal", "avoid_right", "normal"]
+    decisions = [{"state": s, "stamp": [k, 0]} for k, s in enumerate(states)]
+    odom = np.array([[float(k), 0.0, 0.1 * k, 0.55, 1.0, 0.0, 0.0, 0.0, 5.0] for k in range(6)])
+    e = episodes(decisions, odom, ("avoid_left", "avoid_right"))
+    assert (e["count"], e["frames_max"], e["single_frame"]) == (2, 2, 1)
+    assert e["lateral_m_max"] == pytest.approx(0.1)
+
+
+def test_can_payload_reads_back_as_the_twist_through_the_same_profile():
+    from certain_road.canbus.protocol import Action, Command, Mode
+    from sim.gazebo.closed_loop import payload_agreement
+
+    rows = []
+    for speed, steer in ((1.0, 0.0), (0.45, 0.0), (0.35, 0.7), (0.35, -0.7)):
+        c = Command(Action.FORWARD, speed, steer, Mode.AUTONOMOUS)
+        rows.append({"payload": c.to_bytes().hex(), "twist": list(command_velocity(c, CAR))})
+    a = payload_agreement(rows, repo_root() / "configs/sim/car.yaml")
+    # the bytes quantise speed to 1/255 and steer to 1/127 of full scale
+    assert a["max_abs_diff_mps"] <= CAR.max_speed_mps / 255
+    assert a["max_abs_diff_radps"] < 0.01

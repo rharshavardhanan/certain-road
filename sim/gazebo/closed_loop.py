@@ -116,6 +116,69 @@ def ahead(road: Road, odom: np.ndarray, t: float, cam_x: float, half: float, rea
     return out
 
 
+def episodes(decisions: list[dict], odom: np.ndarray, states: tuple[str, ...]) -> dict:
+    """Runs of consecutive decisions in `states`: how long each lasted, and how far the car
+    moved sideways from the run's start to its end (true pose)."""
+    runs, start = [], None
+    for k, d in enumerate([*decisions, {"state": "", "stamp": None}]):
+        if d["state"] in states and start is None:
+            start = k
+        elif d["state"] not in states and start is not None:
+            t0, t1 = _t(decisions[start]["stamp"]), _t(decisions[k - 1]["stamp"])
+            y0, y1 = np.interp([t0, t1], odom[:, 0], odom[:, 2])
+            runs.append({"frames": k - start, "s": t1 - t0, "lateral_m": abs(y1 - y0)})
+            start = None
+    if not runs:
+        return {"count": 0}
+    f = [r["frames"] for r in runs]
+    lat = [r["lateral_m"] for r in runs]
+    return {
+        "count": len(runs),
+        "frames_median": float(np.median(f)),
+        "frames_max": int(max(f)),
+        "single_frame": sum(1 for x in f if x == 1),
+        "lateral_m_median": round(float(np.median(lat)), 3),
+        "lateral_m_max": round(float(max(lat)), 3),
+    }
+
+
+def deepest(road: Road, tracks: dict[str, np.ndarray], look: dict, ids: list[int]) -> dict:
+    """{pothole id: deepest relief (m) under any wheel's contact centre}: how far a wheel
+    actually dropped, beside whether its tyre touched the footprint at all."""
+    from sim.mujoco.relief import depth_at
+
+    by_id = {i.id: i for i in road.instances}
+    out = {}
+    for pid in ids:
+        p = by_id[pid]
+        best = 0.0
+        for xy in tracks.values():  # only inside this pothole's own ellipse, not a neighbour's
+            mine = inside_ellipse(xy[:, 0], xy[:, 1], p)
+            if mine.any():
+                best = max(best, float(depth_at(road, look, xy[mine, 0], xy[mine, 1]).max()))
+        out[pid] = round(best, 4)
+    return out
+
+
+def payload_agreement(decisions: list[dict], vehicle_yaml: Path) -> dict:
+    """Each decision's CAN payload decoded through the vehicle profile, against the Twist
+    RosTransport sent for the same Command: they differ only by the bytes' quantisation."""
+    from certain_road.canbus.protocol import Command
+    from certain_road.sim.model import command_velocity, load_robot
+
+    robot = load_robot(vehicle_yaml)
+    dv, dw = [], []
+    for d in decisions:
+        v, w = command_velocity(Command.from_bytes(bytes.fromhex(d["payload"])), robot)
+        dv.append(abs(v - d["twist"][0]))
+        dw.append(abs(w - d["twist"][1]))
+    return {
+        "decisions": len(decisions),
+        "max_abs_diff_mps": round(max(dv), 5) if dv else None,
+        "max_abs_diff_radps": round(max(dw), 5) if dw else None,
+    }
+
+
 def load_run(folder: Path) -> dict:
     run_dir = repo_root() / (folder / "run_dir.txt").read_text().strip()
     odom = np.array([json.loads(line)[:9] for line in (folder / "odom.jsonl").open()])
@@ -174,6 +237,7 @@ def score(world: Path, run: dict, base: dict) -> dict:
     frames = [d for d in run["decisions"] if d["trigger"] == "frame"]
     t_dec = np.array([_t(d["stamp"]) for d in frames])
     x_dec = np.interp(t_dec, run["odom"][:, 0], run["odom"][:, 1]) + cam_x
+    depth = {k: deepest(road, v, look, [p.id for p in lane_pots]) for k, v in tracks.items()}
     per_pothole = []
     for p in lane_pots:
         near_edge = p.bbox[0]
@@ -198,6 +262,10 @@ def score(world: Path, run: dict, base: dict) -> dict:
                 "first_reaction_at_m": first,
                 "crossed_baseline": crossed["base"].get(p.id, []),
                 "crossed_closed_loop": crossed["run"].get(p.id, []),
+                "deepest_wheel_drop_m": {
+                    "baseline": depth["base"][p.id],
+                    "closed_loop": depth["run"][p.id],
+                },
             }
         )
     in_lane_ids = {p.id for p in lane_pots}
@@ -264,6 +332,12 @@ def score(world: Path, run: dict, base: dict) -> dict:
         },
         "per_pothole": per_pothole,
         "states": {s: states.count(s) for s in sorted(set(states))},
+        "avoid_episodes": episodes(run["decisions"], run["odom"], ("avoid_left", "avoid_right")),
+        "reaction_episodes": episodes(run["decisions"], run["odom"], MANOEUVRES + ("warning",)),
+        "wheel_drops_deeper_than_ride_threshold": {
+            k: sum(1 for v in depth[kk].values() if v >= gz["evaluate"]["ride"]["wheel_drop_m"])
+            for k, kk in (("baseline", "base"), ("closed_loop", "run"))
+        },
         "stale_decisions": sum(1 for d in run["decisions"] if d["trigger"] == "stale"),
         "false_onsets": false,
         "can": {
@@ -271,6 +345,10 @@ def score(world: Path, run: dict, base: dict) -> dict:
             "sent": can_sent,
             "read_back": len(run["can"]),
             "decoded": sum(1 for c in run["can"] if c["ok"]),
+            # without a bus: the payloads as logged, decoded through the same car profile
+            "payload_vs_cmd_vel": payload_agreement(
+                run["decisions"], repo_root() / "configs/sim/car.yaml"
+            ),
         },
         "frames": {
             "camera": len(frame_stamps),
