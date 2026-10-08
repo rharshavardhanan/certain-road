@@ -133,3 +133,17 @@ evaluate:
   # The control samples the same on plain road every control_every_s, at cruise only.
   ride: {wheel_drop_m: 0.01, baseline_s: 1.0, window_s: 1.0, control_every_s: 2.0,
          min_speed_frac: 0.9}
+
+# Lighting presets for the review (D099): `python -m sim.gazebo.export --preset poor --seed 0
+# --sdf-only --light all` writes world_<name>.sdf beside world.sdf, sharing its meshes;
+# launch with world:=runs/gazebo/poor_seed0/world_<name>.sdf. Each scales the calibrated
+# noon light above and may move the sun or recolour the sky. Chosen by eye, not measured
+# against real light; their effect on detection is measured only where the review says so.
+lighting:
+  noon: {}                                                  # the calibrated light (world.sdf)
+  morning: {sun_dir: [-0.75, -0.45, -0.35], sun_scale: 0.7, ambient_scale: 0.9,
+            sky: [0.86, 0.80, 0.70]}                        # low sun ahead-left, long shadows
+  evening: {sun_dir: [0.7, -0.5, -0.25], sun_scale: 0.5, ambient_scale: 0.7,
+            sky: [0.93, 0.66, 0.46]}                        # low sun behind, warm sky, dim road
+  overcast: {sun_scale: 0.2, ambient_scale: 2.3, sky: [0.70, 0.72, 0.74],
+             shadows: false}                                # flat light, no shadows

@@ -173,15 +173,20 @@ def export(preset: str, seed: int, out: Path | None = None) -> dict:
     return meta
 
 
-def rewrite_sdf(out: Path) -> None:
+def rewrite_sdf(out: Path, light: str | None = None) -> Path:
     """world.sdf again from parts.json and today's config: new light or physics, same road.
 
+    With `light`, writes world_<light>.sdf beside it under that gazebo.yaml `lighting` preset
+    (launch it with world:=<folder>/world_<light>.sdf); the meshes and textures are shared.
     Needs neither MuJoCo's scene build nor the texture photos, so it takes a second.
     """
     gz = load_gz()
     saved = json.loads((out / "parts.json").read_text())
     look = load_config(gz["look"])
-    (out / "world.sdf").write_text(world_sdf(saved["parts"], look, gz, saved["road_box"]))
+    preset = gz["lighting"][light] if light else None
+    path = out / (f"world_{light}.sdf" if light else "world.sdf")
+    path.write_text(world_sdf(saved["parts"], look, gz, saved["road_box"], preset))
+    return path
 
 
 def main() -> None:
@@ -196,11 +201,16 @@ def main() -> None:
     ap.add_argument(
         "--sdf-only", action="store_true", help="rewrite world.sdf from parts.json and the config"
     )
+    ap.add_argument(
+        "--light",
+        help="with --sdf-only: a gazebo.yaml lighting preset written as world_<light>.sdf, or all",
+    )
     args = ap.parse_args()
     out = args.out or world_folder(args.preset, args.seed)
     if args.sdf_only:
-        rewrite_sdf(out)
-        print(f"world -> {out / 'world.sdf'}")
+        names = list(load_gz()["lighting"]) if args.light == "all" else [args.light]
+        for name in names:
+            print(f"world -> {rewrite_sdf(out, name)}")
         return
     meta = export(args.preset, args.seed, args.out)
     print(json.dumps(meta["export"], indent=1))
