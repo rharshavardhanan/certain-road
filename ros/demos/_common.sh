@@ -6,6 +6,11 @@ REPO=$PWD
 source ros/env.sh
 export DISPLAY=${DISPLAY:-:1}
 RVIZ=${RVIZ:-true}
+# Two harmless warnings, silenced so the terminal stays readable in front of the mentor:
+# OpenCV's bundled Qt looks for fonts it does not ship (only its window chrome uses them),
+# and the venv sees Ubuntu's own matplotlib too, which only breaks 3D plots (never used).
+export QT_QPA_FONTDIR=${QT_QPA_FONTDIR:-/usr/share/fonts/truetype/dejavu}
+export PYTHONWARNINGS=${PYTHONWARNINGS:-"ignore:Unable to import Axes3D"}
 
 can_window() {  # a second terminal showing every CAN frame decoded, live
   [ "${CAN_WINDOW:-1}" = 1 ] || return 0
