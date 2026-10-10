@@ -12,7 +12,9 @@ camera:
   # gives ~70.4 deg horizontal. Calibrating replaces it with the measured focal length.
   nominal_hfov_deg: 70.42
 intrinsics:
-  views: 15                    # board captures, from different angles and distances
+  views: 20                    # board captures, from different angles and distances
+  still_px: 1.5                # captured only while the corners move less than this per frame
+  drop_factor: 2.0             # views fitting worse than this x the median are dropped, then refit
   min_move_px: 60              # a new auto-capture needs the board this far from the last one
   max_rms_px: 1.0              # a worse fit is refused, not saved
 mount:

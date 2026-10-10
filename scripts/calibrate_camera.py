@@ -129,8 +129,9 @@ def save(update: dict) -> Path:
 
 def intrinsics(cfg: dict, name: str) -> None:
     cap, obj = open_camera(cfg), board_points(cfg, name)
-    views, last = [], None
-    while len(views) < cfg["intrinsics"]["views"]:
+    views, last, prev = [], None, None
+    ic = cfg["intrinsics"]
+    while len(views) < ic["views"]:
         ok, frame = cap.read()
         if not ok:
             sys.exit("no frames from the camera")
@@ -139,13 +140,13 @@ def intrinsics(cfg: dict, name: str) -> None:
             cv2.drawChessboardCorners(
                 frame, tuple(target(cfg, name)["inner_corners"]), corners, True
             )
-            moved = (
-                last is None
-                or np.linalg.norm(corners.mean(0) - last) > cfg["intrinsics"]["min_move_px"]
-            )
-            if moved:
+            # still: blur and the webcam's rolling shutter smear a moving board's corners
+            still = prev is not None and np.abs(corners - prev).mean() < ic["still_px"]
+            moved = last is None or np.linalg.norm(corners.mean(0) - last) > ic["min_move_px"]
+            if still and moved:
                 views.append(corners)
                 last = corners.mean(0)
+        prev = corners
         msg = f"views {len(views)}/{cfg['intrinsics']['views']}: tilt and move the board; q quits"
         cv2.putText(frame, msg, (10, 30), 0, 0.8, (0, 255, 0), 2)
         cv2.imshow("calibrate: intrinsics", frame)
@@ -154,13 +155,18 @@ def intrinsics(cfg: dict, name: str) -> None:
     cap.release()
     cv2.destroyAllWindows()
     size = tuple(cfg["camera"]["size"])
-    rms, k, dist, _, _ = cv2.calibrateCamera(
-        [obj.astype(np.float32)] * len(views),
-        [v.astype(np.float32) for v in views],
-        size,
-        None,
-        None,
-    )
+    objs = [obj.astype(np.float32)] * len(views)
+    imgs = [v.astype(np.float32) for v in views]
+    rms, k, dist, *_, per_view = cv2.calibrateCameraExtended(objs, imgs, size, None, None)
+    per_view = per_view.ravel()
+    keep = per_view <= ic["drop_factor"] * np.median(per_view)
+    if keep.sum() < len(views):  # refit without the smeared views
+        print(
+            f"dropped {len(views) - keep.sum()} of {len(views)} views (worst {per_view.max():.1f} px)"
+        )
+        objs = [o for o, kp in zip(objs, keep, strict=True) if kp]
+        imgs = [m for m, kp in zip(imgs, keep, strict=True) if kp]
+        rms, k, dist, _, _ = cv2.calibrateCamera(objs, imgs, size, None, None)
     hfov = math.degrees(2 * math.atan(size[0] / (2 * k[0, 0])))
     if rms > cfg["intrinsics"]["max_rms_px"]:
         sys.exit(
