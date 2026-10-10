@@ -161,9 +161,8 @@ def intrinsics(cfg: dict, name: str) -> None:
     per_view = per_view.ravel()
     keep = per_view <= ic["drop_factor"] * np.median(per_view)
     if keep.sum() < len(views):  # refit without the smeared views
-        print(
-            f"dropped {len(views) - keep.sum()} of {len(views)} views (worst {per_view.max():.1f} px)"
-        )
+        n_drop, worst = len(views) - int(keep.sum()), float(per_view.max())
+        print(f"dropped {n_drop} of {len(views)} views (worst {worst:.1f} px)")
         objs = [o for o, kp in zip(objs, keep, strict=True) if kp]
         imgs = [m for m, kp in zip(imgs, keep, strict=True) if kp]
         rms, k, dist, _, _ = cv2.calibrateCamera(objs, imgs, size, None, None)
