@@ -80,6 +80,8 @@ def open_camera(cfg: dict) -> cv2.VideoCapture:
     cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, cfg["camera"]["size"][0])
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, cfg["camera"]["size"][1])
+    cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)  # a fixed lens: refocusing changes the focal length
+    cap.set(cv2.CAP_PROP_FOCUS, cfg["camera"]["focus"])
     return cap
 
 
@@ -173,6 +175,7 @@ def intrinsics(cfg: dict, name: str) -> None:
             f" HFOV {hfov:.1f} deg. Hold the board still at each capture, vary angle and"
             " distance, avoid glare; nothing was saved."
         )
+    quality = "good" if rms <= ic["good_rms_px"] else "approximate"
     out = save(
         {
             "intrinsics": {
@@ -180,11 +183,16 @@ def intrinsics(cfg: dict, name: str) -> None:
                 "k": k.tolist(),
                 "dist": dist.ravel().tolist(),
                 "rms_px": float(rms),
+                "quality": quality,
+                "focus": cfg["camera"]["focus"],
                 "hfov_deg": hfov,
             }
         }
     )
-    print(f"reprojection error {rms:.2f} px (under ~0.5 is good); HFOV {hfov:.1f} deg -> {out}")
+    print(
+        f"reprojection error {rms:.2f} px ({quality}); HFOV {hfov:.1f} deg, focus fixed at "
+        f"{cfg['camera']['focus']} -> {out}"
+    )
 
 
 def mount(cfg: dict, name: str) -> None:
