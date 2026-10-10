@@ -50,3 +50,13 @@ def test_board_has_the_configured_size():
     assert pts[:, :2].max(0) == pytest.approx(
         [(nx - 1), (ny - 1)] * np.array(CFG["board"]["square_m"])
     )
+
+
+@pytest.mark.parametrize("name", ["print", "phone"])
+def test_board_has_no_180_degree_twin(name):
+    """With an even number of squares on both sides a board looks the same rotated 180 degrees,
+    corner order can flip between views, and calibration fails (it did: 30 px error)."""
+    from calibrate_camera import target
+
+    nx, ny = target(CFG, name)["inner_corners"]
+    assert (nx + 1) % 2 == 1 or (ny + 1) % 2 == 1

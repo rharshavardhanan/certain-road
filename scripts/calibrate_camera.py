@@ -162,6 +162,12 @@ def intrinsics(cfg: dict, name: str) -> None:
         None,
     )
     hfov = math.degrees(2 * math.atan(size[0] / (2 * k[0, 0])))
+    if rms > cfg["intrinsics"]["max_rms_px"]:
+        sys.exit(
+            f"REFUSED: reprojection error {rms:.2f} px (limit {cfg['intrinsics']['max_rms_px']}),"
+            f" HFOV {hfov:.1f} deg. Hold the board still at each capture, vary angle and"
+            " distance, avoid glare; nothing was saved."
+        )
     out = save(
         {
             "intrinsics": {

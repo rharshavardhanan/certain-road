@@ -14,6 +14,7 @@ camera:
 intrinsics:
   views: 15                    # board captures, from different angles and distances
   min_move_px: 60              # a new auto-capture needs the board this far from the last one
+  max_rms_px: 1.0              # a worse fit is refused, not saved
 mount:
   frames: 40                   # frames averaged for height, pitch and roll
 out: configs/robot/camera_c920.yaml   # measured results, committed as provenance
@@ -24,7 +25,7 @@ out: configs/robot/camera_c920.yaml   # measured results, committed as provenanc
 phone:
   model: Samsung Galaxy A54
   screen_px: [2340, 1080]      # landscape
-  inner_corners: [7, 3]
-  square_px: 260
-  square_m: 0.0164             # 260 px at the A54's ~403 ppi: check with a ruler
+  inner_corners: [7, 4]        # 8 x 5 squares: one side odd, so the board has no 180-degree twin
+  square_px: 200
+  square_m: 0.0126             # 200 px at the A54's ~403 ppi: check with a ruler
   thickness_m: 0.0082          # A54 body thickness
