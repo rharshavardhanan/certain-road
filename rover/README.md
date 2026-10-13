@@ -44,18 +44,29 @@ the planner's corridor assumes a fixed height and tilt (about 18–25 cm, 15° d
   four IN wires (plus ENA/ENB in PWM mode) and GND go between them. Wheels off the ground.
 - **The 2 × 18650 pack** (2S: 7.4 V nominal, 8.4 V full) **runs the motors only.** It is too low
   for the Jetson.
-- **The Jetson on the rover needs its own supply** within the developer kit's DC-jack range
-  (the kit ships with a 19 V adapter; check NVIDIA's spec for the accepted range before
-  connecting anything else). A 3S LiPo (11.1 V nominal, 12.6 V full) with a 5.5 × 2.5 mm barrel
-  plug, like the friend's orange pack, is the usual choice.
-- **With five 18650 cells:** 2 in series (2S, 7.4 V) for the L298N and motors, 3 in series
-  (3S, 9–12.6 V) for the Jetson's barrel jack. Never all 5 in series (21 V when full: too high
-  for the Jetson, far too high for the motors). For the 3S pack: matched cells charged to
-  4.2 V each first, a 3S protection board (BMS, ≥ 10 A) so the cells are not over-discharged,
-  a 5.5 × 2.5 mm centre-positive plug with polarity checked by multimeter, and a 3–5 A inline
-  fuse. Charge the cells individually unless you have a 3S balance charger. The two packs share
-  only the ground wire (Jetson pin 30 ↔ L298N GND); never join their positive wires.
-- The blue LM2596 buck converter is not needed; do not feed the Jetson from it.
+- **The Jetson's DC jack accepts 9–20 V, at most 4.2 A** (the Orin Nano developer kit carrier
+  board spec, as quoted on NVIDIA's forum). Feeding it anything outside that range can damage it.
+- **The blue LM2596 buck converter only steps voltage DOWN**, by at least ~1.5 V, at most 3 A.
+  So it can make 12 V only from ≥ ~13.5 V. Five cells **in parallel** stay at 3.0–4.2 V and can
+  never give 12 V through it; to get 12 V from a buck, the cells must be **in series**.
+- **Measure before you connect:** a multimeter across the pack: ~15–21 V means 5 in series (5S),
+  ~3–4.2 V means parallel. Set the LM2596's output with its screw to 12.0 V **with nothing
+  connected to it**, then connect the Jetson.
+- **Option 1, matching the friend's buck (5 cells in series, 15–21 V):** 5S → LM2596 at 12 V →
+  5.5 × 2.5 mm centre-positive barrel plug → Jetson. The motors need their own lower supply:
+  a second buck set to ~7.5 V into the L298N's +12V/VS terminal (a 5 A-class module, since six
+  TT motors can draw more than an LM2596's 3 A when they stall). Never feed the L298N straight
+  from 5S: TT motors are 3–6 V parts.
+- **Option 2, no buck (3 + 2 cells):** 3 in series (9.0–12.6 V) straight into the Jetson's jack,
+  2 in series (7.4 V) into the L298N. Simpler, but a near-empty 3S pack sits at the Jetson's
+  9 V minimum, so it shuts down earlier.
+- **Either way:** a protection board (BMS) matched to the series count (5S or 3S), matched cells
+  charged to 4.2 V each before joining them, polarity checked with a multimeter, a 3–5 A fuse on
+  the Jetson's positive wire, and only the ground wire shared between the Jetson side and the
+  motor side (Jetson pin 30 ↔ L298N GND). Never join the two supplies' positive wires.
+- **Run the Jetson at 15 W on battery:** `sudo nvpmodel -m 0` (back to 25 W: `-m 1`). At 25 W the
+  board can draw over 2 A from 12 V, close to an LM2596's limit; a brown-out reboots the Jetson
+  mid-run. Detection gets somewhat slower at 15 W: measure it with a dry run.
 - Before pulling the Jetson's power: `sudo shutdown now`.
 
 ## 3. Working from the Mac over SSH
