@@ -71,8 +71,12 @@ the planner's corridor assumes a fixed height and tilt (about 18–25 cm, 15° d
 
 ## 3. Working from the Mac over SSH
 
-1. **Once, on the Jetson** (with a monitor): `sudo systemctl enable --now ssh`. Join the same
-   Wi-Fi as the Mac. If the lab network blocks devices from reaching each other, use the
+1. **Once, on the Jetson** (with a monitor): `sudo systemctl enable --now ssh`. If that fails
+   and `journalctl -u ssh -n 5` says `no hostkeys available`, the image shipped empty
+   (0-byte) host key files that `ssh-keygen -A` will not overwrite. Delete them first:
+   `sudo rm /etc/ssh/ssh_host_*_key /etc/ssh/ssh_host_*_key.pub && sudo ssh-keygen -A`, then
+   `sudo systemctl reset-failed ssh.service ssh.socket && sudo systemctl enable --now
+   ssh.socket ssh.service`. Join the same Wi-Fi as the Mac. If the lab network blocks devices from reaching each other, use the
    phone's hotspot for both. `hostname -I` shows the Jetson's address (it changes; today it
    was 172.16.61.115).
 2. **On the Mac, Terminal:** `ssh host123@host123.local` (or `ssh host123@<address>`). Type
