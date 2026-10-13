@@ -48,6 +48,13 @@ the planner's corridor assumes a fixed height and tilt (about 18–25 cm, 15° d
   (the kit ships with a 19 V adapter; check NVIDIA's spec for the accepted range before
   connecting anything else). A 3S LiPo (11.1 V nominal, 12.6 V full) with a 5.5 × 2.5 mm barrel
   plug, like the friend's orange pack, is the usual choice.
+- **With five 18650 cells:** 2 in series (2S, 7.4 V) for the L298N and motors, 3 in series
+  (3S, 9–12.6 V) for the Jetson's barrel jack. Never all 5 in series (21 V when full: too high
+  for the Jetson, far too high for the motors). For the 3S pack: matched cells charged to
+  4.2 V each first, a 3S protection board (BMS, ≥ 10 A) so the cells are not over-discharged,
+  a 5.5 × 2.5 mm centre-positive plug with polarity checked by multimeter, and a 3–5 A inline
+  fuse. Charge the cells individually unless you have a 3S balance charger. The two packs share
+  only the ground wire (Jetson pin 30 ↔ L298N GND); never join their positive wires.
 - The blue LM2596 buck converter is not needed; do not feed the Jetson from it.
 - Before pulling the Jetson's power: `sudo shutdown now`.
 
