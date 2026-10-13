@@ -52,7 +52,7 @@ the planner's corridor assumes a fixed height and tilt (about 18–25 cm, 15° d
 - **Measure before you connect:** a multimeter across the pack: ~15–21 V means 5 in series (5S),
   ~3–4.2 V means parallel. Set the LM2596's output with its screw to 12.0 V **with nothing
   connected to it**, then connect the Jetson.
-- **Option 1, matching the friend's buck (5 cells in series, 15–21 V):** 5S → LM2596 at 12 V →
+- **Option 1 — THIS ROVER (confirmed 2026-10-13: 5 cells in series, 15–21 V):** 5S → LM2596 at 12 V →
   5.5 × 2.5 mm centre-positive barrel plug → Jetson. The motors need their own lower supply:
   a second buck set to ~7.5 V into the L298N's +12V/VS terminal (a 5 A-class module, since six
   TT motors can draw more than an LM2596's 3 A when they stall). Never feed the L298N straight
