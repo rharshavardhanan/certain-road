@@ -1,0 +1,51 @@
+# The 6-wheel rover (rover/README.md). L298N driven straight from the Jetson's 40-pin header,
+# as on the friend's Jetson Xavier NX build: the Orin Nano's header has the same layout, so
+# the BOARD pin numbers carry over. Values measured by rover/test_motors.py are written to
+# configs/rover/calibrated.yaml, which overrides this file.
+
+pins:                         # BOARD numbering (the numbers printed beside the header)
+  left:  {en: 32, a: 29, b: 31}     # ENA, IN1, IN2  -> OUT1/OUT2: the three left motors
+  right: {en: 33, a: 35, b: 37}     # ENB, IN3, IN4  -> OUT3/OUT4: the three right motors
+  ground: 30                        # to L298N GND (and so battery negative): common ground
+use_pwm: false                # false: ENA/ENB jumpers FITTED, speed by switching IN pins
+                              # true: jumpers removed, ENA->32 ENB->33, PWM enabled in jetson-io
+pwm_hz: 1000
+soft_pwm_slot_s: 0.005        # jumper mode: 10 slots of 5 ms = a 20 Hz cycle, 10 % steps
+invert_left: false
+invert_right: false
+swap_sides: false
+
+# Command -> duty (rover/drivemap.py). A Command's speed 0..1 maps onto [min_duty, max_duty]:
+# below min_duty a TT gear motor stalls (the friend's turn_duty_min was 55 %). steer -1..1
+# adds +/- turn_duty, positive steering left (the right side runs faster).
+min_duty: 50.0
+max_duty: 70.0
+turn_duty: 30.0
+
+# Heading hold (optional, MPU6050): while the planner says NORMAL or WARNING, steer back to
+# the heading the run started with, so six unequal TT motors do not curve the rover off the
+# track. AVOID and STOP are the planner's alone.
+imu:
+  enabled: false              # --heading-hold turns it on
+  buses: [7, 1, 8]            # header pins 3/5: i2c-7 on the Orin Nano, i2c-8 on Xavier NX
+  addr: 0x68
+  bias_seconds: 3.0           # keep the rover still this long at start
+  max_rate_dps: 300.0         # gyro readings beyond this are glitches
+  hold_kp: 2.5                # duty % per degree of heading error
+  hold_max: 25.0
+
+camera:
+  device: /dev/video0
+  size: [1280, 720]           # the C920's 720p mode, MJPG
+  autofocus: false            # a fixed lens keeps the corridor geometry stable
+  focus: 40                   # same value as configs/robot/calibration.yaml
+
+safety:
+  watchdog_s: 0.5             # no fresh decision this long -> motors stop
+  max_run_s: 120              # the run ends by itself
+  arm_countdown_s: 3
+
+stream:
+  port: 8080                  # open http://host123.local:8080 on the Mac
+  jpeg_quality: 70
+  width: 960                  # stream size; detection runs on the full frame
